@@ -279,6 +279,18 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 <main>
   <!-- P0: 상품별 현황 -->
   <div id="panel0" class="sheet-panel active">
+    <!-- 탁송 모드 전용 기간 선택 -->
+    <div id="takso_period_bar" style="display:none;margin-bottom:16px;display:none;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-size:13px;color:#888;font-weight:500;">📅 기간</span>
+        <select id="takso_year_sel" onchange="onTaksoYearChange()"
+          style="padding:7px 12px;border:1.5px solid #e0e0ee;border-radius:8px;font-size:13px;font-family:inherit;background:#fff;cursor:pointer;">
+        </select>
+        <select id="takso_month_sel" onchange="renderTakso()"
+          style="padding:7px 12px;border:1.5px solid #e0e0ee;border-radius:8px;font-size:13px;font-family:inherit;background:#fff;cursor:pointer;">
+        </select>
+      </div>
+    </div>
     <div id="p0_content"></div>
   </div>
   <!-- P1: 차량별 현황 -->
@@ -364,11 +376,18 @@ function setDataMode(mode){
   const sheetTabsEl=document.getElementById('sheetTabs');
   if(sheetTabsEl)sheetTabsEl.style.display=mode==='takso'?'none':'flex';
 
+  const taksoPeriod=document.getElementById('takso_period_bar');
+  if(taksoPeriod)taksoPeriod.style.display=mode==='takso'?'flex':'none';
+
+  const mainPeriod=document.getElementById('periodBar');
+  if(mainPeriod)mainPeriod.style.display=mode==='takso'?'none':'flex';
+
   if(mode==='takso'){
-    // 탁송 탭으로 전환시 상품별현황 탭만 보이게
     switchTab(0);
+    initTaksoPickers();
     renderTakso();
   } else {
+    if(mainPeriod)mainPeriod.style.display='flex';
     renderCurrent();
   }
 }
@@ -823,9 +842,17 @@ function renderP1(){
   // 월 목록 (올해 1월~현재)
   const now=new Date();
   const months=[];
-  const startY=parseInt(yr);
-  const endM=yr===now.getFullYear().toString()?now.getMonth()+1:12;
-  for(let m=1;m<=endM;m++) months.push(`${startY}.${String(m).padStart(2,'0')}`);
+  // 실제 데이터에 있는 월만 표시 (해당 년도)
+  const availMonths=[...new Set(
+    allFiltered.map(r=>getYM(r[iDate])).filter(m=>m&&m.startsWith(yr))
+  )].sort();
+  // 데이터 없으면 1~현재월까지
+  if(availMonths.length>0){
+    availMonths.forEach(m=>months.push(m));
+  } else {
+    const endM=yr===now.getFullYear().toString()?now.getMonth()+1:12;
+    for(let m=1;m<=endM;m++) months.push(`${yr}.${String(m).padStart(2,'0')}`);
+  }
 
   // 선택 차종 데이터
   const carRows=p1SelectedCar
@@ -850,9 +877,9 @@ function renderP1(){
 
       <!-- 좌측 차종 목록 -->
       <div style="width:160px;flex-shrink:0;background:#fff;border-radius:14px;border:1px solid #ebebf5;overflow:hidden;display:flex;flex-direction:column;">
-        <div style="padding:12px;border-bottom:1px solid #f0f0f8;">
-          <input type="text" id="p1_car_search" placeholder="차종 검색..." oninput="filterCarList()"
-            style="width:100%;padding:6px 10px;font-size:12px;font-family:inherit;border:1px solid #e8e8f0;border-radius:6px;outline:none;"/>
+        <div style="padding:8px;border-bottom:1px solid #f0f0f8;">
+          <input type="text" id="p1_car_search" placeholder="검색..." oninput="filterCarList()"
+            style="width:100%;padding:5px 8px;font-size:11px;font-family:inherit;border:1px solid #e8e8f0;border-radius:6px;outline:none;"/>
         </div>
         <div style="overflow-y:auto;flex:1;" id="p1_car_list">
           ${carSorted.map(([car,cnt],i)=>`
@@ -1219,6 +1246,41 @@ function applyRange(){
 }
 
 // ===================== 탁송 현황 =====================
+function initTaksoPickers(){
+  if(!rawTaksoTable)return;
+  const cols=rawTaksoTable.cols.map(c=>c.label);
+  const rows=rawTaksoTable.rows.map(r=>r.c.map(c=>c?c.v:null));
+  const iHope=cols.findIndex(c=>c&&(c.includes('희망일자')||c.includes('희망')));
+  const iDateFallback=cols.findIndex(c=>c&&c.includes('요청일시'));
+  const iDF=iHope>=0?iHope:iDateFallback;
+  const years=[...new Set(rows.map(r=>getYM(r[iDF])?.split('.')[0]).filter(Boolean))].sort().reverse();
+  const ySel=document.getElementById('takso_year_sel');
+  if(!ySel)return;
+  const thisY=new Date().getFullYear().toString();
+  ySel.innerHTML=years.map(y=>`<option value="${y}">${y}년</option>`).join('');
+  if(years.includes(thisY))ySel.value=thisY;
+  onTaksoYearChange(true); // true = 현재달 자동 선택
+}
+
+function onTaksoYearChange(selectCurrent){
+  if(!rawTaksoTable)return;
+  const yr=document.getElementById('takso_year_sel')?.value||new Date().getFullYear().toString();
+  const cols=rawTaksoTable.cols.map(c=>c.label);
+  const rows=rawTaksoTable.rows.map(r=>r.c.map(c=>c?c.v:null));
+  const iHope=cols.findIndex(c=>c&&(c.includes('희망일자')||c.includes('희망')));
+  const iDF=iHope>=0?iHope:cols.findIndex(c=>c&&c.includes('요청일시'));
+  const months=[...new Set(rows.filter(r=>getYM(r[iDF])?.startsWith(yr)).map(r=>getYM(r[iDF])).filter(Boolean))].sort();
+  const mSel=document.getElementById('takso_month_sel');
+  if(!mSel)return;
+  mSel.innerHTML='<option value="">전체</option>'+months.map(m=>`<option value="${m}">${parseInt(m.split('.')[1])}월</option>`).join('');
+  if(selectCurrent){
+    const tm=thisMonth();
+    if(months.includes(tm))mSel.value=tm;
+    else mSel.value=months[months.length-1]||'';
+  }
+  renderTakso();
+}
+
 function renderTakso(){
   if(!rawTaksoTable){
     document.getElementById('p0_content').innerHTML='<div style="text-align:center;padding:60px;color:#bbb;">탁송 데이터를 불러오는 중이거나 없어요.</div>';
@@ -1241,15 +1303,14 @@ function renderTakso(){
   const iDateFinal = iHope >= 0 ? iHope : iDate;
 
   // 금월 필터
-  const yr=document.getElementById('yearSel')?.value||new Date().getFullYear().toString();
-  const mo=document.getElementById('monthSel')?.value||'';
-  const filteredAll = mo
-    ? rows.filter(r=>getYM(r[iDateFinal])===mo)
-    : rows.filter(r=>getYM(r[iDateFinal])?.startsWith(yr));
-  const tm=mo||yr;
-  const displayLabel=mo
-    ? (mo.split('.')[0]+'년 '+parseInt(mo.split('.')[1])+'월')
-    : (yr+'년 전체');
+  const tYr=document.getElementById('takso_year_sel')?.value||new Date().getFullYear().toString();
+  const tMo=document.getElementById('takso_month_sel')?.value||'';
+  const filteredAll = tMo
+    ? rows.filter(r=>getYM(r[iDateFinal])===tMo)
+    : rows.filter(r=>getYM(r[iDateFinal])?.startsWith(tYr));
+  const displayLabel=tMo
+    ? (tMo.split('.')[0]+'년 '+parseInt(tMo.split('.')[1])+'월')
+    : (tYr+'년 전체');
   const vehicleChange=filteredAll.filter(r=>mapTaksoWorker(r[iWorker])==='특이건');
   const filtered=filteredAll.filter(r=>mapTaksoWorker(r[iWorker])!=='특이건');
   const vcNote=vehicleChange.length?` <span style="font-size:10px;color:#bbb;font-weight:400;">* 차량교체 ${vehicleChange.length}건</span>`:'';
