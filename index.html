@@ -3,734 +3,1432 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>판매현황 대시보드</title>
+<title>판매지원팀 판매현황</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Noto Sans KR', sans-serif; background: #f8f9fc; color: #1c1c2e; }
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f7;color:#1c1c2e;font-size:14px;}
 
-  header { background:#fff; border-bottom:1px solid #eee; padding:0 40px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-  .logo { display:flex; align-items:center; gap:10px; }
-  .logo-dot { width:10px; height:10px; border-radius:50%; background:#6C63FF; }
-  .logo-text { font-size:16px; font-weight:700; letter-spacing:-0.3px; }
-  .header-right { font-size:12px; color:#999; }
+/* TOP BAR */
+.topbar{background:#fff;border-bottom:1px solid #e8e8f0;padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px;}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.app-title{font-size:17px;font-weight:700;letter-spacing:-0.3px;white-space:nowrap;}
+.tab-nav{display:flex;gap:2px;}
+.tab-nav-btn{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#999;transition:all 0.2s;}
+.tab-nav-btn.active{background:#6C63FF;color:#fff;}
+.tab-nav-btn:hover:not(.active){background:#f0f0f8;color:#555;}
+.topbar-right{display:flex;align-items:center;gap:10px;white-space:nowrap;}
+.last-update{font-size:11px;color:#bbb;}
 
-  .connect-bar { background:#fff; border-bottom:1px solid #eee; padding:12px 40px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-  .connect-bar label { font-size:12px; color:#888; white-space:nowrap; }
-  .connect-bar input { padding:7px 12px; font-size:13px; font-family:inherit; border:1.5px solid #e8e8f0; border-radius:10px; background:#fafafa; color:#1c1c2e; transition:border-color 0.2s; }
-  .connect-bar input:focus { outline:none; border-color:#6C63FF; background:#fff; }
-  .connect-bar input.wide { width:300px; }
-  .btn-load { padding:7px 18px; background:#6C63FF; color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:500; font-family:inherit; cursor:pointer; white-space:nowrap; }
-  .btn-load:hover { background:#574fd6; }
-  #statusMsg { font-size:12px; }
+/* CONNECT */
+.connect-bar{background:#fff;border-bottom:1px solid #eee;padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.connect-bar label{font-size:12px;color:#888;}
+.connect-bar input{padding:7px 12px;font-size:13px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:8px;background:#fafafa;color:#1c1c2e;width:280px;}
+.connect-bar input:focus{outline:none;border-color:#6C63FF;}
+.btn-load{padding:7px 16px;background:#6C63FF;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;}
+.btn-load:hover{background:#574fd6;}
+#statusMsg{font-size:12px;}
 
-  .sheet-tabs { background:#fff; border-bottom:2px solid #eee; padding:0 40px; display:flex; overflow-x:auto; }
-  .sheet-tab { padding:14px 20px; font-size:14px; font-weight:500; color:#aaa; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.2s; font-family:inherit; background:none; border-top:none; border-left:none; border-right:none; white-space:nowrap; }
-  .sheet-tab:hover { color:#6C63FF; }
-  .sheet-tab.active { color:#6C63FF; border-bottom-color:#6C63FF; }
-  .tab-badge { display:inline-block; margin-left:6px; font-size:11px; background:#f0eeff; color:#6C63FF; padding:1px 7px; border-radius:20px; font-weight:500; }
+/* PERIOD BAR */
+.period-bar{background:#fff;border-bottom:1px solid #e8e8f0;padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.period-seg{display:flex;background:#f0f0f8;border-radius:8px;padding:3px;}
+.seg-btn{padding:5px 14px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s;}
+.seg-btn.active{background:#fff;color:#6C63FF;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.period-sep{width:1px;height:20px;background:#e0e0ee;margin:0 4px;}
+.period-sel{padding:6px 12px;border:1.5px solid #e0e0ee;border-radius:8px;font-size:13px;font-family:inherit;background:#fff;cursor:pointer;color:#333;}
+.period-sel:focus{outline:none;border-color:#6C63FF;}
+.trend-btn-top{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid #6C63FF;background:#fff;color:#6C63FF;margin-left:auto;transition:all 0.2s;}
+.trend-btn-top.active{background:#6C63FF;color:#fff;}
 
-  main { max-width:1280px; margin:0 auto; padding:32px 40px; }
+/* SHEET TABS (하단 탭) */
+.sheet-tabs{background:#fff;border-bottom:2px solid #eee;padding:0 28px;display:flex;overflow-x:auto;}
+.sheet-tab{padding:12px 18px;font-size:13px;font-weight:500;color:#aaa;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;}
+.sheet-tab:hover{color:#6C63FF;}
+.sheet-tab.active{color:#6C63FF;border-bottom-color:#6C63FF;}
+.tab-badge{display:inline-block;margin-left:5px;font-size:10px;background:#f0eeff;color:#6C63FF;padding:1px 6px;border-radius:20px;}
 
-  .page-title-wrap { text-align:center; margin-bottom:28px; }
-  .page-title { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
-  .page-subtitle { font-size:13px; color:#999; margin-top:4px; }
+main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
+.sheet-panel{display:none;}
+.car-item{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:#555;display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.car-item:hover{background:#f0eeff;color:#6C63FF;}
+.car-item.active{background:#6C63FF;color:#fff;font-weight:600;}
+.car-item .car-cnt{font-size:11px;opacity:0.7;}
+.car-detail-panel{background:#fff;border-radius:12px;padding:20px;border:1px solid #ebebf5;margin-top:16px;}
+.seg-mini{display:flex;background:#f0f0f8;border-radius:8px;padding:3px;gap:2px;display:inline-flex;}
+.seg-mini-btn{padding:4px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s;}
+.seg-mini-btn.active{background:#fff;color:#6C63FF;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.section-title-mini{font-size:14px;font-weight:700;color:#1c1c2e;margin-bottom:12px;padding-left:8px;border-left:3px solid #6C63FF;}
+.sheet-panel.active{display:block;}
 
-  .period-bar { display:flex; justify-content:center; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-  .period-btn { padding:9px 22px; border-radius:50px; font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; border:1.5px solid #e0e0ee; background:#fff; color:#888; transition:all 0.2s; }
-  .period-btn:hover { border-color:#6C63FF; color:#6C63FF; }
-  .period-btn.active { background:#6C63FF; color:#fff; border-color:#6C63FF; }
-  .month-select-wrap { display:none; justify-content:center; margin-bottom:20px; }
-  .month-select-wrap.show { display:flex; }
-  .month-select-wrap select { padding:8px 16px; border:1.5px solid #e0e0ee; border-radius:10px; font-size:14px; font-family:inherit; color:#333; background:#fff; cursor:pointer; }
+/* SUMMARY CARDS */
+.summary-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:16px;margin-bottom:20px;align-items:stretch;}
+.sum-card{background:#fff;border-radius:14px;padding:18px 22px;border:1px solid #ebebf5;}
+.sum-label{font-size:12px;color:#999;margin-bottom:4px;}
+.sum-value{font-size:30px;font-weight:700;letter-spacing:-1px;line-height:1.1;}
+.sum-sub{font-size:12px;margin-top:6px;display:flex;align-items:center;gap:4px;}
+.sum-mini-chart{width:80px;height:30px;margin-top:6px;}
+.up{color:#22c997;}.dn{color:#FF6B6B;}.eq{color:#aaa;}
+.yoy-card{background:#fff;border-radius:14px;padding:18px 22px;border:1px solid #ebebf5;display:flex;flex-direction:column;justify-content:space-between;}
+.yoy-title{font-size:12px;font-weight:600;color:#666;margin-bottom:10px;}
+.yoy-items{display:flex;gap:16px;flex-wrap:wrap;}
+.yoy-item{text-align:center;}
+.yoy-item-icon{font-size:18px;margin-bottom:4px;}
+.yoy-item-label{font-size:11px;color:#999;margin-bottom:2px;}
+.yoy-item-val{font-size:16px;font-weight:700;}
 
-  .metric-grid { display:grid; gap:16px; margin-bottom:24px; }
-  .g3 { grid-template-columns:repeat(3,1fr); }
-  .g4 { grid-template-columns:repeat(4,1fr); }
-  .metric-card { background:#fff; border-radius:16px; padding:20px 22px; border:1px solid #f0f0f8; position:relative; overflow:hidden; }
-  .metric-card::after { content:''; position:absolute; top:0; left:0; width:4px; height:100%; border-radius:16px 0 0 16px; }
-  .mc1::after{background:#6C63FF;} .mc2::after{background:#22c997;} .mc3::after{background:#FF6B6B;} .mc4::after{background:#FFA94D;} .mc5::after{background:#4dabf7;} .mc6::after{background:#f06595;}
-  .metric-label { font-size:12px; color:#999; margin-bottom:8px; }
-  .metric-value { font-size:28px; font-weight:700; letter-spacing:-1px; }
-  .metric-sub { font-size:11px; color:#bbb; margin-top:5px; }
+/* MAIN GRID */
+.main-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:16px;margin-bottom:16px;}
+.main-grid.wide{grid-template-columns:1fr 1fr 380px;}
+.card{background:#fff;border-radius:14px;padding:20px;border:1px solid #ebebf5;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:13px;font-weight:600;color:#1c1c2e;display:flex;align-items:center;gap:6px;}
+.card-title::before{content:'';display:inline-block;width:3px;height:14px;border-radius:2px;background:#6C63FF;}
+.card-badge{font-size:11px;color:#6C63FF;background:#f0eeff;padding:2px 8px;border-radius:20px;}
+.card-link{font-size:11px;color:#6C63FF;cursor:pointer;border:none;background:none;font-family:inherit;}
 
-  .section-title { font-size:15px; font-weight:700; color:#1c1c2e; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
-  .section-title::before { content:''; display:inline-block; width:4px; height:18px; background:#6C63FF; border-radius:2px; }
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:16px;}
+.donut-canvas-wrap{position:relative;width:140px;height:140px;flex-shrink:0;}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.donut-center-val{font-size:18px;font-weight:700;line-height:1;}
+.donut-center-label{font-size:10px;color:#999;margin-top:2px;}
+.donut-legend{flex:1;}
+.legend-item{display:flex;align-items:center;gap:6px;margin-bottom:7px;font-size:12px;}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.legend-name{color:#333;flex:1;}
+.legend-val{color:#999;font-size:11px;white-space:nowrap;}
 
-  .chart-row { display:grid; gap:20px; margin-bottom:20px; }
-  .chart-row.two { grid-template-columns:1fr 1fr; }
-  .chart-row.three { grid-template-columns:1fr 1fr 1fr; }
-  .card { background:#fff; border-radius:16px; padding:24px; border:1px solid #f0f0f8; }
-  .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-  .card-title { font-size:14px; font-weight:600; }
-  .card-badge { font-size:11px; color:#6C63FF; background:#f0eeff; padding:3px 10px; border-radius:20px; }
+/* TREND TABLE */
+.trend-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+.trend-table th{padding:7px 10px;background:#f8f9fc;font-weight:600;color:#666;text-align:center;border-bottom:1px solid #ebebf5;}
+.trend-table th:first-child{text-align:left;}
+.trend-table td{padding:7px 10px;text-align:center;border-bottom:1px solid #f5f5f8;}
+.trend-table td:first-child{text-align:left;font-weight:500;}
+.trend-table tr:last-child td{background:#f8f9fc;font-weight:700;border-bottom:none;}
+.shin-c{color:#6C63FF;font-weight:600;}
+.re-c{color:#22c997;font-weight:600;}
+.diff-up{color:#22c997;font-size:11px;}
+.diff-dn{color:#FF6B6B;font-size:11px;}
 
-  /* 인라인 수치 블록 */
-  .stat-row { display:flex; gap:40px; padding:8px 0; flex-wrap:wrap; }
-  .stat-item { min-width:120px; }
-  .stat-label { font-size:12px; color:#999; margin-bottom:6px; }
-  .stat-hint { font-size:11px; margin-left:4px; }
-  .stat-val { font-size:30px; font-weight:700; letter-spacing:-1px; cursor:default; }
-  .stat-unit { font-size:13px; font-weight:500; color:#aaa; margin-left:3px; }
+/* STAT ROW */
+.stat-row{display:flex;gap:28px;flex-wrap:wrap;}
+.stat-item{min-width:100px;}
+.stat-label{font-size:11px;color:#999;margin-bottom:5px;}
+.stat-val{font-size:24px;font-weight:700;letter-spacing:-0.5px;cursor:default;}
+.stat-unit{font-size:12px;color:#aaa;margin-left:2px;}
+.stat-pct{display:inline-block;margin-left:6px;font-size:11px;padding:1px 6px;border-radius:10px;}
 
-  /* DONUT */
-  .donut-wrap { display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
-  .donut-canvas-wrap { position:relative; width:170px; height:170px; flex-shrink:0; }
-  .donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none; }
-  .donut-center-val { font-size:20px; font-weight:700; color:#1c1c2e; line-height:1; }
-  .donut-center-label { font-size:11px; color:#999; margin-top:3px; }
-  .donut-legend { flex:1; min-width:120px; }
-  .legend-item { display:flex; align-items:center; gap:8px; margin-bottom:9px; font-size:13px; }
-  .legend-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-  .legend-name { color:#333; flex:1; }
-  .legend-val { color:#999; font-size:12px; white-space:nowrap; }
+/* INSIGHT */
+.insight-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;}
+.insight-card{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #ebebf5;}
+.insight-icon{font-size:20px;margin-bottom:6px;}
+.insight-title{font-size:12px;font-weight:600;margin-bottom:4px;}
+.insight-desc{font-size:11px;color:#888;line-height:1.5;}
 
-  /* BAR */
-  .bar-item { margin-bottom:12px; }
-  .bar-item:last-child { margin-bottom:0; }
-  .bar-meta { display:flex; justify-content:space-between; margin-bottom:5px; }
-  .bar-name { font-size:13px; color:#333; }
-  .bar-count { font-size:12px; color:#999; }
-  .bar-track { background:#f3f3f8; border-radius:6px; height:7px; overflow:hidden; }
-  .bar-fill { height:100%; border-radius:6px; transition:width 0.8s cubic-bezier(0.4,0,0.2,1); }
+/* GAUGE */
+.gauge-wrap{position:relative;width:80px;height:80px;margin:0 auto 8px;}
+.gauge-wrap canvas{width:80px!important;height:80px!important;}
+.gauge-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-45%);text-align:center;font-size:13px;font-weight:700;}
 
-  .chart-wrap { position:relative; height:240px; }
+/* BOTTOM ROW */
+.bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
 
-  /* TOOLTIP */
-  .tooltip-wrap { position:relative; cursor:default; }
-  .custom-tooltip { position:fixed; background:#1c1c2e; color:#fff; font-size:13px; line-height:1.9; padding:10px 16px; border-radius:10px; pointer-events:none; white-space:pre; z-index:9999; box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+/* TREND POPUP */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center;}
+.popup-overlay.show{display:flex;}
+.popup-box{background:#fff;border-radius:18px;padding:24px;width:92%;max-width:800px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.popup-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.popup-title{font-size:15px;font-weight:700;}
+.popup-close{background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;}
+.cal-toggle-btn{width:100%;text-align:center;font-size:13px;font-weight:600;color:#6C63FF;margin-bottom:8px;padding:9px;background:#f0eeff;border-radius:10px;cursor:pointer;border:none;font-family:inherit;}
+.cal-wrap{display:none;gap:16px;flex-wrap:wrap;margin-bottom:14px;padding:14px;background:#f8f9fc;border-radius:10px;border:1px solid #e8e8f0;}
+.cal-wrap.open{display:flex;}
+.cal-box{flex:1;min-width:190px;}
+.cal-box-title{font-size:11px;color:#999;margin-bottom:6px;font-weight:500;}
+.cal-year-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.cal-year-btn{background:none;border:none;font-size:15px;cursor:pointer;color:#aaa;padding:0 4px;}
+.cal-year-btn:hover{color:#6C63FF;}
+.cal-year-label{font-size:13px;font-weight:700;}
+.cal-months{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+.cal-month-btn{padding:5px 2px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1px solid #e8e8f0;background:#fff;color:#555;text-align:center;}
+.cal-month-btn:hover{border-color:#6C63FF;color:#6C63FF;}
+.cal-month-btn.selected{background:#6C63FF;color:#fff;border-color:#6C63FF;}
+.trend-chart-wrap{position:relative;height:200px;margin-bottom:16px;}
+.series-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.series-chip{padding:5px 12px;border-radius:50px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid #e0e0ee;background:#fff;color:#888;transition:all 0.15s;}
+.series-chip:hover{border-color:#6C63FF;color:#6C63FF;}
+.series-chip.active{background:#6C63FF;color:#fff;border-color:#6C63FF;}
+.series-chip.all-chip.active{background:#1c1c2e;border-color:#1c1c2e;}
 
-  .empty { color:#ccc; font-size:13px; text-align:center; padding:40px; }
-  .sheet-panel { display:none; }
-  .sheet-panel.active { display:block; }
+/* 기타 */
+.chart-wrap{position:relative;height:180px;}
+.empty{color:#ccc;font-size:13px;text-align:center;padding:30px;}
+.tooltip-wrap{cursor:default;}
+.custom-tooltip{position:fixed;background:#1c1c2e;color:#fff;font-size:12px;line-height:1.8;padding:8px 14px;border-radius:10px;pointer-events:none;white-space:pre;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);}
 
-  .divider { height:1px; background:#f0f0f8; margin:24px 0; }
+/* 누적현황 기간 선택 패널 */
+.accum-panel{background:#f8f9fc;border:1px solid #e8e8f0;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:none;}
+.accum-panel.show{display:block;}
+.accum-panel-title{font-size:12px;color:#888;margin-bottom:10px;}
+.accum-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.accum-btn{padding:6px 16px;border-radius:50px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid #e0e0ee;background:#fff;color:#888;transition:all 0.2s;}
+.accum-btn:hover{border-color:#6C63FF;color:#6C63FF;}
+.accum-btn.active{background:#6C63FF;color:#fff;border-color:#6C63FF;}
 
-  @media (max-width:900px) {
-    main { padding:20px 16px; }
-    header, .connect-bar, .sheet-tabs { padding-left:16px; padding-right:16px; }
-    .metric-grid.g3, .metric-grid.g4 { grid-template-columns:repeat(2,1fr); }
-    .chart-row.two, .chart-row.three { grid-template-columns:1fr; }
-    .connect-bar input.wide { width:180px; }
-  }
+/* P2 판매채널 */
+.seller-filter-wrap{display:none;margin-bottom:14px;}
+.seller-filter-wrap.show{display:block;}
+
+@media(max-width:1000px){
+  .summary-row{grid-template-columns:1fr 1fr;}
+  .main-grid,.main-grid.wide{grid-template-columns:1fr;}
+  .bottom-row{grid-template-columns:1fr;}
+  .insight-row{grid-template-columns:repeat(2,1fr);}
+  main{padding:16px 14px 40px;}
+  .topbar,.period-bar,.sheet-tabs,.connect-bar{padding-left:14px;padding-right:14px;}
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo"><div class="logo-dot"></div><span class="logo-text">판매현황 대시보드</span></div>
-  <span class="header-right" id="lastUpdate">데이터를 불러와 주세요</span>
-</header>
-
-<div class="connect-bar">
-  <label>시트 ID</label>
-  <input class="wide" id="sheetId" value="14j3hDW3Hn-1ftkJlqZhEZhWTt38eZU8S4yMoadenrR4" />
-  <button class="btn-load" onclick="loadAll()">불러오기</button>
-  <span id="statusMsg"></span>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="app-title">판매지원팀 판매현황</span>
+  </div>
+  <div class="topbar-right">
+    <span class="last-update" id="lastUpdate">데이터를 불러와 주세요</span>
+  </div>
 </div>
 
-<div class="sheet-tabs" id="sheetTabs" style="display:none;">
+<!-- CONNECT -->
+<div class="connect-bar">
+  <label>시트 ID</label>
+  <input id="sheetId" value="14j3hDW3Hn-1ftkJlqZhEZhWTt38eZU8S4yMoadenrR4"/>
+  <button class="btn-load" onclick="loadAll()">불러오기</button>
+  <span id="statusMsg"></span>
+  <div id="dataModeBtns" style="display:none;margin-left:8px;">
+    <div style="display:flex;background:#f0f0f8;border-radius:8px;padding:3px;gap:2px;">
+      <button onclick="setDataMode('exec')" id="btn_exec"
+        style="padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:#6C63FF;color:#fff;transition:all 0.15s;">실행</button>
+      <button onclick="setDataMode('takso')" id="btn_takso"
+        style="padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s;">탁송</button>
+    </div>
+  </div>
+</div>
+
+<!-- PERIOD BAR -->
+<div class="period-bar" id="periodBar">
+  <div class="period-seg">
+    <button class="seg-btn active" onclick="setMode('month')" id="seg_month">월별</button>
+    <button class="seg-btn" onclick="setMode('year')" id="seg_year">년도별</button>
+  </div>
+  <div class="period-sep"></div>
+  <select class="period-sel" id="yearSel" onchange="onYearChange()"><option value="">년도</option></select>
+  <select class="period-sel" id="monthSel" onchange="renderCurrent()"><option value="">월</option></select>
+</div>
+
+
+
+<!-- SHEET TABS -->
+<div class="sheet-tabs" id="sheetTabs">
   <button class="sheet-tab active" onclick="switchTab(0)" id="tab0">상품별 현황</button>
   <button class="sheet-tab" onclick="switchTab(1)" id="tab1">차량별 현황</button>
   <button class="sheet-tab" onclick="switchTab(2)" id="tab2">판매채널별 현황</button>
   <button class="sheet-tab" onclick="switchTab(3)" id="tab3">수행자별 현황</button>
 </div>
 
+<!-- TREND POPUP -->
+<div class="popup-overlay" id="trendPopup">
+  <div class="popup-box">
+    <div class="popup-header">
+      <span class="popup-title" id="popupTitle">월별 추세 비교</span>
+      <button class="popup-close" onclick="closeTrendPopup()">×</button>
+    </div>
+    <button class="cal-toggle-btn" id="calToggleBtn" onclick="toggleCal()">📅 기간을 선택하세요 ▼</button>
+    <div class="cal-wrap" id="calWrap">
+      <div class="cal-box">
+        <div class="cal-box-title">시작 월</div>
+        <div class="cal-year-row">
+          <button class="cal-year-btn" onclick="moveYear('from',-1)">‹</button>
+          <span class="cal-year-label" id="fromYearLabel">2025</span>
+          <button class="cal-year-btn" onclick="moveYear('from',1)">›</button>
+        </div>
+        <div class="cal-months" id="fromMonths"></div>
+      </div>
+      <div class="cal-box">
+        <div class="cal-box-title">종료 월</div>
+        <div class="cal-year-row">
+          <button class="cal-year-btn" onclick="moveYear('to',-1)">‹</button>
+          <span class="cal-year-label" id="toYearLabel">2026</span>
+          <button class="cal-year-btn" onclick="moveYear('to',1)">›</button>
+        </div>
+        <div class="cal-months" id="toMonths"></div>
+      </div>
+    </div>
+    <div id="seriesFilterWrap" style="display:none;margin-bottom:12px;">
+      <div style="font-size:12px;color:#888;margin-bottom:8px;">차종 선택</div>
+      <div class="series-filter" id="seriesFilterChips"></div>
+    </div>
+    <div class="trend-chart-wrap"><canvas id="trendLineChart"></canvas></div>
+    <div style="overflow-x:auto;margin-top:12px;" id="trendTableWrap"></div>
+  </div>
+</div>
+
 <main>
+  <!-- P0: 상품별 현황 -->
   <div id="panel0" class="sheet-panel active">
-    <div class="page-title-wrap">
-      <div class="page-title">판매지원팀 판매현황</div>
-      <div class="page-subtitle" id="p0_subtitle">데이터를 불러오면 현황이 표시됩니다</div>
-    </div>
-    <div class="period-bar">
-      <button class="period-btn active" onclick="setPeriod('month')" id="btn_month">금월 현황</button>
-      <button class="period-btn" onclick="setPeriod('total')" id="btn_total">누적 현황</button>
-      <button class="period-btn" onclick="setPeriod('pick')" id="btn_pick">월별 선택</button>
-    </div>
-    <div class="month-select-wrap" id="monthSelectWrap">
-      <select id="monthPicker" onchange="renderAll()"><option value="">월을 선택해주세요</option></select>
-    </div>
     <div id="p0_content"></div>
   </div>
-
+  <!-- P1: 차량별 현황 -->
   <div id="panel1" class="sheet-panel">
-    <div class="page-title-wrap">
-      <div class="page-title">차량별 현황</div>
-      <div class="page-subtitle" id="p1_subtitle"></div>
+    <!-- 차량별 현황 레이아웃 -->
+    <div style="display:flex;height:calc(100vh - 200px);gap:0;overflow:hidden;">
+      <!-- 좌측 차종 목록 -->
+      <div style="width:160px;flex-shrink:0;background:#fff;border-right:1px solid #ebebf5;border-radius:14px 0 0 14px;overflow-y:auto;padding:14px 0;">
+        <div style="padding:0 12px 10px;">
+          <input type="text" id="p1_car_search" placeholder="차종 검색..." oninput="filterCarList(this.value)"
+            style="width:100%;padding:7px 10px;font-size:12px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:8px;outline:none;"/>
+        </div>
+        <div id="p1_car_list" style="padding:0 8px;"></div>
+      </div>
+      <!-- 우측 메인 -->
+      <div style="flex:1;overflow-y:auto;padding:0 0 0 20px;">
+        <div id="p1_content"></div>
+      </div>
     </div>
-    <div id="p1_content"></div>
   </div>
-
+  <!-- P2: 판매채널별 현황 -->
   <div id="panel2" class="sheet-panel">
-    <div class="page-title-wrap">
-      <div class="page-title">판매채널별 현황</div>
-      <div class="page-subtitle" id="p2_subtitle"></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
+      <input type="text" id="p2_search" placeholder="🔍 판매채널 검색 (예: 오토원...)" oninput="onP2Search(this.value)"
+        style="padding:8px 14px;font-size:13px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:8px;background:#fff;width:280px;outline:none;"/>
+      <button onclick="onP2Search('');document.getElementById('p2_search').value='';"
+        style="padding:7px 14px;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid #e0e0ee;background:#fff;color:#888;">초기화</button>
     </div>
+    <div class="seller-filter-wrap" id="p2_seller_filter">
+      <div style="font-size:12px;color:#aaa;margin-bottom:7px;">📦 판매사</div>
+      <div id="p2_seller_chips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+    </div>
+    <div id="p2_dealer_detail" style="display:none;margin-bottom:16px;"></div>
     <div id="p2_content"></div>
   </div>
-
+  <!-- P3: 수행자별 현황 -->
   <div id="panel3" class="sheet-panel">
-    <div class="page-title-wrap">
-      <div class="page-title">수행자별 현황</div>
-      <div class="page-subtitle" id="p3_subtitle"></div>
+    <div id="p3_worker_filter" style="margin-bottom:14px;">
+      <div style="font-size:12px;color:#aaa;margin-bottom:7px;">수행자</div>
+      <div id="p3_worker_chips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
     </div>
     <div id="p3_content"></div>
   </div>
 </main>
 
 <script>
-const COLORS = ['#6C63FF','#22c997','#FF6B6B','#FFA94D','#4dabf7','#f06595','#a9e34b','#74c0fc','#e599f7','#ffd43b'];
-let rawTable = null;
-let currentPeriod = 'month';
-const charts = {};
+const COLORS=['#6C63FF','#22c997','#FF6B6B','#FFA94D','#4dabf7','#f06595','#a9e34b','#74c0fc','#e599f7','#ffd43b'];
+const MONTHS_KR=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+let rawTable=null, rawTaksoTable=null, currentTab=0, dataMode='exec', selectedCar='__all__', carTypeMode='신차', allCarList=[];
+let viewMode='month'; // 'month' | 'accum'
+let selYear='', selMonth='', accumRange='all'; // accum: 'all'|'YYYY'|'YYYY.MM~YYYY.MM'
+let selectedWorker='__all__', chSearchQuery='', selectedSeller='__all__';
+let calFrom={year:2025,month:null}, calTo={year:2026,month:null};
+let popupTabCtx=0, selectedSeries=new Set(['__all__']);
+const charts={};
 
-// 수행원 이름 매핑
-const WORKER_MAP = {
-  '이연수':'하모니','이현수':'하모니','백광현':'하모니',
-  '양서영':'토스','염대현':'토스','박주영':'토스',
-  '주식회사 하렌파트너스':'하렌파트너스'
-};
-function mapWorker(v) {
-  const s = (v||'').toString().trim();
-  for (const [k,label] of Object.entries(WORKER_MAP)) {
-    if (s.includes(k)) return label;
-  }
-  return s.slice(0,3) || '미확인';
+const WORKER_MAP={'이연수':'하모니','이현수':'하모니','백광현':'하모니','양서영':'토스','염대현':'토스','박주영':'토스','주식회사 하렌파트너스':'하렌파트너스'};
+function mapWorker(v){const s=(v||'').toString().trim();if(!s)return null;for(const[k,l]of Object.entries(WORKER_MAP))if(s.includes(k))return l;return s.slice(0,3)||null;}
+
+// 탁송 수행자 매핑
+function mapTaksoWorker(v){
+  const s=(v||'').toString().trim();
+  if(!s)return'미확인';
+  if(s.includes('특이건'))return'특이건';
+  if(s.includes('하렌파트너스')||s.includes('주식회사 하렌'))return'하렌파트너스';
+  // 괄호 앞 이름만 (예: 이진희(차드림) → 이진희)
+  const m=s.match(/^([^(（]+)/);
+  return m?m[1].trim().slice(0,3):s.slice(0,3);
 }
 
-function setStatus(msg, ok) {
-  const el = document.getElementById('statusMsg');
-  el.textContent = msg;
-  el.style.color = ok===false?'#FF6B6B':ok===true?'#22c997':'#999';
-}
+const AUTOW_MAP={'카투':{계약수행자:'신선미',원수행자:'신선미'},'오토리지':{계약수행자:'조복경',원수행자:'나장열'},'씨에스카':{계약수행자:'조복경',원수행자:'조복경'},'시현':{계약수행자:'조복경',원수행자:'최형용'},'스윗코':{계약수행자:'조복경',원수행자:'이진희'},'스마트다이렉트카':{계약수행자:'조복경',원수행자:'이종국'},'슈어카':{계약수행자:'조복경',원수행자:'이종국'},'신차드림':{계약수행자:'조복경',원수행자:'이종국'},'오토다이렉트카':{계약수행자:'조복경',원수행자:'이종국'},'카베이':{계약수행자:'강병문',원수행자:'이종국'}};
+function getChannelGroup(ch){const s=(ch||'').trim();for(const[k,v]of Object.entries(AUTOW_MAP))if(s.includes(k))return v;return null;}
 
-function switchTab(idx) {
-  [0,1,2,3].forEach(i => {
-    document.getElementById(`tab${i}`).classList.toggle('active', i===idx);
-    document.getElementById(`panel${i}`).classList.toggle('active', i===idx);
-  });
-}
+function setStatus(msg,ok){const el=document.getElementById('statusMsg');el.textContent=msg;el.style.color=ok===false?'#FF6B6B':ok===true?'#22c997':'#999';}
 
-function setPeriod(p) {
-  currentPeriod = p;
-  ['month','total','pick'].forEach(k => document.getElementById(`btn_${k}`).classList.toggle('active', k===p));
-  document.getElementById('monthSelectWrap').classList.toggle('show', p==='pick');
-  renderP0();
-}
+function setDataMode(mode){
+  dataMode=mode;
+  const execBtn=document.getElementById('btn_exec');
+  const taksoBtn=document.getElementById('btn_takso');
+  if(execBtn){execBtn.style.background=mode==='exec'?'#6C63FF':'transparent';execBtn.style.color=mode==='exec'?'#fff':'#888';}
+  if(taksoBtn){taksoBtn.style.background=mode==='takso'?'#6C63FF':'transparent';taksoBtn.style.color=mode==='takso'?'#fff':'#888';}
 
-async function loadAll() {
-  const id = document.getElementById('sheetId').value.trim();
-  if (!id) { setStatus('시트 ID를 입력해주세요.', false); return; }
-  setStatus('불러오는 중...', null);
-  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('판매현황테스트')}`;
-  try {
-    const res = await fetch(url);
-    const text = await res.text();
-    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
-    if (!match) throw new Error('파싱 실패');
-    const json = JSON.parse(match[1]);
-    if (!json.table?.rows?.length) throw new Error('데이터 없음');
-    rawTable = json.table;
-    const now = new Date();
-    document.getElementById('lastUpdate').textContent = `${now.toLocaleDateString('ko-KR')} ${now.toLocaleTimeString('ko-KR')} 기준`;
-    document.getElementById('sheetTabs').style.display = 'flex';
-    setBadge('tab0', rawTable.rows.length);
-    setBadge('tab1', rawTable.rows.length);
-    setBadge('tab2', rawTable.rows.length);
-    setBadge('tab3', rawTable.rows.length);
-    populateMonthPicker();
-    renderAll();
-    setStatus(`✓ ${rawTable.rows.length.toLocaleString()}건`, true);
-  } catch(e) {
-    setStatus('❌ ' + e.message, false);
+  const sheetTabsEl=document.getElementById('sheetTabs');
+  if(sheetTabsEl)sheetTabsEl.style.display=mode==='takso'?'none':'flex';
+
+  if(mode==='takso'){
+    // 탁송 탭으로 전환시 상품별현황 탭만 보이게
+    switchTab(0);
+    renderTakso();
+  } else {
+    renderCurrent();
   }
 }
 
-function setBadge(tabId, count) {
-  const old = document.getElementById(tabId).querySelector('.tab-badge');
-  if (old) old.remove();
-  const b = document.createElement('span'); b.className='tab-badge'; b.textContent=count.toLocaleString()+'건';
-  document.getElementById(tabId).appendChild(b);
+function switchTab(idx){
+  currentTab=idx;
+  [0,1,2,3].forEach(i=>{document.getElementById(`tab${i}`).classList.toggle('active',i===idx);document.getElementById(`panel${i}`).classList.toggle('active',i===idx);});
+  // 추세 비교 버튼은 0,1만
+  setTimeout(()=>renderCurrent(),30);
 }
 
-function getRows() {
-  const cols = rawTable.cols.map(c => c.label);
-  const rows = rawTable.rows.map(r => r.c.map(c => c ? c.v : null));
-  const idx = n => cols.findIndex(c => c && c.includes(n));
-  return { cols, rows, idx };
+function setMode(m){
+  viewMode=m;
+  ['month','year'].forEach(k=>{const el=document.getElementById('seg_'+k);if(el)el.classList.toggle('active',k===m);});
+  const mSel=document.getElementById('monthSel');
+  if(mSel)mSel.style.display=m==='month'?'inline-block':'none';
+  renderCurrent();
 }
 
-function getYearMonth(v) {
-  if (!v) return null;
-  const d = v.toString().match(/Date\((\d{4}),(\d+),(\d+)\)/);
-  if (d) return `${d[1]}.${String(parseInt(d[2])+1).padStart(2,'0')}`;
-  const m = v.toString().match(/(\d{4})[.\-\/](\d{1,2})/);
-  return m ? `${m[1]}.${m[2].padStart(2,'0')}` : null;
+function onYearChange(){
+  const yr=document.getElementById('yearSel').value;
+  const mSel=document.getElementById('monthSel');
+  if(!mSel)return;
+  if(yr&&rawTable){
+    const{rows,idx}=getRows();
+    const iDate=idx('계약실행일');
+    const months=[...new Set(rows.filter(r=>getYM(r[iDate])?.startsWith(yr)).map(r=>getYM(r[iDate])).filter(Boolean))].sort();
+    mSel.innerHTML='<option value="">월 선택</option>'+months.map(m=>`<option value="${m}">${parseInt(m.split('.')[1])}월</option>`).join('');
+    const tm=thisMonth();
+    if(months.includes(tm))mSel.value=tm;
+    else mSel.value=months[months.length-1]||'';
+  }
+  renderCurrent();
 }
 
-function populateMonthPicker() {
-  const { rows, idx } = getRows();
-  const iDate = idx('계약실행일');
-  const months = new Set();
-  if (iDate >= 0) rows.forEach(r => { const m = getYearMonth(r[iDate]); if(m) months.add(m); });
-  const sorted = [...months].sort().reverse();
-  const sel = document.getElementById('monthPicker');
-  sel.innerHTML = '<option value="">월을 선택해주세요</option>' + sorted.map(m=>`<option value="${m}">${m}</option>`).join('');
+
+
+async function loadAll(){
+  const id=document.getElementById('sheetId').value.trim();
+  if(!id){setStatus('시트 ID를 입력해주세요.',false);return;}
+  setStatus('불러오는 중...',null);
+  const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('판매현황테스트')}`;
+  try{
+    const res=await fetch(url);const text=await res.text();
+    const match=text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if(!match)throw new Error('파싱 실패');
+    const json=JSON.parse(match[1]);
+    if(!json.table?.rows?.length)throw new Error('데이터 없음');
+    rawTable=json.table;
+    const now=new Date();
+    document.getElementById('lastUpdate').textContent=`↻ 최종 업데이트: ${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    // sheetTabs already visible
+    // periodBar already visible
+    // 탁송 데이터도 함께 로드
+    try{
+      const tUrl=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('탁송데이터')}`;
+      const tRes=await fetch(tUrl);
+      const tText=await tRes.text();
+      const tMatch=tText.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+      if(tMatch){
+        const tJson=JSON.parse(tMatch[1]);
+        if(tJson.table?.rows?.length){
+          rawTaksoTable=tJson.table;
+          console.log('탁송 로드 성공:',rawTaksoTable.rows.length,'건');
+        }
+      } else {
+        console.log('탁송 매칭 실패, 응답:', tText.slice(0,200));
+      }
+    }catch(e){console.log('탁송 로드 실패:',e.message);}
+
+    // 실행/탁송 버튼 표시
+    const modeBtns=document.getElementById('dataModeBtns');
+    if(modeBtns)modeBtns.style.display='flex';
+
+    [0,1,2,3].forEach(i=>setBadge(`tab${i}`,rawTable.rows.length));
+    populatePickers();
+    renderCurrent();
+    setStatus(`✓ ${rawTable.rows.length.toLocaleString()}건`+(rawTaksoTable?` / 탁송 ${rawTaksoTable.rows.length.toLocaleString()}건`:' / 탁송 로드안됨'),true);
+  }catch(e){setStatus('❌ '+e.message+' / '+e.stack?.split('\n')[0],false);console.error(e);}
 }
 
-function filterRows(rows, iDate) {
-  if (currentPeriod === 'total') return rows;
-  const now = new Date();
-  const thisMonth = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}`;
-  if (currentPeriod === 'month') return rows.filter(r => getYearMonth(r[iDate]) === thisMonth);
-  const picked = document.getElementById('monthPicker').value;
-  return picked ? rows.filter(r => getYearMonth(r[iDate]) === picked) : [];
+function setBadge(id,count){const old=document.getElementById(id).querySelector('.tab-badge');if(old)old.remove();const b=document.createElement('span');b.className='tab-badge';b.textContent=count.toLocaleString()+'건';document.getElementById(id).appendChild(b);}
+
+function getRows(){
+  const cols=rawTable.cols.map(c=>c.label);
+  const rows=rawTable.rows.map(r=>r.c.map(c=>c?c.v:null));
+  const idx=n=>cols.findIndex(c=>c&&c.includes(n));
+  return{cols,rows,idx};
 }
 
-function getPeriodLabel() {
-  const now = new Date();
-  if (currentPeriod === 'month') return `${now.getFullYear()}년 ${now.getMonth()+1}월`;
-  if (currentPeriod === 'total') return '전체 누적';
-  const picked = document.getElementById('monthPicker').value;
-  return picked ? picked.replace('.','년 ')+'월' : '월 선택';
+function getYM(v){
+  if(!v)return null;
+  const d=v.toString().match(/Date\((\d{4}),(\d+),(\d+)\)/);
+  if(d)return`${d[1]}.${String(parseInt(d[2])+1).padStart(2,'0')}`;
+  const m=v.toString().match(/(\d{4})[.\-\/](\d{1,2})/);
+  return m?`${m[1]}.${m[2].padStart(2,'0')}`:null;
 }
 
-function countMap(arr, keyFn) {
-  const m = {};
-  arr.forEach(r => { const v = keyFn(r)||'미분류'; m[v]=(m[v]||0)+1; });
-  return m;
+function thisMonth(){const n=new Date();return`${n.getFullYear()}.${String(n.getMonth()+1).padStart(2,'0')}`;}
+
+function getFilteredRows(rows,iDate){
+  const yr=document.getElementById('yearSel')?.value||new Date().getFullYear().toString();
+  const mo=document.getElementById('monthSel')?.value||'';
+  if(viewMode==='month'){
+    if(mo)return rows.filter(r=>getYM(r[iDate])===mo);
+    return rows.filter(r=>getYM(r[iDate])===thisMonth());
+  } else {
+    return rows.filter(r=>getYM(r[iDate])?.startsWith(yr));
+  }
 }
 
-function avgVal(arr, iRental) {
-  const vals = arr.map(r => parseFloat((r[iRental]||'').toString().replace(/[^0-9.-]/g,''))).filter(v=>!isNaN(v)&&v>0);
-  if (!vals.length) return '-';
-  return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length).toLocaleString()+'원';
+function getPeriodLabel(){
+  const yr=document.getElementById('yearSel')?.value||new Date().getFullYear().toString();
+  const mo=document.getElementById('monthSel')?.value||'';
+  if(viewMode==='month'){
+    if(mo){const p=mo.split('.');return p[0]+'년 '+parseInt(p[1])+'월';}
+    const p=thisMonth().split('.');return p[0]+'년 '+parseInt(p[1])+'월';
+  }
+  return yr+'년 전체';
 }
 
-function renderAll() {
-  if (!rawTable) return;
-  renderP0();
-  renderP1();
-  renderP2();
-  renderP3();
+function getAllMonths(rows,iDate){
+  return[...new Set(rows.map(r=>getYM(r[iDate])).filter(Boolean))].sort();
+}
+
+function populatePickers(){
+  const{rows,idx}=getRows();
+  const iDate=idx('계약실행일');
+  const years=[...new Set(rows.map(r=>getYM(r[iDate])?.split('.')[0]).filter(Boolean))].sort().reverse();
+
+  // 년도 셀렉터
+  const ySel=document.getElementById('yearSel');
+  if(ySel){
+    ySel.innerHTML=years.map(y=>`<option value="${y}">${y}년</option>`).join('');
+    const thisY=new Date().getFullYear().toString();
+    if(years.includes(thisY))ySel.value=thisY;
+  }
+
+  // 달력 기본값: 최근 1년
+  const now=new Date();
+  calFrom={year:now.getFullYear()-1,month:now.getMonth()+1};
+  calTo={year:now.getFullYear(),month:now.getMonth()+1};
+
+  // 월 셀렉터 초기화 (현재 년도 월 목록 + 현재달 선택)
+  onYearChange();
+}
+
+
+function countMap(arr,keyFn){const m={};arr.forEach(r=>{const v=keyFn(r);if(v!=null&&v!==''){m[v]=(m[v]||0)+1;}});return m;}
+function avgVal(arr,iR){
+  if(iR<0||!arr.length)return'-';
+  const v=arr.map(r=>parseFloat((r[iR]||'').toString().replace(/[^0-9.-]/g,''))).filter(v=>!isNaN(v)&&v>0);
+  if(!v.length)return'-';
+  return Math.round(v.reduce((a,b)=>a+b,0)/v.length).toLocaleString()+'원';
+}
+
+function toggleTrendTable(){
+  const w=document.getElementById('trendTableWrap2');
+  const btn=document.getElementById('trendTableToggle');
+  if(!w)return;
+  const show=w.style.display==='none';
+  w.style.display=show?'block':'none';
+  if(btn)btn.textContent=show?'▲ 숨기기':'▼ 상세';
+}
+
+function renderCurrent(){
+  if(!rawTable)return;
+  if(dataMode==='takso'){renderTakso();return;}
+  if(currentTab===0)renderP0();
+  else if(currentTab===1)renderP1();
+  else if(currentTab===2)renderP2();
+  else renderP3();
 }
 
 // ===================== P0: 상품별 현황 =====================
-function renderP0() {
-  if (!rawTable) return;
-  const { rows, idx } = getRows();
-  const iDate   = idx('계약실행일');
-  const iProd   = idx('상품구분');
-  const iType   = idx('상품유형');
-  const iNoDepo = idx('무보증여부');
-  const iEnd    = idx('종료후처리');
-  const iWorker = idx('수행원');
-  const iAge    = idx('계약 당시 연령대');
-  const iRental = idx('렌탈료');
+function renderP0(){
+  if(!rawTable)return;
+  const{rows,idx}=getRows();
+  const iDate=idx('계약실행일'),iProd=idx('상품구분'),iType=idx('상품유형');
+  const iNoDepo=idx('무보증여부'),iEnd=idx('종료후처리'),iWorker=idx('수행원');
+  const iAge=idx('계약 당시 연령대'),iRental=idx('렌탈료');
 
-  const filtered = filterRows(rows, iDate);
-  document.getElementById('p0_subtitle').textContent = `${getPeriodLabel()} 기준 · ${filtered.length.toLocaleString()}건`;
+  const filtered=getFilteredRows(rows,iDate);
+  const shincha=filtered.filter(r=>(r[iProd]||'').includes('신차'));
+  const rerent=filtered.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');});
 
-  const shincha = filtered.filter(r => (r[iProd]||'').includes('신차'));
-  const rerent  = filtered.filter(r => { const v=(r[iProd]||''); return v.includes('재렌트')||v.includes('재'); });
+  // 전년 동기 비교
+  const prevYearRows=getPrevYearRows(rows,iDate);
+  const prevShin=prevYearRows.filter(r=>(r[iProd]||'').includes('신차')).length;
+  const prevRe=prevYearRows.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');}).length;
+  const prevTotal=prevYearRows.length;
 
-  const shinchaTypeMap = iType>=0 ? countMap(shincha, r=>(r[iType]||'').toString().trim()) : {};
-  const rerentTypeMap  = iType>=0 ? countMap(rerent,  r=>(r[iType]||'').toString().trim()) : {};
+  function calcPctGlobal(curr,prev){if(!prev)return null;return((curr-prev)/prev*100).toFixed(1);}
+  function pctBadge(curr,prev){const p=calcPctGlobal(curr,prev);if(p===null)return'';const up=parseFloat(p)>=0;return`<span class="stat-pct" style="background:${up?'#e8f8f0':'#fde8e8'};color:${up?'#1a7a4a':'#a32d2d'};">${up?'▲':'▼'} ${Math.abs(p)}%</span>`;}
+
+  // 월별 추세 (최근 6개월)
+  const allMonths=getAllMonths(rows,iDate);
+  const recentMonths=allMonths.slice(-6);
+  const shinByM={},reByM={};
+  recentMonths.forEach(m=>{shinByM[m]=0;reByM[m]=0;});
+  rows.forEach(r=>{const m=getYM(r[iDate]);if(!m||!shinByM.hasOwnProperty(m))return;if((r[iProd]||'').includes('신차'))shinByM[m]++;else if((r[iProd]||'').includes('재렌트')||(r[iProd]||'').includes('재'))reByM[m]++;});
 
   // 무보증
-  const isNoDepo = v => (v||'').toString().trim()==='Y';
-  const shinND   = shincha.filter(r=>isNoDepo(r[iNoDepo]));
-  const rerentND = rerent.filter(r=>isNoDepo(r[iNoDepo]));
-
-  // 무보증 연령대 툴팁
-  const ageTip = arr => {
-    if (!arr.length||iAge<0) return '';
-    const m = countMap(arr, r=>(r[iAge]||'미확인').toString().trim());
-    return Object.entries(m).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>`${k}  ${v}건`).join('\n');
-  };
+  const isNoDepo=v=>(v||'').toString().trim()==='Y';
+  const shinND=shincha.filter(r=>isNoDepo(r[iNoDepo]));
+  const reND=rerent.filter(r=>isNoDepo(r[iNoDepo]));
+  const shinNDpct=shincha.length?Math.round(shinND.length/shincha.length*100):0;
+  const reNDpct=rerent.length?Math.round(reND.length/rerent.length*100):0;
 
   // 만기처리
-  const isSelect = v => { const s=(v||'').toString().trim(); return ['반납','반납/연장/인수','양도/반납'].includes(s); };
-  const isInsu   = v => (v||'').toString().trim()==='양도(인수)';
-  const insuRows    = filtered.filter(r=>isInsu(r[iEnd]));
-  const selectCount = filtered.filter(r=>isSelect(r[iEnd])).length;
+  const isSelect=v=>{const s=(v||'').toString().trim();return['반납','반납/연장/인수','양도/반납'].includes(s);};
+  const isInsu=v=>(v||'').toString().trim()==='양도(인수)';
+  const insuRows=filtered.filter(r=>isInsu(r[iEnd]));
+  const selectRows=filtered.filter(r=>isSelect(r[iEnd]));
+  const dongbanInsu=insuRows.filter(r=>(r[iType]||'').includes('동반차')).length;
+  const gudokInsu=insuRows.filter(r=>(r[iType]||'').includes('구독')).length;
 
-  // 인수형 수행자 툴팁
-  const workerTip = arr => {
-    if (!arr.length||iWorker<0) return '';
-    const m = countMap(arr, r=>mapWorker(r[iWorker]));
-    return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}  ${v}건`).join('\n');
-  };
+  // 상품유형 도넛 데이터
+  const shinTypeMap=countMap(shincha,r=>(r[iType]||'기타').toString().trim());
+  const reTypeMap=countMap(rerent,r=>(r[iType]||'기타').toString().trim());
 
-  // 동반차/구독카 중 인수형
-  const dongbanInsu = insuRows.filter(r=>(r[iType]||'').includes('동반차')).length;
-  const gudokInsu   = insuRows.filter(r=>(r[iType]||'').includes('구독')).length;
+  // 인사이트
+  const insights=buildInsights(filtered,shincha,rerent,prevTotal,prevShin,prevRe,shinTypeMap,reTypeMap);
 
-  // 평균 렌탈료
-  const shinAvg   = avgVal(shincha, iRental);
-  const rerentAvg = avgVal(rerent, iRental);
-
-  const html = `
-    <div class="metric-grid g3">
-      <div class="metric-card mc1"><div class="metric-label">전체 계약</div><div class="metric-value">${filtered.length.toLocaleString()}</div><div class="metric-sub">건</div></div>
-      <div class="metric-card mc2"><div class="metric-label">신차</div><div class="metric-value">${shincha.length.toLocaleString()}</div><div class="metric-sub">건</div></div>
-      <div class="metric-card mc3"><div class="metric-label">재렌트</div><div class="metric-value">${rerent.length.toLocaleString()}</div><div class="metric-sub">건</div></div>
-    </div>
-
-    <div class="section-title">상품유형별 현황</div>
-    <div class="chart-row two" style="margin-bottom:20px;">
-      <div class="card">
-        <div class="card-header"><span class="card-title">신차 상품유형</span><span class="card-badge">${shincha.length}건</span></div>
-        <div class="donut-wrap">
-          <div class="donut-canvas-wrap"><canvas id="donut_shincha"></canvas><div class="donut-center"><div class="donut-center-val">${shincha.length}</div><div class="donut-center-label">신차</div></div></div>
-          <div class="donut-legend" id="legend_shincha"></div>
-        </div>
+  document.getElementById('p0_content').innerHTML=`
+    <!-- 요약 카드 -->
+    <div class="summary-row">
+      <div class="sum-card">
+        <div class="sum-label">전체 계약</div>
+        <div class="sum-value" style="color:#1c1c2e;">${filtered.length.toLocaleString()}<span style="font-size:16px;font-weight:500;color:#aaa;"> 건</span></div>
+        <div class="sum-sub">${pctBadge(filtered.length,prevTotal)} <span style="color:#bbb;font-size:11px;">전년 동기 대비</span></div>
       </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">재렌트 상품유형</span><span class="card-badge">${rerent.length}건</span></div>
-        <div class="donut-wrap">
-          <div class="donut-canvas-wrap"><canvas id="donut_rerent"></canvas><div class="donut-center"><div class="donut-center-val">${rerent.length}</div><div class="donut-center-label">재렌트</div></div></div>
-          <div class="donut-legend" id="legend_rerent"></div>
+      <div class="sum-card">
+        <div class="sum-label">신차 계약</div>
+        <div class="sum-value" style="color:#6C63FF;">${shincha.length.toLocaleString()}<span style="font-size:16px;font-weight:500;color:#aaa;"> 건</span></div>
+        <div class="sum-sub">${pctBadge(shincha.length,prevShin)} <span style="color:#bbb;font-size:11px;">전년 동기 대비</span></div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">재렌트 계약</div>
+        <div class="sum-value" style="color:#22c997;">${rerent.length.toLocaleString()}<span style="font-size:16px;font-weight:500;color:#aaa;"> 건</span></div>
+        <div class="sum-sub">${pctBadge(rerent.length,prevRe)} <span style="color:#bbb;font-size:11px;">전년 동기 대비</span></div>
+      </div>
+      <div class="yoy-card">
+        <div class="yoy-title">📊 전년 동기 대비 요약</div>
+        <div class="yoy-items">
+          <div class="yoy-item"><div class="yoy-item-icon">📋</div><div class="yoy-item-label">전체 계약</div><div class="yoy-item-val ${parseFloat(calcPctGlobal(filtered.length,prevTotal)||0)>=0?'up':'dn'}">${calcPctGlobal(filtered.length,prevTotal)!==null?(parseFloat(calcPctGlobal(filtered.length,prevTotal))>=0?'▲':'▼')+Math.abs(calcPctGlobal(filtered.length,prevTotal))+'%':'-'}</div></div>
+          <div class="yoy-item"><div class="yoy-item-icon">🚗</div><div class="yoy-item-label">신차 계약</div><div class="yoy-item-val ${parseFloat(calcPctGlobal(shincha.length,prevShin)||0)>=0?'up':'dn'}">${calcPctGlobal(shincha.length,prevShin)!==null?(parseFloat(calcPctGlobal(shincha.length,prevShin))>=0?'▲':'▼')+Math.abs(calcPctGlobal(shincha.length,prevShin))+'%':'-'}</div></div>
+          <div class="yoy-item"><div class="yoy-item-icon">🔄</div><div class="yoy-item-label">재렌트 계약</div><div class="yoy-item-val ${parseFloat(calcPctGlobal(rerent.length,prevRe)||0)>=0?'up':'dn'}">${calcPctGlobal(rerent.length,prevRe)!==null?(parseFloat(calcPctGlobal(rerent.length,prevRe))>=0?'▲':'▼')+Math.abs(calcPctGlobal(rerent.length,prevRe))+'%':'-'}</div></div>
         </div>
       </div>
     </div>
 
-    <div class="chart-row two" style="margin-bottom:20px;">
+    <!-- 상품유형 + 월별 추세 -->
+    <div class="main-grid wide" style="margin-bottom:16px;">
       <div class="card">
-        <div class="section-title" style="margin-bottom:12px;">무보증 현황</div>
+        <div class="card-header"><span class="card-title">신차 상품유형 현황</span><span class="card-badge">${shincha.length}건</span></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-wrap"><canvas id="donut_shin"></canvas><div class="donut-center"><div class="donut-center-val">${shincha.length}</div><div class="donut-center-label">신차</div></div></div>
+          <div class="donut-legend" id="legend_shin"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">재렌트 상품유형 현황</span><span class="card-badge">${rerent.length}건</span></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-wrap"><canvas id="donut_re"></canvas><div class="donut-center"><div class="donut-center-val">${rerent.length}</div><div class="donut-center-label">재렌트</div></div></div>
+          <div class="donut-legend" id="legend_re"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">월별 추세 비교</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button onclick="toggleTrendTable()" id="trendTableToggle"
+              style="padding:4px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid #e0e0ee;background:#fff;color:#888;">▼ 상세</button>
+            <button onclick="openTrendPopup()"
+              style="padding:4px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid #6C63FF;background:#fff;color:#6C63FF;">자세히보기</button>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="trend_mini"></canvas></div>
+        <div id="trendTableWrap2" style="display:none;margin-top:10px;">
+          <table class="trend-table">
+            <thead><tr><th>월</th><th style="color:#6C63FF;">신차</th><th style="color:#22c997;">재렌트</th><th>총 계약</th></tr></thead>
+            <tbody>
+              ${recentMonths.map(m=>`<tr><td>${m}</td><td class="shin-c">${shinByM[m]||0}</td><td class="re-c">${reByM[m]||0}</td><td>${(shinByM[m]||0)+(reByM[m]||0)}</td></tr>`).join('')}
+              <tr><td>합계</td><td class="shin-c">${recentMonths.reduce((a,m)=>a+(shinByM[m]||0),0)}</td><td class="re-c">${recentMonths.reduce((a,m)=>a+(reByM[m]||0),0)}</td><td>${recentMonths.reduce((a,m)=>a+(shinByM[m]||0)+(reByM[m]||0),0)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 무보증 + 만기처리 -->
+    <div class="bottom-row" style="margin-bottom:16px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">무보증 현황</span></div>
         <div class="stat-row">
-          <div class="stat-item tooltip-wrap" data-tip="${ageTip(shinND)}">
-            <div class="stat-label">신차 무보증 <span class="stat-hint" style="color:#c0b8ff;">● hover</span></div>
-            <div class="stat-val" style="color:#6C63FF;">${shinND.length}<span class="stat-unit">건</span></div>
+          <div class="stat-item tooltip-wrap" data-tip="${buildAgeTip(shinND,iAge)}">
+            <div class="stat-label">신차 무보증 <span style="font-size:10px;color:#c0b8ff;">● hover</span></div>
+            <div class="stat-val" style="color:#6C63FF;">${shinND.length}<span class="stat-unit">건</span>
+              <span class="stat-pct" style="background:#f0eeff;color:#6C63FF;">${shinNDpct}%</span>
+            </div>
           </div>
-          <div class="stat-item tooltip-wrap" data-tip="${ageTip(rerentND)}">
-            <div class="stat-label">재렌트 무보증 <span class="stat-hint" style="color:#9de8c7;">● hover</span></div>
-            <div class="stat-val" style="color:#22c997;">${rerentND.length}<span class="stat-unit">건</span></div>
+          <div class="stat-item tooltip-wrap" data-tip="${buildAgeTip(reND,iAge)}">
+            <div class="stat-label">재렌트 무보증 <span style="font-size:10px;color:#9de8c7;">● hover</span></div>
+            <div class="stat-val" style="color:#22c997;">${reND.length}<span class="stat-unit">건</span>
+              <span class="stat-pct" style="background:#e8f8f0;color:#1a7a4a;">${reNDpct}%</span>
+            </div>
           </div>
         </div>
+        <div style="font-size:11px;color:#bbb;margin-top:10px;">※ (%) 는 각 계약 유형 대비 무보증 비중</div>
       </div>
       <div class="card">
-        <div class="section-title" style="margin-bottom:12px;">만기처리방법 현황</div>
+        <div class="card-header"><span class="card-title">만기처리방법 현황</span></div>
         <div class="stat-row">
           <div class="stat-item">
-            <div class="stat-label">선택형</div>
-            <div class="stat-val" style="color:#FFA94D;">${selectCount}<span class="stat-unit">건</span></div>
+            <div class="stat-label">선택형 / 인수형</div>
+            <div class="stat-val" style="color:#FFA94D;">${selectRows.length}<span class="stat-unit">건</span></div>
+            <div style="font-size:12px;color:#aaa;margin-top:4px;">인수형 <strong style="color:#FF6B6B;">${insuRows.length}건</strong></div>
           </div>
-          <div class="stat-item tooltip-wrap" data-tip="${workerTip(insuRows)}">
-            <div class="stat-label">인수형 <span class="stat-hint" style="color:#ffb3b3;">● hover</span></div>
-            <div class="stat-val" style="color:#FF6B6B;">${insuRows.length}<span class="stat-unit">건</span></div>
+          <div class="stat-item" style="border-left:1px solid #f0f0f8;padding-left:20px;">
+            <div class="stat-label" style="margin-bottom:8px;">인수 유형</div>
+            <div style="font-size:13px;color:#555;line-height:2;">동반차 인수형 <strong style="color:#1c1c2e;margin-left:6px;">${dongbanInsu}건</strong></div>
+            <div style="font-size:13px;color:#555;line-height:2;">구독카 인수형 <strong style="color:#1c1c2e;margin-left:6px;">${gudokInsu}건</strong></div>
           </div>
         </div>
-        <div style="margin-top:14px; display:flex; gap:20px; flex-wrap:wrap;">
-          <div style="font-size:13px;color:#999;">동반차 인수형 <span style="font-weight:700;color:#1c1c2e;margin-left:6px;">${dongbanInsu}건</span></div>
-          <div style="font-size:13px;color:#999;">구독카 인수형 <span style="font-weight:700;color:#1c1c2e;margin-left:6px;">${gudokInsu}건</span></div>
-        </div>
+        <div style="font-size:11px;color:#bbb;margin-top:10px;">※ 현재 모든 계약이 선택형 인수형으로 처리되고 있습니다.</div>
       </div>
     </div>
 
-    <div class="section-title">평균 렌탈료</div>
-    <div class="card" style="margin-bottom:40px;">
-      <div class="stat-row">
-        <div class="stat-item">
-          <div class="stat-label">신차 평균 렌탈료</div>
-          <div class="stat-val" style="color:#6C63FF;font-size:26px;">${shinAvg}</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">재렌트 평균 렌탈료</div>
-          <div class="stat-val" style="color:#22c997;font-size:26px;">${rerentAvg}</div>
-        </div>
-      </div>
-    </div>
-  `;
+    <!-- 인사이트 -->
+    <div class="insight-row">
+      ${insights.map(ins=>`
+        <div class="insight-card">
+          <div class="insight-icon">${ins.icon}</div>
+          <div class="insight-title" style="color:${ins.color};">${ins.title}</div>
+          <div class="insight-desc">${ins.desc}</div>
+        </div>`).join('')}
+    </div>`;
 
-  document.getElementById('p0_content').innerHTML = html;
-  renderDonut('donut_shincha','legend_shincha',shinchaTypeMap);
-  renderDonut('donut_rerent','legend_rerent',rerentTypeMap);
+  // 차트 렌더
+  renderDonut('donut_shin','legend_shin',shinTypeMap);
+  renderDonut('donut_re','legend_re',reTypeMap);
+
+  // 미니 추세 차트
+  const mc=document.getElementById('trend_mini');
+  if(mc){
+    if(charts['trend_mini'])charts['trend_mini'].destroy();
+    charts['trend_mini']=new Chart(mc.getContext('2d'),{
+      type:'line',
+      data:{labels:recentMonths,datasets:[
+        {label:'신차',data:recentMonths.map(m=>shinByM[m]||0),borderColor:'#6C63FF',backgroundColor:'rgba(108,99,255,0.07)',tension:0.4,pointRadius:3,fill:true},
+        {label:'재렌트',data:recentMonths.map(m=>reByM[m]||0),borderColor:'#22c997',backgroundColor:'rgba(34,201,151,0.05)',tension:0.4,pointRadius:3,fill:true},
+        {label:'총 계약',data:recentMonths.map(m=>(shinByM[m]||0)+(reByM[m]||0)),borderColor:'#FF6B6B',borderDash:[5,3],tension:0.4,pointRadius:3,fill:false},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:10}},beginAtZero:true}}}
+    });
+  }
   bindTooltips();
 }
 
-// ===================== P1: 차량별 현황 =====================
-function renderP1() {
-  if (!rawTable) return;
-  const { rows, idx } = getRows();
-  const iSeries = idx('시리즈명');
-  const iProd   = idx('상품구분');
-  const iDate   = idx('계약실행일');
-
-  const filtered = filterRows(rows, iDate);
-  document.getElementById('p1_subtitle').textContent = `${getPeriodLabel()} 기준 · ${filtered.length.toLocaleString()}건`;
-
-  const shincha = filtered.filter(r=>(r[iProd]||'').includes('신차'));
-  const rerent  = filtered.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');});
-
-  const seriesAll  = iSeries>=0 ? countMap(filtered, r=>(r[iSeries]||'미분류').toString().trim()) : {};
-  const seriesShin = iSeries>=0 ? countMap(shincha,  r=>(r[iSeries]||'미분류').toString().trim()) : {};
-  const seriesRe   = iSeries>=0 ? countMap(rerent,   r=>(r[iSeries]||'미분류').toString().trim()) : {};
-
-  document.getElementById('p1_content').innerHTML = `
-    <div class="card" style="margin-bottom:20px;">
-      <div class="card-header"><span class="card-title">시리즈별 전체 계약 건수</span><span class="card-badge">${filtered.length}건</span></div>
-      <div class="chart-wrap" style="height:300px;"><canvas id="series_bar_all"></canvas></div>
-    </div>
-    <div class="chart-row two" style="margin-bottom:40px;">
-      <div class="card"><div class="card-header"><span class="card-title">신차 시리즈별</span><span class="card-badge">${shincha.length}건</span></div><div id="series_shin_bar"></div></div>
-      <div class="card"><div class="card-header"><span class="card-title">재렌트 시리즈별</span><span class="card-badge">${rerent.length}건</span></div><div id="series_re_bar"></div></div>
-    </div>
-  `;
-
-  const entries = Object.entries(seriesAll).sort((a,b)=>b[1]-a[1]).slice(0,15);
-  if (charts['series_all']) charts['series_all'].destroy();
-  if (entries.length) {
-    charts['series_all'] = new Chart(document.getElementById('series_bar_all').getContext('2d'), {
-      type:'bar',
-      data:{ labels:entries.map(([k])=>k), datasets:[{data:entries.map(([,v])=>v), backgroundColor:'#6C63FF', borderRadius:5, borderSkipped:false}] },
-      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-        scales:{ x:{grid:{color:'#f0f0f8'}, border:{display:false}, ticks:{font:{size:11}}}, y:{grid:{display:false}, border:{display:false}, ticks:{font:{size:12}}} } }
-    });
-  }
-  renderBar('series_shin_bar', seriesShin, 8);
-  renderBar('series_re_bar',   seriesRe,   8);
+function buildAgeTip(arr,iAge){
+  if(!arr.length||iAge<0)return'';
+  const m=countMap(arr,r=>(r[iAge]||'미확인').toString().trim());
+  return Object.entries(m).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>`${k}  ${v}건`).join('\n');
 }
 
-// ===================== P2: 판매채널별 현황 =====================
-function renderP2() {
-  if (!rawTable) return;
-  const { rows, idx } = getRows();
-  const iDate    = idx('계약실행일');
-  const iProd    = idx('상품구분');
-  const iChannel = idx('판매채널');
-  const iType    = idx('상품유형');
-  const iRental  = idx('렌탈료');
-  const iSeries  = idx('시리즈명');
+function buildInsights(filtered,shincha,rerent,prevTotal,prevShin,prevRe,shinTypeMap,reTypeMap){
+  const ins=[];
+  const cp=(c,p)=>p?((c-p)/p*100).toFixed(1):null;
 
-  const filtered = filterRows(rows, iDate);
-  document.getElementById('p2_subtitle').textContent = `${getPeriodLabel()} 기준 · ${filtered.length.toLocaleString()}건`;
+  const tp=cp(filtered.length,prevTotal);
+  if(tp!==null) ins.push({icon:parseFloat(tp)>=0?'📈':'📉',color:parseFloat(tp)>=0?'#22c997':'#FF6B6B',
+    title:`전체 계약 ${parseFloat(tp)>=0?'증가':'감소'}`,
+    desc:`전년 대비 ${Math.abs(tp)}% ${parseFloat(tp)>=0?'증가하며':'감소하며'} 지속적인 ${parseFloat(tp)>=0?'성장세':'하락세'}를 보이고 있습니다.`});
 
-  const shincha = filtered.filter(r=>(r[iProd]||'').includes('신차'));
-  const rerent  = filtered.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');});
+  const shinPct=filtered.length?Math.round(shincha.length/filtered.length*100):0;
+  const prevShinPct=prevTotal?Math.round(prevShin/prevTotal*100):0;
+  ins.push({icon:'🚗',color:'#6C63FF',
+    title:`신차 비중 ${shinPct>=50?'강세':'약세'}`,
+    desc:`신차 비중이 ${shinPct}%로, 전년 동기 대비 ${(shinPct-prevShinPct).toFixed(1)}%p 변동했습니다.`});
 
-  const chAll  = iChannel>=0 ? countMap(filtered, r=>(r[iChannel]||'미분류').toString().trim()) : {};
-  const chShin = iChannel>=0 ? countMap(shincha,  r=>(r[iChannel]||'미분류').toString().trim()) : {};
-  const chRe   = iChannel>=0 ? countMap(rerent,   r=>(r[iChannel]||'미분류').toString().trim()) : {};
+  const rp=cp(rerent.length,prevRe);
+  if(rp!==null) ins.push({icon:'🔄',color:'#22c997',
+    title:`재렌트 ${parseFloat(rp)>=0?'성장세':'감소세'}`,
+    desc:`재렌트 계약이 전년 대비 ${Math.abs(rp)}% ${parseFloat(rp)>=0?'증가':'감소'}했습니다.`});
 
-  // 채널별 렌탈료 평균
-  const chAvgMap = {};
-  if (iChannel>=0 && iRental>=0) {
-    const m = {};
-    filtered.forEach(r => {
-      const ch=(r[iChannel]||'미분류').toString().trim();
-      const v=parseFloat((r[iRental]||'').toString().replace(/[^0-9.-]/g,''));
-      if(!isNaN(v)&&v>0){if(!m[ch])m[ch]=[];m[ch].push(v);}
-    });
-    Object.entries(m).forEach(([k,arr])=>{ chAvgMap[k]=Math.round(arr.reduce((a,b)=>a+b,0)/arr.length); });
+  const topShin=Object.entries(shinTypeMap).sort((a,b)=>b[1]-a[1])[0];
+  if(topShin) ins.push({icon:'⭐',color:'#FFA94D',
+    title:`신차 TOP: ${topShin[0]}`,
+    desc:`${topShin[0]} 상품이 신차 중 가장 높은 비중(${Math.round(topShin[1]/shincha.length*100)}%)을 차지합니다.`});
+
+  const topRe=Object.entries(reTypeMap).sort((a,b)=>b[1]-a[1])[0];
+  if(topRe) ins.push({icon:'💡',color:'#4dabf7',
+    title:`재렌트 TOP: ${topRe[0]}`,
+    desc:`${topRe[0]} 상품이 재렌트 중 가장 높은 비중(${Math.round(topRe[1]/rerent.length*100)}%)을 차지합니다.`});
+
+  return ins.slice(0,5);
+}
+
+
+function getPrevYearRows(rows,iDate){
+  const now=new Date();
+  const curY=selYear||now.getFullYear().toString();
+  const prevY=String(parseInt(curY)-1);
+  if(viewMode==='month'){
+    const mo=document.getElementById('monthSel')?.value||'';
+    if(mo){const pm=prevY+'.'+mo.split('.')[1];return rows.filter(r=>getYM(r[iDate])===pm);}
+    return rows.filter(r=>getYM(r[iDate])?.startsWith(prevY));
   }
+  return rows.filter(r=>getYM(r[iDate])?.startsWith(prevY));
+}
 
-  // TOP 채널
-  const topCh = Object.entries(chAll).sort((a,b)=>b[1]-a[1]);
-  const topChName = topCh[0]?.[0] || '-';
-  const topChCount = topCh[0]?.[1] || 0;
+// ===================== P1: 차량별 현황 =====================
+let p1CarMode='shin'; // 'shin'|'re'|'all'
+let p1SelectedCar=null;
+let p1DetailMode='fuel'; // 'fuel'|'trim'
 
-  document.getElementById('p2_content').innerHTML = `
-    <div class="metric-grid g4" style="margin-bottom:24px;">
-      <div class="metric-card mc1"><div class="metric-label">전체 계약</div><div class="metric-value">${filtered.length.toLocaleString()}</div><div class="metric-sub">건</div></div>
-      <div class="metric-card mc2"><div class="metric-label">채널 수</div><div class="metric-value">${Object.keys(chAll).length}</div><div class="metric-sub">개</div></div>
-      <div class="metric-card mc3"><div class="metric-label">TOP 채널</div><div class="metric-value" style="font-size:18px;">${topChName}</div><div class="metric-sub">${topChCount}건</div></div>
-      <div class="metric-card mc4"><div class="metric-label">평균 렌탈료</div><div class="metric-value" style="font-size:18px;">${avgVal(filtered,iRental)}</div><div class="metric-sub">전체</div></div>
-    </div>
+function renderP1(){
+  if(!rawTable)return;
+  const{rows,idx}=getRows();
+  const iDate=idx('계약실행일'),iProd=idx('상품구분');
+  const iCar=cols=>cols.findIndex(c=>c&&(c.includes('차종')||c.includes('시리즈명')));
+  const iFuel=cols=>cols.findIndex(c=>c&&c.includes('유종'));
+  const iTrim=cols=>cols.findIndex(c=>c&&(c.includes('모델명')||c.includes('옵션')));
 
-    <div class="chart-row two" style="margin-bottom:20px;">
-      <div class="card">
-        <div class="card-header"><span class="card-title">채널별 전체 현황</span><span class="card-badge">${Object.keys(chAll).length}개 채널</span></div>
-        <div class="donut-wrap">
-          <div class="donut-canvas-wrap"><canvas id="donut_ch_all"></canvas><div class="donut-center"><div class="donut-center-val">${filtered.length}</div><div class="donut-center-label">전체</div></div></div>
-          <div class="donut-legend" id="legend_ch_all"></div>
+  const cols=rawTable.cols.map(c=>c.label);
+  const iCarIdx=cols.findIndex(c=>c&&(c.includes('시리즈명')||c.includes('차종')));
+  const iFuelIdx=cols.findIndex(c=>c&&c.includes('유종'));
+  const iTrimIdx=cols.findIndex(c=>c&&(c.includes('모델명')||c.includes('옵션')));
+
+  // 기간: 올해 기본
+  const yr=document.getElementById('yearSel')?.value||new Date().getFullYear().toString();
+  const mo=document.getElementById('monthSel')?.value||'';
+  const allFiltered=mo
+    ? rows.filter(r=>getYM(r[iDate])===mo)
+    : rows.filter(r=>getYM(r[iDate])?.startsWith(yr));
+
+  // 신차/재렌트/전체 필터
+  const modeFiltered=p1CarMode==='shin'
+    ? allFiltered.filter(r=>(r[iProd]||'').includes('신차'))
+    : p1CarMode==='re'
+    ? allFiltered.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');})
+    : allFiltered;
+
+  // 차종별 집계 (많이 팔린 순)
+  const carMap=iCarIdx>=0?countMap(modeFiltered,r=>(r[iCarIdx]||'미확인').toString().trim()):{};
+  const carSorted=Object.entries(carMap).sort((a,b)=>b[1]-a[1]);
+
+  // 초기 선택 차종
+  if(!p1SelectedCar&&carSorted.length>0) p1SelectedCar=carSorted[0][0];
+
+  // 월 목록 (올해 1월~현재)
+  const now=new Date();
+  const months=[];
+  const startY=parseInt(yr);
+  const endM=yr===now.getFullYear().toString()?now.getMonth()+1:12;
+  for(let m=1;m<=endM;m++) months.push(`${startY}.${String(m).padStart(2,'0')}`);
+
+  // 선택 차종 데이터
+  const carRows=p1SelectedCar
+    ? modeFiltered.filter(r=>(r[iCarIdx]||'').toString().trim()===p1SelectedCar)
+    : modeFiltered;
+
+  // 월별 건수
+  const monthMap={};
+  months.forEach(m=>monthMap[m]=0);
+  carRows.forEach(r=>{const m=getYM(r[iDate]);if(m&&monthMap.hasOwnProperty(m))monthMap[m]++;});
+
+  // 유종별/트림별
+  const fuelMap=iFuelIdx>=0?countMap(carRows,r=>(r[iFuelIdx]||'미확인').toString().trim()):{};
+  const trimMap=iTrimIdx>=0?countMap(carRows,r=>{
+    const t=(r[iTrimIdx]||'').toString().trim();
+    // 모델명에서 트림 추출 (앞 10글자 또는 공백/숫자 기준)
+    return t.slice(0,15)||'기타';
+  }):{};
+
+  document.getElementById('p1_content').innerHTML=`
+    <div style="display:flex;height:calc(100vh - 220px);min-height:500px;gap:0;">
+
+      <!-- 좌측 차종 목록 -->
+      <div style="width:160px;flex-shrink:0;background:#fff;border-radius:14px;border:1px solid #ebebf5;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="padding:12px;border-bottom:1px solid #f0f0f8;">
+          <input type="text" id="p1_car_search" placeholder="차종 검색..." oninput="filterCarList()"
+            style="width:100%;padding:6px 10px;font-size:12px;font-family:inherit;border:1px solid #e8e8f0;border-radius:6px;outline:none;"/>
+        </div>
+        <div style="overflow-y:auto;flex:1;" id="p1_car_list">
+          ${carSorted.map(([car,cnt],i)=>`
+            <div onclick="selectCar('${car.replace(/'/g,"\'")}',this)"
+              style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f8f8fc;display:flex;justify-content:space-between;align-items:center;background:${p1SelectedCar===car?'#6C63FF':i%2===0?'#fff':'#fafafe'};"
+              class="car-item" data-car="${car}">
+              <span style="font-size:13px;font-weight:${p1SelectedCar===car?'700':'400'};color:${p1SelectedCar===car?'#fff':'#333'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${car}</span>
+              <span style="font-size:11px;color:${p1SelectedCar===car?'rgba(255,255,255,0.8)':'#aaa'};flex-shrink:0;margin-left:4px;">${cnt}</span>
+            </div>`).join('')}
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">채널별 평균 렌탈료</span></div>
-        <div id="ch_avg_bar"></div>
+
+      <!-- 우측 메인 -->
+      <div style="flex:1;overflow-y:auto;padding-left:16px;">
+
+        <!-- 헤더: 차종명 + 신차/재렌트/전체 토글 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:20px;font-weight:700;">${p1SelectedCar||'전체'}</div>
+            <div style="font-size:12px;color:#aaa;margin-top:2px;">${yr}년 기준 · ${carRows.length}건</div>
+          </div>
+          <div style="display:flex;background:#f0f0f8;border-radius:8px;padding:3px;gap:2px;">
+            <button onclick="setP1Mode('shin')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:${p1CarMode==='shin'?'#fff':'transparent'};color:${p1CarMode==='shin'?'#6C63FF':'#888'};box-shadow:${p1CarMode==='shin'?'0 1px 4px rgba(0,0,0,0.1)':'none'};">신차</button>
+            <button onclick="setP1Mode('re')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:${p1CarMode==='re'?'#fff':'transparent'};color:${p1CarMode==='re'?'#6C63FF':'#888'};box-shadow:${p1CarMode==='re'?'0 1px 4px rgba(0,0,0,0.1)':'none'};">재렌트</button>
+            <button onclick="setP1Mode('all')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:${p1CarMode==='all'?'#fff':'transparent'};color:${p1CarMode==='all'?'#6C63FF':'#888'};box-shadow:${p1CarMode==='all'?'0 1px 4px rgba(0,0,0,0.1)':'none'};">전체</button>
+          </div>
+        </div>
+
+        <!-- 월별 막대 차트 -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header">
+            <span class="card-title">월별 현황</span>
+            <button onclick="toggleP1Detail()" style="padding:5px 14px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1px solid #6C63FF;background:#fff;color:#6C63FF;">상세보기</button>
+          </div>
+          <div style="position:relative;height:220px;"><canvas id="p1_month_chart"></canvas></div>
+        </div>
+
+        <!-- 상세보기 패널 -->
+        <div id="p1_detail_panel" style="display:none;">
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header">
+              <div style="display:flex;gap:8px;">
+                <button onclick="setP1Detail('fuel')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid ${p1DetailMode==='fuel'?'#6C63FF':'#e0e0ee'};background:${p1DetailMode==='fuel'?'#6C63FF':'#fff'};color:${p1DetailMode==='fuel'?'#fff':'#888'};">유종별</button>
+                <button onclick="setP1Detail('trim')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid ${p1DetailMode==='trim'?'#6C63FF':'#e0e0ee'};background:${p1DetailMode==='trim'?'#6C63FF':'#fff'};color:${p1DetailMode==='trim'?'#fff':'#888'};">트림별</button>
+              </div>
+              <span class="card-badge">${carRows.length}건</span>
+            </div>
+            <div id="p1_detail_bar"></div>
+          </div>
+        </div>
+
       </div>
-    </div>
+    </div>`;
 
-    <div class="chart-row two" style="margin-bottom:40px;">
-      <div class="card"><div class="card-header"><span class="card-title">신차 채널별</span><span class="card-badge">${shincha.length}건</span></div><div id="ch_shin_bar"></div></div>
-      <div class="card"><div class="card-header"><span class="card-title">재렌트 채널별</span><span class="card-badge">${rerent.length}건</span></div><div id="ch_re_bar"></div></div>
-    </div>
-  `;
+  // 월별 차트
+  const mc=document.getElementById('p1_month_chart');
+  if(mc){
+    if(charts['p1_month'])charts['p1_month'].destroy();
+    charts['p1_month']=new Chart(mc.getContext('2d'),{
+      type:'bar',
+      data:{
+        labels:months.map(m=>parseInt(m.split('.')[1])+'월'),
+        datasets:[{
+          data:months.map(m=>monthMap[m]||0),
+          backgroundColor:'#6C63FF',
+          borderRadius:6,
+          borderSkipped:false
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw}건`}}},
+        scales:{
+          x:{grid:{display:false},border:{display:false},ticks:{font:{size:12}}},
+          y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:11}},beginAtZero:true}
+        }
+      }
+    });
+  }
 
-  renderDonut('donut_ch_all','legend_ch_all',chAll);
-  renderBar('ch_shin_bar', chShin, 8);
-  renderBar('ch_re_bar',   chRe,   8);
+  // 상세 바 렌더
+  renderP1DetailBar(p1DetailMode==='fuel'?fuelMap:trimMap);
+}
 
-  // 채널별 평균 렌탈료 바
-  const avgEntries = Object.entries(chAvgMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const maxAvg = avgEntries[0]?.[1]||1;
-  const avgEl = document.getElementById('ch_avg_bar');
-  avgEl.innerHTML = avgEntries.map(([k,v],i)=>`
-    <div class="bar-item">
-      <div class="bar-meta"><span class="bar-name">${k}</span><span class="bar-count">${v.toLocaleString()}원</span></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/maxAvg*100)}%;background:${COLORS[i%COLORS.length]};"></div></div>
+function setP1Mode(mode){
+  p1CarMode=mode;
+  renderP1();
+}
+
+function selectCar(car,el){
+  p1SelectedCar=car;
+  renderP1();
+}
+
+function filterCarList(){
+  const q=(document.getElementById('p1_car_search')?.value||'').toLowerCase();
+  document.querySelectorAll('.car-item').forEach(el=>{
+    const car=el.getAttribute('data-car')||'';
+    el.style.display=car.toLowerCase().includes(q)?'flex':'none';
+  });
+}
+
+function toggleP1Detail(){
+  const panel=document.getElementById('p1_detail_panel');
+  if(!panel)return;
+  panel.style.display=panel.style.display==='none'?'block':'none';
+}
+
+function setP1Detail(mode){
+  p1DetailMode=mode;
+  renderP1();
+  document.getElementById('p1_detail_panel').style.display='block';
+}
+
+function renderP1DetailBar(dataMap){
+  const el=document.getElementById('p1_detail_bar');
+  if(!el)return;
+  const entries=Object.entries(dataMap).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  const maxVal=entries[0]?.[1]||1;
+  if(!entries.length){el.innerHTML='<div class="empty">데이터 없음</div>';return;}
+  el.innerHTML=entries.map(([k,v],i)=>`
+    <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+      <div style="width:120px;font-size:12px;color:#555;text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${k}</div>
+      <div style="flex:1;background:#f3f3f8;border-radius:5px;height:20px;overflow:hidden;">
+        <div style="height:100%;border-radius:5px;background:${COLORS[i%COLORS.length]};width:${Math.round(v/maxVal*100)}%;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;">
+          <span style="font-size:11px;color:#fff;font-weight:600;">${v}</span>
+        </div>
+      </div>
+      <div style="width:40px;font-size:12px;color:#aaa;text-align:right;">${Math.round(v/total*100)}%</div>
     </div>`).join('');
 }
 
-// ===================== P3: 수행자별 현황 =====================
-function renderP3() {
-  if (!rawTable) return;
-  const { rows, idx } = getRows();
-  const iDate   = idx('계약실행일');
-  const iProd   = idx('상품구분');
-  const iWorker = idx('수행원');
-  const iType   = idx('상품유형');
-  const iRental = idx('렌탈료');
-  const iEnd    = idx('종료후처리');
 
-  const filtered = filterRows(rows, iDate);
-  document.getElementById('p3_subtitle').textContent = `${getPeriodLabel()} 기준 · ${filtered.length.toLocaleString()}건`;
+// ===================== P2 =====================
+function onP2Search(val){chSearchQuery=val;selectedSeller='__all__';renderP2();}
+function setSellerFilter(s){
+  selectedSeller=s;
+  document.querySelectorAll('#p2_seller_chips .seller-chip').forEach(el=>el.classList.toggle('active',el.getAttribute('data-seller')===s));
+  renderP2();
+}
+function renderP2(){
+  if(!rawTable)return;
+  const{rows,idx}=getRows();
+  const iDate=idx('계약실행일'),iProd=idx('상품구분'),iChannel=idx('판매채널'),iRental=idx('렌탈료'),iSeller=idx('판매사');
+  const allFiltered=getFilteredRows(rows,iDate);
+  const q=(chSearchQuery||'').trim().toLowerCase();
+  const byChannel=q?allFiltered.filter(r=>(r[iChannel]||'').toString().toLowerCase().includes(q)||(r[iSeller]||'').toString().toLowerCase().includes(q)):allFiltered;
 
-  const isInsu = v => (v||'').toString().trim()==='양도(인수)';
+  // 판매사 버튼
+  const sellerWrap=document.getElementById('p2_seller_filter');
+  const sellerChips=document.getElementById('p2_seller_chips');
+  if(q&&iSeller>=0){
+    const sellers=[...new Set(byChannel.map(r=>(r[iSeller]||'').toString().trim()).filter(Boolean))].sort();
+    if(sellers.length>0){
+      sellerWrap.classList.add('show');
+      sellerChips.innerHTML=
+        `<button class="seller-chip series-chip all-chip${selectedSeller==='__all__'?' active':''}" data-seller="__all__" onclick="setSellerFilter('__all__')">전체</button>`+
+        sellers.map(s=>`<button class="seller-chip series-chip${selectedSeller===s?' active':''}" data-seller="${s}" onclick="setSellerFilter('${s.replace(/'/g,"\\'")}')"> ${s}</button>`).join('');
+    } else sellerWrap.classList.remove('show');
+  } else { sellerWrap.classList.remove('show'); }
 
-  // 수행자별 집계
-  const workerStats = {};
-  filtered.forEach(r => {
-    const name = mapWorker(r[iWorker]);
-    if (!workerStats[name]) workerStats[name] = { total:0, shin:0, re:0, insu:0, rentals:[] };
-    const s = workerStats[name];
-    s.total++;
-    if ((r[iProd]||'').includes('신차')) s.shin++;
-    if ((r[iProd]||''). includes('재렌트')||(r[iProd]||'').includes('재')) s.re++;
-    if (iEnd>=0 && isInsu(r[iEnd])) s.insu++;
-    const rv = parseFloat((r[iRental]||'').toString().replace(/[^0-9.-]/g,''));
-    if (!isNaN(rv)&&rv>0) s.rentals.push(rv);
+  const filtered=selectedSeller==='__all__'?byChannel:byChannel.filter(r=>(r[iSeller]||'').toString().trim()===selectedSeller);
+
+  // 판매사 상세 테이블
+  const dealerDetail=document.getElementById('p2_dealer_detail');
+  if(q&&filtered.length>0&&iSeller>=0){
+    const ss={};
+    filtered.forEach(r=>{
+      const sl=(r[iSeller]||'').toString().trim()||'(미입력)';
+      const ch=(r[iChannel]||'').toString().trim();
+      const info=getChannelGroup(ch)||getChannelGroup(sl);
+      if(!ss[sl])ss[sl]={total:0,shin:0,re:0,info};
+      ss[sl].total++;if((r[iProd]||'').includes('신차'))ss[sl].shin++;
+      if((r[iProd]||'').includes('재렌트')||(r[iProd]||'').includes('재'))ss[sl].re++;
+    });
+    const sr=Object.entries(ss).sort((a,b)=>b[1].total-a[1].total);
+    dealerDetail.style.display='block';
+    dealerDetail.innerHTML=`<div class="card"><div class="card-header"><span class="card-title">판매사별 상세</span><span class="card-badge">${sr.length}개 판매사</span></div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="border-bottom:2px solid #f0f0f8;"><th style="text-align:left;padding:9px 12px;color:#999;font-weight:500;">판매사</th><th style="padding:9px 12px;color:#999;font-weight:500;">계약수행자</th><th style="padding:9px 12px;color:#999;font-weight:500;">원수행자</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">전체</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">신차</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">재렌트</th></tr></thead>
+        <tbody>${sr.map(([name,s],i)=>`<tr style="border-bottom:1px solid #f5f5f8;"><td style="padding:9px 12px;font-weight:600;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:7px;"></span>${name}</td><td style="padding:9px 12px;color:#555;text-align:center;">${s.info?.계약수행자||'-'}</td><td style="padding:9px 12px;color:#888;text-align:center;">${s.info?.원수행자||'-'}</td><td style="text-align:right;padding:9px 12px;font-weight:700;">${s.total}</td><td style="text-align:right;padding:9px 12px;color:#6C63FF;">${s.shin}</td><td style="text-align:right;padding:9px 12px;color:#22c997;">${s.re}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  } else dealerDetail.style.display='none';
+
+  const shincha=filtered.filter(r=>(r[iProd]||'').includes('신차'));
+  const rerent=filtered.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');});
+  const chAll=iChannel>=0?countMap(filtered,r=>(r[iChannel]||'미입력').toString().trim()):{};
+  const chShin=iChannel>=0?countMap(shincha,r=>(r[iChannel]||'미입력').toString().trim()):{};
+  const chRe=iChannel>=0?countMap(rerent,r=>(r[iChannel]||'미입력').toString().trim()):{};
+  const chAvgMap={};
+  if(iChannel>=0&&iRental>=0){const m={};filtered.forEach(r=>{const ch=(r[iChannel]||'미입력').toString().trim();const v=parseFloat((r[iRental]||'').toString().replace(/[^0-9.-]/g,''));if(!isNaN(v)&&v>0){if(!m[ch])m[ch]=[];m[ch].push(v);}});Object.entries(m).forEach(([k,a])=>{chAvgMap[k]=Math.round(a.reduce((x,y)=>x+y,0)/a.length);});}
+  const topCh=Object.entries(chAll).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('p2_content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+      <div class="sum-card mc1"><div class="sum-label">${q?'검색 결과':'전체 계약'}</div><div class="sum-value" style="font-size:24px;">${filtered.length.toLocaleString()}</div></div>
+      <div class="sum-card"><div class="sum-label">채널 수</div><div class="sum-value" style="font-size:24px;">${Object.keys(chAll).length}</div></div>
+      <div class="sum-card"><div class="sum-label">TOP 채널</div><div class="sum-value" style="font-size:16px;">${topCh[0]?.[0]||'-'}</div><div class="sum-sub" style="color:#aaa;">${topCh[0]?.[1]||0}건</div></div>
+      <div class="sum-card"><div class="sum-label">평균 렌탈료</div><div class="sum-value" style="font-size:16px;">${avgVal(filtered,iRental)}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="card"><div class="card-header"><span class="card-title">채널별 비중</span></div><div class="donut-wrap"><div class="donut-canvas-wrap"><canvas id="donut_ch_all"></canvas><div class="donut-center"><div class="donut-center-val">${filtered.length}</div><div class="donut-center-label">${q?'검색':'전체'}</div></div></div><div class="donut-legend" id="legend_ch_all"></div></div></div>
+      <div class="card"><div class="card-header"><span class="card-title">채널별 평균 렌탈료</span></div><div id="ch_avg_bar"></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="card"><div class="card-header"><span class="card-title">신차 채널별</span><span class="card-badge">${shincha.length}건</span></div><div id="ch_shin_bar"></div></div>
+      <div class="card"><div class="card-header"><span class="card-title">재렌트 채널별</span><span class="card-badge">${rerent.length}건</span></div><div id="ch_re_bar"></div></div>
+    </div>`;
+  renderDonut('donut_ch_all','legend_ch_all',chAll);renderBar('ch_shin_bar',chShin,8);renderBar('ch_re_bar',chRe,8);
+  const avgEntries=Object.entries(chAvgMap).sort((a,b)=>b[1]-a[1]).slice(0,8);const maxAvg=avgEntries[0]?.[1]||1;
+  const avgEl=document.getElementById('ch_avg_bar');
+  if(avgEl)avgEl.innerHTML=avgEntries.map(([k,v],i)=>`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;"><span>${k}</span><span style="color:#999;">${v.toLocaleString()}원</span></div><div style="background:#f3f3f8;border-radius:5px;height:6px;overflow:hidden;"><div style="height:100%;border-radius:5px;background:${COLORS[i%COLORS.length]};width:${Math.round(v/maxAvg*100)}%;"></div></div></div>`).join('');
+}
+
+// ===================== P3 =====================
+function renderP3(){
+  if(!rawTable)return;
+  const{rows,idx}=getRows();
+  const iDate=idx('계약실행일'),iProd=idx('상품구분'),iWorker=idx('수행원'),iType=idx('상품유형'),iNoDepo=idx('무보증여부'),iEnd=idx('종료후처리');
+  const allFiltered=getFilteredRows(rows,iDate);
+  const allWorkers=[...new Set(allFiltered.map(r=>mapWorker(r[iWorker])).filter(Boolean))].sort();
+  const chipsEl=document.getElementById('p3_worker_chips');
+  if(chipsEl){
+    chipsEl.innerHTML=
+      `<button class="series-chip all-chip${selectedWorker==='__all__'?' active':''}" onclick="setWorker('__all__')">전체</button>`+
+      allWorkers.map(w=>`<button class="series-chip${selectedWorker===w?' active':''}" onclick="setWorker('${w}')">${w}</button>`).join('');
+  }
+  const filtered=selectedWorker==='__all__'?allFiltered:allFiltered.filter(r=>mapWorker(r[iWorker])===selectedWorker);
+  const isNoDepo=v=>(v||'').toString().trim()==='Y';
+  const isInsu=v=>(v||'').toString().trim()==='양도(인수)';
+  const wStats={};
+  filtered.forEach(r=>{
+    const name=mapWorker(r[iWorker]);if(!name)return;
+    if(!wStats[name])wStats[name]={total:0,shin:0,re:0,insu:0,noDepo:0};
+    const s=wStats[name];s.total++;
+    if((r[iProd]||'').includes('신차'))s.shin++;
+    if((r[iProd]||'').includes('재렌트')||(r[iProd]||'').includes('재'))s.re++;
+    if(iEnd>=0&&isInsu(r[iEnd]))s.insu++;
+    if(iNoDepo>=0&&isNoDepo(r[iNoDepo]))s.noDepo++;
   });
+  const sorted=Object.entries(wStats).sort((a,b)=>b[1].total-a[1].total);
+  const totalAll=filtered.length;
+  const shincha=filtered.filter(r=>(r[iProd]||'').includes('신차'));
+  const rerent=filtered.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');});
+  const shinTypeMap=countMap(shincha,r=>(r[iType]||'기타').toString().trim());
+  const reTypeMap=countMap(rerent,r=>(r[iType]||'기타').toString().trim());
+  const allMonths=getAllMonths(allFiltered,iDate).slice(-12);
+  const shinByM={},reByM={};
+  allMonths.forEach(m=>{shinByM[m]=0;reByM[m]=0;});
+  filtered.forEach(r=>{const m=getYM(r[iDate]);if(!m||!shinByM.hasOwnProperty(m))return;if((r[iProd]||'').includes('신차'))shinByM[m]++;else if((r[iProd]||'').includes('재렌트')||(r[iProd]||'').includes('재'))reByM[m]++;});
+  document.getElementById('p3_content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+      <div class="sum-card"><div class="sum-label">전체 계약</div><div class="sum-value" style="font-size:24px;">${totalAll.toLocaleString()}</div></div>
+      <div class="sum-card"><div class="sum-label">신차</div><div class="sum-value" style="font-size:24px;color:#6C63FF;">${shincha.length}</div></div>
+      <div class="sum-card"><div class="sum-label">재렌트</div><div class="sum-value" style="font-size:24px;color:#22c997;">${rerent.length}</div></div>
+      <div class="sum-card"><div class="sum-label">무보증</div><div class="sum-value" style="font-size:24px;color:#FFA94D;">${filtered.filter(r=>isNoDepo(r[iNoDepo])).length}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="card"><div class="card-header"><span class="card-title">신차 상품유형</span><span class="card-badge">${shincha.length}건</span></div>
+        <div class="donut-wrap"><div class="donut-canvas-wrap"><canvas id="donut_p3_shin"></canvas><div class="donut-center"><div class="donut-center-val">${shincha.length}</div><div class="donut-center-label">신차</div></div></div><div class="donut-legend" id="legend_p3_shin"></div></div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f8;font-size:13px;color:#999;">무보증 <strong style="color:#6C63FF;margin-left:6px;">${filtered.filter(r=>(r[iProd]||'').includes('신차')&&isNoDepo(r[iNoDepo])).length}건</strong></div>
+      </div>
+      <div class="card"><div class="card-header"><span class="card-title">재렌트 상품유형</span><span class="card-badge">${rerent.length}건</span></div>
+        <div class="donut-wrap"><div class="donut-canvas-wrap"><canvas id="donut_p3_re"></canvas><div class="donut-center"><div class="donut-center-val">${rerent.length}</div><div class="donut-center-label">재렌트</div></div></div><div class="donut-legend" id="legend_p3_re"></div></div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f8;font-size:13px;color:#999;">무보증 <strong style="color:#22c997;margin-left:6px;">${filtered.filter(r=>{const v=(r[iProd]||'');return(v.includes('재렌트')||v.includes('재'))&&isNoDepo(r[iNoDepo]);}).length}건</strong></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;"><div class="card-header"><span class="card-title">월별 추세 (신차 / 재렌트)</span></div><div style="position:relative;height:200px;"><canvas id="p3_trend_chart"></canvas></div></div>
+    <div class="card" style="margin-bottom:16px;overflow-x:auto;">
+      <div class="card-header"><span class="card-title">수행자별 상세</span></div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="border-bottom:2px solid #f0f0f8;"><th style="text-align:left;padding:9px 12px;color:#999;font-weight:500;">수행자</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">전체</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">신차</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">재렌트</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">인수형</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">무보증</th></tr></thead>
+        <tbody>${sorted.map(([name,s],i)=>`<tr style="border-bottom:1px solid #f5f5f8;"><td style="padding:9px 12px;font-weight:600;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:7px;"></span>${name}</td><td style="text-align:right;padding:9px 12px;font-weight:700;">${s.total}</td><td style="text-align:right;padding:9px 12px;color:#6C63FF;">${s.shin}</td><td style="text-align:right;padding:9px 12px;color:#22c997;">${s.re}</td><td style="text-align:right;padding:9px 12px;color:#FF6B6B;">${s.insu}</td><td style="text-align:right;padding:9px 12px;color:#FFA94D;">${s.noDepo}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  renderDonut('donut_p3_shin','legend_p3_shin',shinTypeMap);
+  renderDonut('donut_p3_re','legend_p3_re',reTypeMap);
+  const tc=document.getElementById('p3_trend_chart');
+  if(tc){if(charts['p3_trend'])charts['p3_trend'].destroy();
+    charts['p3_trend']=new Chart(tc.getContext('2d'),{type:'bar',data:{labels:allMonths,datasets:[{label:'신차',data:allMonths.map(m=>shinByM[m]||0),backgroundColor:'#6C63FF',borderRadius:4,borderSkipped:false},{label:'재렌트',data:allMonths.map(m=>reByM[m]||0),backgroundColor:'#22c997',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{font:{size:10},maxRotation:45}},y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:10}},beginAtZero:true}}}});
+  }
+}
+function setWorker(w){selectedWorker=w;renderP3();}
 
-  const sorted = Object.entries(workerStats).sort((a,b)=>b[1].total-a[1].total);
-  const totalAll = filtered.length;
+// ===================== TREND POPUP =====================
+const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+function openTrendPopup(){
+  popupTabCtx=currentTab;
+  document.getElementById('trendPopup').classList.add('show');
+  document.getElementById('popupTitle').textContent=currentTab===0?'상품별 월별 추세':'차량별 월별 추세';
+  document.getElementById('seriesFilterWrap').style.display=currentTab===1?'block':'none';
+  if(currentTab===1)buildSeriesChips();
+  renderCal();applyRange();
+  const w=document.getElementById('calWrap');if(w)w.classList.remove('open');
+  updateRangeDisplay();
+}
+function closeTrendPopup(){document.getElementById('trendPopup').classList.remove('show');}
+document.getElementById('trendPopup').addEventListener('click',e=>{if(e.target===document.getElementById('trendPopup'))closeTrendPopup();});
+function toggleCal(){document.getElementById('calWrap').classList.toggle('open');updateRangeDisplay();}
+function moveYear(side,dir){if(side==='from')calFrom.year+=dir;else calTo.year+=dir;renderCal();}
+function renderCal(){
+  renderCalSide('from',calFrom,document.getElementById('fromYearLabel'),document.getElementById('fromMonths'));
+  renderCalSide('to',calTo,document.getElementById('toYearLabel'),document.getElementById('toMonths'));
+  updateRangeDisplay();
+}
+function renderCalSide(side,state,yearEl,monthsEl){
+  if(!yearEl||!monthsEl)return;
+  yearEl.textContent=state.year+'년';
+  monthsEl.innerHTML=MONTHS.map((l,i)=>{const m=i+1;const sel=state.month===m;return`<button class="cal-month-btn${sel?' selected':''}" onclick="selectMonth('${side}',${m})">${l}</button>`;}).join('');
+}
+function selectMonth(side,m){
+  if(side==='from')calFrom.month=m;else calTo.month=m;
+  renderCal();
+  if(calFrom.month&&calTo.month){applyRange();const w=document.getElementById('calWrap');if(w)w.classList.remove('open');updateRangeDisplay();}
+}
+function updateRangeDisplay(){
+  const btn=document.getElementById('calToggleBtn');if(!btn)return;
+  const f=calFrom.month?`${calFrom.year}년 ${calFrom.month}월`:'시작월';
+  const t=calTo.month?`${calTo.year}년 ${calTo.month}월`:'종료월';
+  const arrow=document.getElementById('calWrap')?.classList.contains('open')?'▲':'▼';
+  btn.textContent=`📅 ${f}  ~  ${t}  ${arrow}`;
+}
+function buildSeriesChips(){
+  const{rows,idx}=getRows();const iSeries=idx('시리즈명');
+  const all=new Set();rows.forEach(r=>{const v=(r[iSeries]||'').toString().trim();if(v)all.add(v);});
+  const wrap=document.getElementById('seriesFilterChips');
+  wrap.innerHTML=`<button class="series-chip all-chip active" onclick="toggleSeries('__all__')">전체</button>`+[...all].sort().map(s=>`<button class="series-chip" onclick="toggleSeries('${s}')" id="chip_${CSS.escape(s)}">${s}</button>`).join('');
+  selectedSeries=new Set(['__all__']);
+}
+function toggleSeries(s){
+  if(s==='__all__'){selectedSeries=new Set(['__all__']);document.querySelectorAll('.series-chip').forEach(el=>el.classList.remove('active'));document.querySelector('.all-chip').classList.add('active');}
+  else{selectedSeries.delete('__all__');document.querySelector('.all-chip')?.classList.remove('active');if(selectedSeries.has(s)){selectedSeries.delete(s);document.getElementById(`chip_${CSS.escape(s)}`)?.classList.remove('active');}else{selectedSeries.add(s);document.getElementById(`chip_${CSS.escape(s)}`)?.classList.add('active');}if(selectedSeries.size===0){selectedSeries.add('__all__');document.querySelector('.all-chip')?.classList.add('active');}}
+  applyRange();
+}
+function applyRange(){
+  if(!rawTable)return;
+  if(!calFrom.month||!calTo.month)return;
+  const from=`${calFrom.year}.${String(calFrom.month).padStart(2,'0')}`;
+  const to=`${calTo.year}.${String(calTo.month).padStart(2,'0')}`;
+  if(from>to)return;
+  const{rows,idx}=getRows();
+  const iDate=idx('계약실행일'),iProd=idx('상품구분'),iSeries=idx('시리즈명');
+  const allMonths=getAllMonths(rows,iDate).filter(m=>m>=from&&m<=to);
+  let filtered=rows;
+  if(popupTabCtx===1&&!selectedSeries.has('__all__'))filtered=rows.filter(r=>selectedSeries.has((r[iSeries]||'').toString().trim()));
+  const shinMap={},reMap={},totMap={};
+  allMonths.forEach(m=>{shinMap[m]=0;reMap[m]=0;totMap[m]=0;});
+  filtered.forEach(r=>{
+    const m=getYM(r[iDate]);if(!m||m<from||m>to)return;
+    const prod=(r[iProd]||'');
+    totMap[m]=(totMap[m]||0)+1;
+    if(prod.includes('신차'))shinMap[m]=(shinMap[m]||0)+1;
+    else if(prod.includes('재렌트')||prod.includes('재'))reMap[m]=(reMap[m]||0)+1;
+  });
+  const tShin=allMonths.reduce((a,m)=>a+(shinMap[m]||0),0);
+  const tRe=allMonths.reduce((a,m)=>a+(reMap[m]||0),0);
+  const tTot=allMonths.reduce((a,m)=>a+(totMap[m]||0),0);
+  const canvas=document.getElementById('trendLineChart');
+  if(canvas){if(charts['trendLine'])charts['trendLine'].destroy();
+    charts['trendLine']=new Chart(canvas.getContext('2d'),{type:'line',data:{labels:allMonths,datasets:[{label:'신차',data:allMonths.map(m=>shinMap[m]||0),borderColor:'#6C63FF',backgroundColor:'rgba(108,99,255,0.08)',tension:0.4,pointRadius:4,fill:true},{label:'재렌트',data:allMonths.map(m=>reMap[m]||0),borderColor:'#22c997',backgroundColor:'rgba(34,201,151,0.06)',tension:0.4,pointRadius:4,fill:true},{label:'총 출고',data:allMonths.map(m=>totMap[m]||0),borderColor:'#FF6B6B',tension:0.4,pointRadius:4,borderDash:[5,3],fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:10}},beginAtZero:true}}}});
+  }
+  const tw=document.getElementById('trendTableWrap');
+  if(tw)tw.innerHTML=`<table class="trend-table"><thead><tr><th>월</th><th>신차</th><th>재렌트</th><th>총 출고</th></tr></thead><tbody>${allMonths.map(m=>`<tr><td>${m}</td><td class="shin-c">${shinMap[m]||0}</td><td class="re-c">${reMap[m]||0}</td><td style="font-weight:600;">${totMap[m]||0}</td></tr>`).join('')}<tr><td>합계</td><td class="shin-c">${tShin}</td><td class="re-c">${tRe}</td><td style="font-weight:700;">${tTot}</td></tr></tbody></table>`;
+}
 
-  const workerCountMap = {};
-  sorted.forEach(([k,v]) => workerCountMap[k]=v.total);
+// ===================== 탁송 현황 =====================
+function renderTakso(){
+  if(!rawTaksoTable){
+    document.getElementById('p0_content').innerHTML='<div style="text-align:center;padding:60px;color:#bbb;">탁송 데이터를 불러오는 중이거나 없어요.</div>';
+    return;
+  }
 
-  document.getElementById('p3_content').innerHTML = `
-    <div class="metric-grid g4" style="margin-bottom:24px;">
-      <div class="metric-card mc1"><div class="metric-label">전체 계약</div><div class="metric-value">${filtered.length.toLocaleString()}</div><div class="metric-sub">건</div></div>
-      <div class="metric-card mc2"><div class="metric-label">수행자 수</div><div class="metric-value">${sorted.length}</div><div class="metric-sub">명</div></div>
-      <div class="metric-card mc3"><div class="metric-label">TOP 수행자</div><div class="metric-value" style="font-size:18px;">${sorted[0]?.[0]||'-'}</div><div class="metric-sub">${sorted[0]?.[1]?.total||0}건</div></div>
-      <div class="metric-card mc4"><div class="metric-label">인수형 합계</div><div class="metric-value">${sorted.reduce((a,[,v])=>a+v.insu,0)}</div><div class="metric-sub">건</div></div>
+  const cols=rawTaksoTable.cols.map(c=>c.label);
+  const rows=rawTaksoTable.rows.map(r=>r.c.map(c=>c?c.v:null));
+  const idx=n=>cols.findIndex(c=>c&&c.includes(n));
+
+  // 컬럼 인덱스
+  const iDate=idx('요청일시');   // D열 - 희망일자(출고일)
+  const iWorker=idx('수행자');   // F열
+  const iProd=idx('상품명');     // K열
+  const iType=idx('신차구분');   // M열 - 신차/재렌트
+  const iCar=idx('차종');        // N열
+
+  // 희망일자(U열) 따로 찾기
+  const iHope=cols.findIndex(c=>c&&(c.includes('희망일자')||c.includes('희망')));
+  const iDateFinal = iHope >= 0 ? iHope : iDate;
+
+  // 금월 필터
+  const yr=document.getElementById('yearSel')?.value||new Date().getFullYear().toString();
+  const mo=document.getElementById('monthSel')?.value||'';
+  const filteredAll = mo
+    ? rows.filter(r=>getYM(r[iDateFinal])===mo)
+    : rows.filter(r=>getYM(r[iDateFinal])?.startsWith(yr));
+  const tm=mo||yr;
+  const displayLabel=mo
+    ? (mo.split('.')[0]+'년 '+parseInt(mo.split('.')[1])+'월')
+    : (yr+'년 전체');
+  const vehicleChange=filteredAll.filter(r=>mapTaksoWorker(r[iWorker])==='특이건');
+  const filtered=filteredAll.filter(r=>mapTaksoWorker(r[iWorker])!=='특이건');
+  const vcNote=vehicleChange.length?` <span style="font-size:10px;color:#bbb;font-weight:400;">* 차량교체 ${vehicleChange.length}건</span>`:'';
+  const shincha=filtered.filter(r=>(r[iType]||'').toString().includes('신차'));
+  const rerent=filtered.filter(r=>{const v=(r[iType]||'').toString();return v.includes('재렌트')||v.includes('재');});
+
+  const prodMap=iProd>=0?countMap(filtered,r=>(r[iProd]||'기타').toString().trim()):{};
+  const shinProdMap=iProd>=0?countMap(shincha,r=>(r[iProd]||'기타').toString().trim()):{};
+  const reProdMap=iProd>=0?countMap(rerent,r=>(r[iProd]||'기타').toString().trim()):{};
+  const carMap=iCar>=0?countMap(filtered,r=>(r[iCar]||'미확인').toString().trim()):{};
+  const shinCarMap=iCar>=0?countMap(shincha,r=>(r[iCar]||'미확인').toString().trim()):{};
+  const reCarMap=iCar>=0?countMap(rerent,r=>(r[iCar]||'미확인').toString().trim()):{};
+  const workerMap=iWorker>=0?countMap(filtered,r=>mapTaksoWorker(r[iWorker])):{};
+  const shinWorkerMap=iWorker>=0?countMap(shincha,r=>mapTaksoWorker(r[iWorker])):{};
+  const reWorkerMap=iWorker>=0?countMap(rerent,r=>mapTaksoWorker(r[iWorker])):{};
+
+  document.getElementById('p0_content').innerHTML=`
+    <div style="text-align:center;padding:6px 0 20px;color:#888;font-size:13px;">📦 탁송 출고 현황 · ${displayLabel} 기준</div>
+
+    <!-- 요약 카드 -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;">
+      <div class="sum-card" style="border-left:4px solid #6C63FF;">
+        <div class="sum-label">총 탁송 출고</div>
+        <div class="sum-value">${filtered.length.toLocaleString()}<span style="font-size:16px;color:#aaa;"> 건</span></div>
+        ${vcNote?`<div style="margin-top:2px;">${vcNote}</div>`:''}
+      </div>
+      <div class="sum-card" style="border-left:4px solid #22c997;">
+        <div class="sum-label">신차</div>
+        <div class="sum-value" style="color:#6C63FF;">${shincha.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
+      </div>
+      <div class="sum-card" style="border-left:4px solid #FF6B6B;">
+        <div class="sum-label">재렌트</div>
+        <div class="sum-value" style="color:#22c997;">${rerent.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
+        ${vcNote?`<div style="margin-top:2px;">${vcNote}</div>`:''}
+      </div>
     </div>
 
-    <div class="chart-row two" style="margin-bottom:20px;">
+    <!-- 상품별 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
       <div class="card">
-        <div class="card-header"><span class="card-title">수행자별 계약 건수</span></div>
-        <div id="worker_bar"></div>
+        <div class="card-header"><span class="card-title">상품별 전체</span><span class="card-badge">${filtered.length}건</span></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-wrap"><canvas id="t_donut_prod"></canvas>
+            <div class="donut-center"><div class="donut-center-val">${filtered.length}</div><div class="donut-center-label">전체</div></div>
+          </div>
+          <div class="donut-legend" id="t_legend_prod"></div>
+        </div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">수행자별 비중</span></div>
+        <div class="card-header"><span class="card-title">신차 상품별</span><span class="card-badge">${shincha.length}건</span></div>
         <div class="donut-wrap">
-          <div class="donut-canvas-wrap"><canvas id="donut_worker"></canvas><div class="donut-center"><div class="donut-center-val">${filtered.length}</div><div class="donut-center-label">전체</div></div></div>
-          <div class="donut-legend" id="legend_worker"></div>
+          <div class="donut-canvas-wrap"><canvas id="t_donut_shin_prod"></canvas>
+            <div class="donut-center"><div class="donut-center-val">${shincha.length}</div><div class="donut-center-label">신차</div></div>
+          </div>
+          <div class="donut-legend" id="t_legend_shin_prod"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">재렌트 상품별</span><span class="card-badge">${rerent.length}건</span>${vcNote}</div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-wrap"><canvas id="t_donut_re_prod"></canvas>
+            <div class="donut-center"><div class="donut-center-val">${rerent.length}</div><div class="donut-center-label">재렌트</div></div>
+          </div>
+          <div class="donut-legend" id="t_legend_re_prod"></div>
         </div>
       </div>
     </div>
 
-    <div class="section-title">수행자별 상세 현황</div>
-    <div class="card" style="margin-bottom:40px; overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        <thead>
-          <tr style="border-bottom:2px solid #f0f0f8;">
-            <th style="text-align:left;padding:10px 12px;color:#999;font-weight:500;">수행자</th>
-            <th style="text-align:right;padding:10px 12px;color:#999;font-weight:500;">전체</th>
-            <th style="text-align:right;padding:10px 12px;color:#999;font-weight:500;">신차</th>
-            <th style="text-align:right;padding:10px 12px;color:#999;font-weight:500;">재렌트</th>
-            <th style="text-align:right;padding:10px 12px;color:#999;font-weight:500;">인수형</th>
-            <th style="text-align:right;padding:10px 12px;color:#999;font-weight:500;">평균렌탈료</th>
-            <th style="text-align:right;padding:10px 12px;color:#999;font-weight:500;">비중</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${sorted.map(([name,s],i) => {
-            const avg = s.rentals.length ? Math.round(s.rentals.reduce((a,b)=>a+b,0)/s.rentals.length).toLocaleString()+'원' : '-';
-            const pct = Math.round(s.total/totalAll*100);
-            const color = COLORS[i%COLORS.length];
-            return `<tr style="border-bottom:1px solid #f8f8fc;">
-              <td style="padding:10px 12px;font-weight:600;">
-                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:8px;"></span>${name}
-              </td>
-              <td style="text-align:right;padding:10px 12px;font-weight:700;">${s.total}</td>
-              <td style="text-align:right;padding:10px 12px;color:#6C63FF;">${s.shin}</td>
-              <td style="text-align:right;padding:10px 12px;color:#22c997;">${s.re}</td>
-              <td style="text-align:right;padding:10px 12px;color:#FF6B6B;">${s.insu}</td>
-              <td style="text-align:right;padding:10px 12px;color:#999;">${avg}</td>
-              <td style="text-align:right;padding:10px 12px;color:#aaa;">${pct}%</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
+    <!-- 수행자별 -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><span class="card-title">수행자별 전체</span><span class="card-badge">${filtered.length}건</span></div>
+      <div class="donut-wrap" style="margin-bottom:18px;">
+        <div class="donut-canvas-wrap"><canvas id="t_donut_worker"></canvas>
+          <div class="donut-center"><div class="donut-center-val">${filtered.length}</div><div class="donut-center-label">전체</div></div>
+        </div>
+        <div class="donut-legend" id="t_legend_worker"></div>
+      </div>
+      <div style="border-top:1px solid #f0f0f8;padding-top:14px;">
+        <div id="t_worker_bars"></div>
+      </div>
     </div>
-  `;
 
-  renderBar('worker_bar', workerCountMap, 10);
-  renderDonut('donut_worker','legend_worker',workerCountMap);
+    <!-- 차량별 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">차종별 전체</span><span class="card-badge">${filtered.length}건</span></div>
+        <div id="t_car_bar"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">신차 차종별</span><span class="card-badge">${shincha.length}건</span></div>
+        <div id="t_shin_car_bar"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">재렌트 차종별</span><span class="card-badge">${rerent.length}건</span>${vcNote}</div>
+        <div id="t_re_car_bar"></div>
+      </div>
+    </div>`;
+
+  // 차트 렌더
+  renderDonut('t_donut_prod','t_legend_prod',prodMap);
+  renderDonut('t_donut_shin_prod','t_legend_shin_prod',shinProdMap);
+  renderDonut('t_donut_re_prod','t_legend_re_prod',reProdMap);
+  renderBar('t_car_bar',carMap,8);
+  renderBar('t_shin_car_bar',shinCarMap,8);
+  renderBar('t_re_car_bar',reCarMap,8);
+  renderDonut('t_donut_worker','t_legend_worker',workerMap);
+  renderWorkerBars('t_worker_bars',workerMap,shinWorkerMap,reWorkerMap);
 }
 
 // ===================== 공통 렌더 함수 =====================
-function renderDonut(canvasId, legendId, dataMap) {
-  const entries = Object.entries(dataMap).sort((a,b)=>b[1]-a[1]);
-  const total = entries.reduce((s,[,v])=>s+v,0);
-  const canvas = document.getElementById(canvasId);
-  const legendEl = document.getElementById(legendId);
-  if (!entries.length||!canvas) { if(canvas) canvas.parentElement.innerHTML='<div class="empty">데이터 없음</div>'; return; }
-  if (charts[canvasId]) charts[canvasId].destroy();
-  charts[canvasId] = new Chart(canvas.getContext('2d'), {
-    type:'doughnut',
-    data:{ labels:entries.map(([k])=>k), datasets:[{data:entries.map(([,v])=>v), backgroundColor:COLORS, borderWidth:2, borderColor:'#fff', hoverOffset:6}] },
-    options:{ cutout:'68%', plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}건 (${Math.round(ctx.raw/total*100)}%)`}} }, animation:{animateRotate:true,duration:700} }
+function renderDonut(canvasId,legendId,dataMap){
+  const entries=Object.entries(dataMap).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  const canvas=document.getElementById(canvasId);const legendEl=document.getElementById(legendId);
+  if(!canvas||!legendEl)return;
+  if(!entries.length){canvas.parentElement.innerHTML='<div class="empty">데이터 없음</div>';return;}
+  if(charts[canvasId])charts[canvasId].destroy();
+  charts[canvasId]=new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:entries.map(([k])=>k),datasets:[{data:entries.map(([,v])=>v),backgroundColor:COLORS,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}건 (${Math.round(ctx.raw/total*100)}%)`}}},animation:{animateRotate:true,duration:700}}});
+  legendEl.innerHTML=entries.slice(0,7).map(([k,v],i)=>`<div class="legend-item"><div class="legend-dot" style="background:${COLORS[i%COLORS.length]}"></div><span class="legend-name">${k}</span><span class="legend-val">${v}건 · ${Math.round(v/total*100)}%</span></div>`).join('');
+}
+function renderBar(elId,dataMap,limit=7){
+  const el=document.getElementById(elId);if(!el)return;
+    const entries=Object.entries(dataMap).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  if(!entries.length){el.innerHTML='<div class="empty">데이터 없음</div>';return;}
+  el.innerHTML=entries.map(([k,v],i)=>`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;"><span>${k}</span><span style="color:#999;">${v.toLocaleString()}건 · ${Math.round(v/total*100)}%</span></div><div style="background:#f3f3f8;border-radius:5px;height:6px;overflow:hidden;"><div style="height:100%;border-radius:5px;background:${COLORS[i%COLORS.length]};width:${Math.round(v/total*100)}%;"></div></div></div>`).join('');
+}
+function renderWorkerBars(elId,totalMap,shinMap,reMap){
+  const el=document.getElementById(elId);if(!el)return;
+  const entries=Object.entries(totalMap).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){el.innerHTML='<div class="empty">데이터 없음</div>';return;}
+  const rows=entries.map(([k,v])=>{
+    const shin=shinMap[k]||0,re=reMap[k]||0;
+    const base=shin+re||1;
+    const shinPct=Math.round(shin/base*100);
+    const rePct=100-shinPct;
+    return `<tr style="border-bottom:1px solid #f5f5f8;">
+      <td style="padding:10px 12px;font-weight:700;font-size:14px;">${k}</td>
+      <td style="text-align:right;padding:10px 12px;font-weight:700;">${v.toLocaleString()}건</td>
+      <td style="text-align:right;padding:10px 12px;color:#6C63FF;">${shin.toLocaleString()}건</td>
+      <td style="text-align:right;padding:10px 12px;color:#22c997;">${re.toLocaleString()}건</td>
+      <td style="padding:10px 12px 10px 18px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;height:6px;border-radius:3px;background:#f3f3f8;overflow:hidden;display:flex;">
+            <div style="width:${shinPct}%;background:#6C63FF;height:100%;"></div>
+            <div style="width:${rePct}%;background:#22c997;height:100%;"></div>
+          </div>
+          <span style="font-size:11px;color:#999;white-space:nowrap;">신차 ${shinPct}% / 재렌트 ${rePct}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">
+    <colgroup><col style="width:18%;"><col style="width:13%;"><col style="width:13%;"><col style="width:13%;"><col style="width:43%;"></colgroup>
+    <thead><tr style="border-bottom:2px solid #f0f0f8;">
+      <th style="text-align:left;padding:8px 12px;color:#999;font-weight:500;">수행자</th>
+      <th style="text-align:right;padding:8px 12px;color:#999;font-weight:500;">전체</th>
+      <th style="text-align:right;padding:8px 12px;color:#999;font-weight:500;">신차</th>
+      <th style="text-align:right;padding:8px 12px;color:#999;font-weight:500;">재렌트</th>
+      <th style="text-align:left;padding:8px 12px 8px 18px;color:#999;font-weight:500;">출고비율</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+function bindTooltips(){
+  document.querySelectorAll('.tooltip-wrap').forEach(el=>{
+    const tip=el.getAttribute('data-tip');if(!tip)return;let box=null;
+    el.addEventListener('mouseenter',e=>{box=document.createElement('div');box.className='custom-tooltip';box.innerText=tip;document.body.appendChild(box);moveTip(box,e);});
+    el.addEventListener('mousemove',e=>{if(box)moveTip(box,e);});
+    el.addEventListener('mouseleave',()=>{if(box){box.remove();box=null;}});
   });
-  legendEl.innerHTML = entries.slice(0,7).map(([k,v],i)=>`
-    <div class="legend-item">
-      <div class="legend-dot" style="background:${COLORS[i%COLORS.length]}"></div>
-      <span class="legend-name">${k}</span>
-      <span class="legend-val">${v}건 · ${Math.round(v/total*100)}%</span>
-    </div>`).join('');
 }
-
-function renderBar(elId, dataMap, limit=7) {
-  const el = document.getElementById(elId);
-  if (!el) return;
-  const entries = Object.entries(dataMap).sort((a,b)=>b[1]-a[1]).slice(0,limit);
-  const total = entries.reduce((s,[,v])=>s+v,0);
-  if (!entries.length) { el.innerHTML='<div class="empty">데이터 없음</div>'; return; }
-  el.innerHTML = entries.map(([k,v],i)=>`
-    <div class="bar-item">
-      <div class="bar-meta"><span class="bar-name">${k}</span><span class="bar-count">${v.toLocaleString()}건 · ${Math.round(v/total*100)}%</span></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/total*100)}%;background:${COLORS[i%COLORS.length]};"></div></div>
-    </div>`).join('');
+function moveTip(box,e){
+  const bw=box.offsetWidth||160,bh=box.offsetHeight||50,vw=window.innerWidth,vh=window.innerHeight;
+  let x=e.clientX+14,y=e.clientY-10;
+  if(x+bw>vw-10)x=e.clientX-bw-10;if(y+bh>vh-10)y=vh-bh-10;
+  box.style.left=x+'px';box.style.top=y+'px';
 }
-
-function bindTooltips() {
-  document.querySelectorAll('.tooltip-wrap').forEach(el => {
-    const tip = el.getAttribute('data-tip');
-    if (!tip) return;
-    let box = null;
-    el.addEventListener('mouseenter', e => {
-      box = document.createElement('div');
-      box.className = 'custom-tooltip';
-      box.innerText = tip;
-      document.body.appendChild(box);
-      moveTip(box, e);
-    });
-    el.addEventListener('mousemove', e => { if(box) moveTip(box, e); });
-    el.addEventListener('mouseleave', () => { if(box){box.remove();box=null;} });
-  });
-}
-function moveTip(box, e) {
-  const bw = box.offsetWidth||160, bh = box.offsetHeight||60;
-  const vw = window.innerWidth, vh = window.innerHeight;
-  let x = e.clientX+16, y = e.clientY-10;
-  if (x+bw > vw-10) x = e.clientX-bw-10;
-  if (y+bh > vh-10) y = vh-bh-10;
-  box.style.left = x+'px';
-  box.style.top  = y+'px';
-}
+function calcPctGlobal(curr,prev){if(!prev)return null;return((curr-prev)/prev*100).toFixed(1);}
 </script>
 </body>
 </html>
