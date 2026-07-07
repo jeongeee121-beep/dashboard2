@@ -987,31 +987,27 @@ function renderP1(){
       }
     });
 
-    // 막대 위 숫자 플러그인 (항상 표시 - 호버 무관)
-    const p1LabelPlugin={
-      id:'p1Labels',
-      afterDatasetsDraw(chart){
-        const ctx=chart.ctx;
-        chart.data.datasets.forEach((dataset,di)=>{
-          const meta=chart.getDatasetMeta(di);
-          if(meta.hidden)return;
-          meta.data.forEach((bar,i)=>{
-            const val=dataset.data[i];
-            if(!val)return;
-            ctx.save();
-            ctx.font='bold 11px sans-serif';
-            ctx.fillStyle='#444';
-            ctx.textAlign='center';
-            ctx.textBaseline='bottom';
-            ctx.fillText(val,bar.x,bar.y-4);
-            ctx.restore();
-          });
+    // 막대 위 숫자 표시 (animation complete 후)
+    setTimeout(()=>{
+      const c=charts['p1_month'];
+      if(!c)return;
+      const ctx=c.ctx;
+      c.data.datasets.forEach((ds,di)=>{
+        const meta=c.getDatasetMeta(di);
+        if(meta.hidden)return;
+        meta.data.forEach((bar,i)=>{
+          const val=ds.data[i];
+          if(!val)return;
+          ctx.save();
+          ctx.font='bold 11px sans-serif';
+          ctx.fillStyle='#444';
+          ctx.textAlign='center';
+          ctx.textBaseline='bottom';
+          ctx.fillText(val,bar.x,bar.y-4);
+          ctx.restore();
         });
-      }
-    };
-    charts['p1_month'].options.plugins={...charts['p1_month'].options.plugins};
-    Chart.register(p1LabelPlugin);
-    charts['p1_month'].update();
+      });
+    },350);
   }
 }
 
