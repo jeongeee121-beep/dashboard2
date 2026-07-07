@@ -791,6 +791,7 @@ function getPrevYearRows(rows,iDate){
 let p1CarMode='shin';
 let p1SelectedCar=null;
 let p1ClickedMonth=null;
+let p1ClickedDetail='shin'; // 전체모드에서 클릭한 신차/재렌트
 let p1DetailMode='fuel';
 
 // 트림명 추출 함수
@@ -860,6 +861,8 @@ function renderP1(){
     Array.from({length:yr===now.getFullYear().toString()?now.getMonth()+1:12},
       (_,i)=>`${yr}.${String(i+1).padStart(2,'0')}`);
 
+  const isAll=p1CarMode==='all';
+
   // 월별 건수
   const shinByM={},reByM={},totalByM={};
   months.forEach(m=>{shinByM[m]=0;reByM[m]=0;totalByM[m]=0;});
@@ -868,12 +871,14 @@ function renderP1(){
   months.forEach(m=>totalByM[m]=(shinByM[m]||0)+(reByM[m]||0));
 
   // 클릭된 월 상세
-  const clickedRows=p1ClickedMonth?carRows.filter(r=>getYM(r[iDate])===p1ClickedMonth):[];
+  // 전체 모드에서 신차/재렌트 구분 클릭 반영
+  const clickedBase=isAll
+    ? (p1ClickedDetail==='shin'?carShinRows:carReRows)
+    : carRows;
+  const clickedRows=p1ClickedMonth?clickedBase.filter(r=>getYM(r[iDate])===p1ClickedMonth):[];
   const fuelMap=iFuelIdx>=0?countMap(clickedRows,r=>(r[iFuelIdx]||'미확인').toString().trim()):{};
   const trimMap=iTrimIdx>=0?countMap(clickedRows,r=>extractTrim(r[iTrimIdx])):{};
 
-  // 차트 데이터
-  const isAll=p1CarMode==='all';
   const chartDatasets=isAll?[
     {label:'신차',data:months.map(m=>shinByM[m]||0),backgroundColor:'#6C63FF',borderRadius:4,borderSkipped:false},
     {label:'재렌트',data:months.map(m=>reByM[m]||0),backgroundColor:'#22c997',borderRadius:4,borderSkipped:false},
@@ -959,35 +964,54 @@ function renderP1(){
         plugins:{
           legend:{display:isAll,position:'bottom',labels:{font:{size:11},usePointStyle:true}},
           tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label||''}${ctx.raw}건`}},
-          datalabels:{display:false} // 기본 datalabels 끄고 직접 처리
         },
         scales:{
           x:{grid:{display:false},border:{display:false},ticks:{font:{size:12}}},
-          y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:11}},beginAtZero:true}
+          y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:11}},beginAtZero:true,grace:'15%'}
         },
         onClick:(e,els)=>{
           if(els.length>0){
-            const clickedM=months[els[0].index];
-            p1ClickedMonth=p1ClickedMonth===clickedM?null:clickedM;
+            const mi=months[els[0].index];
+            // 전체 모드에서 신차/재렌트 구분 클릭
+            if(isAll){
+              const di=els[0].datasetIndex; // 0=신차, 1=재렌트
+              p1ClickedMonth=p1ClickedMonth===mi&&p1ClickedDetail===(di===0?'shin':'re')?null:mi;
+              p1ClickedDetail=di===0?'shin':'re';
+            } else {
+              p1ClickedMonth=p1ClickedMonth===mi?null:mi;
+              p1ClickedDetail=p1CarMode;
+            }
             renderP1();
           }
-        },
-        animation:{onComplete:function(){
-          // 막대 위에 숫자 직접 그리기
-          const ctx=this.ctx;
-          ctx.font='bold 12px Noto Sans KR, sans-serif';
-          ctx.fillStyle='#555';
-          ctx.textAlign='center';
-          ctx.textBaseline='bottom';
-          this.data.datasets.forEach((dataset,di)=>{
-            this.getDatasetMeta(di).data.forEach((bar,i)=>{
-              const val=dataset.data[i];
-              if(val>0)ctx.fillText(val,bar.x,bar.y-3);
-            });
-          });
-        }}
+        }
       }
     });
+
+    // 막대 위 숫자 플러그인 (항상 표시 - 호버 무관)
+    const p1LabelPlugin={
+      id:'p1Labels',
+      afterDatasetsDraw(chart){
+        const ctx=chart.ctx;
+        chart.data.datasets.forEach((dataset,di)=>{
+          const meta=chart.getDatasetMeta(di);
+          if(meta.hidden)return;
+          meta.data.forEach((bar,i)=>{
+            const val=dataset.data[i];
+            if(!val)return;
+            ctx.save();
+            ctx.font='bold 11px sans-serif';
+            ctx.fillStyle='#444';
+            ctx.textAlign='center';
+            ctx.textBaseline='bottom';
+            ctx.fillText(val,bar.x,bar.y-4);
+            ctx.restore();
+          });
+        });
+      }
+    };
+    charts['p1_month'].options.plugins={...charts['p1_month'].options.plugins};
+    Chart.register(p1LabelPlugin);
+    charts['p1_month'].update();
   }
 }
 
