@@ -883,6 +883,7 @@ function renderP1(){
     {label:'신차',data:months.map(m=>shinByM[m]||0),backgroundColor:'#6C63FF',borderRadius:4,borderSkipped:false},
     {label:'재렌트',data:months.map(m=>reByM[m]||0),backgroundColor:'#22c997',borderRadius:4,borderSkipped:false},
   ]:[{
+    label:p1CarMode==='shin'?'신차':'재렌트',
     data:months.map(m=>p1CarMode==='shin'?shinByM[m]||0:reByM[m]||0),
     backgroundColor:months.map(m=>m===p1ClickedMonth?'#FF6B6B':'#6C63FF'),
     borderRadius:4,borderSkipped:false
@@ -962,7 +963,7 @@ function renderP1(){
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{
-          legend:{display:isAll,position:'bottom',labels:{font:{size:11},usePointStyle:true}},
+          legend:{display:isAll,position:'bottom',labels:{font:{size:11},boxWidth:12,boxHeight:12}},
           tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label||''}${ctx.raw}건`}},
         },
         scales:{
