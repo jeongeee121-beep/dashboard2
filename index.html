@@ -798,26 +798,42 @@ let p1DetailMode='fuel';
 function extractTrim(modelName){
   if(!modelName)return'기타';
   const s=modelName.toString().trim();
+
+  // 포터/봉고 등 캡 타입 처리 (슈퍼캡/더블캡 + 트림)
+  const capMatch=s.match(/(슈퍼캡|더블캡|싱글캡)/);
+  const capType=capMatch?capMatch[1]:null;
+
   // 트림 키워드 목록 (긴 것부터 매칭)
   const trimKeywords=[
     '더 에센셜','디 에센셜','디에센셜',
-    '캘리그라피','노블레스','프레스티지','익스클루시브','프리미엄',
+    '캘리그라피','노블레스','프레스티지','익스클루시브',
     '스마트 플러스','스마트플러스',
-    '스마트','모던','스타일','프리미엄 플러스',
+    '프리미엄 플러스','프리미엄',
+    '스마트','모던','스타일',
     '인스퍼레이션','시그니처','익스프레스','어드밴스드',
     '투어링','르블랑','퍼스트','하이라이프',
     '스탠다드','베이직','라이트','엔트리',
     'Luxury','Premium','Modern','Smart','Style',
-    'N Line','N 라인','AWD',
+    'N Line','N 라인',
   ];
+
+  let trimName='';
   for(const kw of trimKeywords){
-    if(s.includes(kw))return kw;
+    if(s.includes(kw)){trimName=kw;break;}
   }
-  // 배기량 패턴 뒤 단어 추출 (예: 1.6 모던, 2.0 프레스티지)
-  const m=s.match(/[\d.]+\s+([가-힣a-zA-Z\s]+?)(?:\s+\d{4}|\s*$)/);
-  if(m&&m[1]&&m[1].trim().length>1&&!m[1].trim().match(/^[가-힣]{1,2}$/)){
-    return m[1].trim().split(' ')[0];
+
+  // 배기량 패턴 뒤 단어로 트림 추출 (예: 1.6 모던)
+  if(!trimName){
+    const m=s.match(/\d+\.\d+\s+([가-힣]{2,6})/);
+    if(m&&m[1]&&!['가솔린','디젤','LPG','하이브리드','전기'].includes(m[1])){
+      trimName=m[1];
+    }
   }
+
+  // 캡 타입 있으면 조합
+  if(capType&&trimName)return capType+' - '+trimName;
+  if(capType)return capType;
+  if(trimName)return trimName;
   return'기타';
 }
 
@@ -988,27 +1004,46 @@ function renderP1(){
       }
     });
 
-    // 막대 위 숫자 표시 (animation complete 후)
-    setTimeout(()=>{
-      const c=charts['p1_month'];
-      if(!c)return;
-      const ctx=c.ctx;
-      c.data.datasets.forEach((ds,di)=>{
-        const meta=c.getDatasetMeta(di);
-        if(meta.hidden)return;
-        meta.data.forEach((bar,i)=>{
-          const val=ds.data[i];
-          if(!val)return;
-          ctx.save();
-          ctx.font='bold 11px sans-serif';
-          ctx.fillStyle='#444';
-          ctx.textAlign='center';
-          ctx.textBaseline='bottom';
-          ctx.fillText(val,bar.x,bar.y-4);
-          ctx.restore();
+    // 막대 위 숫자: animation 완료 후 그리기
+    charts['p1_month'].options.animation={
+      onComplete:function(){
+        const c=this;const ctx=c.ctx;
+        c.data.datasets.forEach((ds,di)=>{
+          const meta=c.getDatasetMeta(di);
+          if(meta.hidden)return;
+          meta.data.forEach((bar,i)=>{
+            const val=ds.data[i];
+            if(!val)return;
+            ctx.save();
+            ctx.font='bold 11px sans-serif';
+            ctx.fillStyle='#333';
+            ctx.textAlign='center';
+            ctx.textBaseline='bottom';
+            ctx.fillText(val,bar.x,bar.y-4);
+            ctx.restore();
+          });
         });
-      });
-    },350);
+      },
+      onProgress:function(){
+        const c=this;const ctx=c.ctx;
+        c.data.datasets.forEach((ds,di)=>{
+          const meta=c.getDatasetMeta(di);
+          if(meta.hidden)return;
+          meta.data.forEach((bar,i)=>{
+            const val=ds.data[i];
+            if(!val)return;
+            ctx.save();
+            ctx.font='bold 11px sans-serif';
+            ctx.fillStyle='#333';
+            ctx.textAlign='center';
+            ctx.textBaseline='bottom';
+            ctx.fillText(val,bar.x,bar.y-4);
+            ctx.restore();
+          });
+        });
+      }
+    };
+    charts['p1_month'].update();
   }
 }
 
