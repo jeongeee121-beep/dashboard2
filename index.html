@@ -790,7 +790,35 @@ function getPrevYearRows(rows,iDate){
 // ===================== P1: 차량별 현황 =====================
 let p1CarMode='shin';
 let p1SelectedCar=null;
-let p1ClickedMonth=null; // 클릭된 월
+let p1ClickedMonth=null;
+let p1DetailMode='fuel';
+
+// 트림명 추출 함수
+function extractTrim(modelName){
+  if(!modelName)return'기타';
+  const s=modelName.toString().trim();
+  // 트림 키워드 목록 (긴 것부터 매칭)
+  const trimKeywords=[
+    '더 에센셜','디 에센셜','디에센셜',
+    '캘리그라피','노블레스','프레스티지','익스클루시브','프리미엄',
+    '스마트 플러스','스마트플러스',
+    '스마트','모던','스타일','프리미엄 플러스',
+    '인스퍼레이션','시그니처','익스프레스','어드밴스드',
+    '투어링','르블랑','퍼스트','하이라이프',
+    '스탠다드','베이직','라이트','엔트리',
+    'Luxury','Premium','Modern','Smart','Style',
+    'N Line','N 라인','AWD',
+  ];
+  for(const kw of trimKeywords){
+    if(s.includes(kw))return kw;
+  }
+  // 배기량 패턴 뒤 단어 추출 (예: 1.6 모던, 2.0 프레스티지)
+  const m=s.match(/[\d.]+\s+([가-힣a-zA-Z\s]+?)(?:\s+\d{4}|\s*$)/);
+  if(m&&m[1]&&m[1].trim().length>1&&!m[1].trim().match(/^[가-힣]{1,2}$/)){
+    return m[1].trim().split(' ')[0];
+  }
+  return'기타';
+}
 
 function renderP1(){
   if(!rawTable)return;
@@ -801,70 +829,62 @@ function renderP1(){
   const iFuelIdx=cols.findIndex(c=>c&&c.includes('유종'));
   const iTrimIdx=cols.findIndex(c=>c&&(c.includes('모델명')||c.includes('옵션')));
 
-  // 년도 기준 (월별 선택 없음)
   const yr=document.getElementById('yearSel')?.value||new Date().getFullYear().toString();
-
-  // 전체 데이터에서 해당 년도 행
   const yearRows=rows.filter(r=>getYM(r[iDate])?.startsWith(yr));
 
-  // 신차/재렌트/전체 필터
-  const modeRows=p1CarMode==='shin'
-    ? yearRows.filter(r=>(r[iProd]||'').includes('신차'))
-    : p1CarMode==='re'
-    ? yearRows.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');})
-    : yearRows;
+  const shinRows=yearRows.filter(r=>(r[iProd]||'').includes('신차'));
+  const reRows=yearRows.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');});
+  const modeRows=p1CarMode==='shin'?shinRows:p1CarMode==='re'?reRows:yearRows;
 
-  // 차종별 집계 (많이 팔린 순) - modeRows 기준
   const carMap=iCarIdx>=0?countMap(modeRows,r=>(r[iCarIdx]||'미확인').toString().trim()):{};
   const carSorted=Object.entries(carMap).sort((a,b)=>b[1]-a[1]);
-
-  // 초기 선택 차종
-  if(!p1SelectedCar&&carSorted.length>0) p1SelectedCar=carSorted[0][0];
-
-  // 좌측 차종 목록 업데이트
-  const carListEl=document.getElementById('p1_car_list_inner');
-  if(carListEl){
-    carListEl.innerHTML=carSorted.map(([car,cnt])=>`
-      <div onclick="selectCar('${car.replace(/'/g,"\'")}')"
-        style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #f8f8fc;display:flex;justify-content:space-between;align-items:center;background:${p1SelectedCar===car?'#6C63FF':''};"
-        class="car-item" data-car="${car}">
-        <span style="font-size:13px;font-weight:${p1SelectedCar===car?'700':'400'};color:${p1SelectedCar===car?'#fff':'#333'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;">${car}</span>
-        <span style="font-size:11px;color:${p1SelectedCar===car?'rgba(255,255,255,0.8)':'#aaa'};flex-shrink:0;margin-left:4px;">${cnt}</span>
-      </div>`).join('');
-  }
+  if(!p1SelectedCar&&carSorted.length>0)p1SelectedCar=carSorted[0][0];
 
   // 선택 차종 데이터
   const carRows=p1SelectedCar
     ? modeRows.filter(r=>(r[iCarIdx]||'').toString().trim()===p1SelectedCar)
     : modeRows;
+  const carShinRows=p1SelectedCar
+    ? shinRows.filter(r=>(r[iCarIdx]||'').toString().trim()===p1SelectedCar)
+    : shinRows;
+  const carReRows=p1SelectedCar
+    ? reRows.filter(r=>(r[iCarIdx]||'').toString().trim()===p1SelectedCar)
+    : reRows;
 
-  // 해당 년도 모든 월 (데이터 있는 것)
+  // 월 목록
   const now=new Date();
   const availMonths=[...new Set(
     rows.filter(r=>getYM(r[iDate])?.startsWith(yr)).map(r=>getYM(r[iDate])).filter(Boolean)
   )].sort();
   const months=availMonths.length>0?availMonths:
-    (()=>{const end=yr===now.getFullYear().toString()?now.getMonth()+1:12;
-     return Array.from({length:end},(_,i)=>`${yr}.${String(i+1).padStart(2,'0')}`);})();
+    Array.from({length:yr===now.getFullYear().toString()?now.getMonth()+1:12},
+      (_,i)=>`${yr}.${String(i+1).padStart(2,'0')}`);
 
   // 월별 건수
-  const monthMap={};
-  months.forEach(m=>monthMap[m]=0);
-  carRows.forEach(r=>{const m=getYM(r[iDate]);if(m&&monthMap.hasOwnProperty(m))monthMap[m]++;});
+  const shinByM={},reByM={},totalByM={};
+  months.forEach(m=>{shinByM[m]=0;reByM[m]=0;totalByM[m]=0;});
+  carShinRows.forEach(r=>{const m=getYM(r[iDate]);if(m&&shinByM.hasOwnProperty(m))shinByM[m]++;});
+  carReRows.forEach(r=>{const m=getYM(r[iDate]);if(m&&reByM.hasOwnProperty(m))reByM[m]++;});
+  months.forEach(m=>totalByM[m]=(shinByM[m]||0)+(reByM[m]||0));
 
-  // 클릭된 월 상세 데이터
-  const clickedRows=p1ClickedMonth
-    ? carRows.filter(r=>getYM(r[iDate])===p1ClickedMonth)
-    : [];
+  // 클릭된 월 상세
+  const clickedRows=p1ClickedMonth?carRows.filter(r=>getYM(r[iDate])===p1ClickedMonth):[];
   const fuelMap=iFuelIdx>=0?countMap(clickedRows,r=>(r[iFuelIdx]||'미확인').toString().trim()):{};
-  const trimMap=iTrimIdx>=0?countMap(clickedRows,r=>{
-    const t=(r[iTrimIdx]||'').toString().trim();
-    return t.slice(0,15)||'기타';
-  }):{};
+  const trimMap=iTrimIdx>=0?countMap(clickedRows,r=>extractTrim(r[iTrimIdx])):{};
+
+  // 차트 데이터
+  const isAll=p1CarMode==='all';
+  const chartDatasets=isAll?[
+    {label:'신차',data:months.map(m=>shinByM[m]||0),backgroundColor:'#6C63FF',borderRadius:4,borderSkipped:false},
+    {label:'재렌트',data:months.map(m=>reByM[m]||0),backgroundColor:'#22c997',borderRadius:4,borderSkipped:false},
+  ]:[{
+    data:months.map(m=>p1CarMode==='shin'?shinByM[m]||0:reByM[m]||0),
+    backgroundColor:months.map(m=>m===p1ClickedMonth?'#FF6B6B':'#6C63FF'),
+    borderRadius:4,borderSkipped:false
+  }];
 
   document.getElementById('p1_content').innerHTML=`
     <div style="display:flex;height:calc(100vh - 170px);min-height:500px;">
-
       <!-- 좌측 차종 목록 -->
       <div style="width:150px;flex-shrink:0;background:#fff;border-right:1px solid #ebebf5;overflow-y:auto;display:flex;flex-direction:column;">
         <div style="padding:8px;border-bottom:1px solid #f0f0f8;position:sticky;top:0;background:#fff;z-index:1;">
@@ -873,7 +893,7 @@ function renderP1(){
         </div>
         <div id="p1_car_list_inner">
           ${carSorted.map(([car,cnt])=>`
-            <div onclick="selectCar('${car.replace(/'/g,"\'")}',this)"
+            <div onclick="selectCar('${car.replace(/'/g,"\'")}')"
               style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #f8f8fc;display:flex;justify-content:space-between;align-items:center;background:${p1SelectedCar===car?'#6C63FF':''};"
               class="car-item" data-car="${car}">
               <span style="font-size:13px;font-weight:${p1SelectedCar===car?'700':'400'};color:${p1SelectedCar===car?'#fff':'#333'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${car}</span>
@@ -884,78 +904,62 @@ function renderP1(){
 
       <!-- 우측 메인 -->
       <div style="flex:1;overflow-y:auto;padding:0 20px 20px;">
-
-        <!-- 헤더 -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0;flex-wrap:wrap;gap:10px;">
           <div>
             <div style="font-size:20px;font-weight:700;">${p1SelectedCar||'전체'}</div>
             <div style="font-size:12px;color:#aaa;margin-top:2px;">${yr}년 기준 · ${carRows.length}건</div>
           </div>
           <div style="display:flex;background:#f0f0f8;border-radius:8px;padding:3px;gap:2px;">
-            <button onclick="setP1Mode('shin')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:${p1CarMode==='shin'?'#fff':'transparent'};color:${p1CarMode==='shin'?'#6C63FF':'#888'};box-shadow:${p1CarMode==='shin'?'0 1px 4px rgba(0,0,0,0.1)':'none'};">신차</button>
-            <button onclick="setP1Mode('re')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:${p1CarMode==='re'?'#fff':'transparent'};color:${p1CarMode==='re'?'#6C63FF':'#888'};box-shadow:${p1CarMode==='re'?'0 1px 4px rgba(0,0,0,0.1)':'none'};">재렌트</button>
-            <button onclick="setP1Mode('all')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:${p1CarMode==='all'?'#fff':'transparent'};color:${p1CarMode==='all'?'#6C63FF':'#888'};box-shadow:${p1CarMode==='all'?'0 1px 4px rgba(0,0,0,0.1)':'none'};">전체</button>
+            ${['shin','re','all'].map(m=>`<button onclick="setP1Mode('${m}')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:${p1CarMode===m?'#fff':'transparent'};color:${p1CarMode===m?'#6C63FF':'#888'};box-shadow:${p1CarMode===m?'0 1px 4px rgba(0,0,0,0.1)':'none'};">${m==='shin'?'신차':m==='re'?'재렌트':'전체'}</button>`).join('')}
           </div>
         </div>
 
-        <!-- 월별 막대 차트 - 클릭하면 상세 -->
+        <!-- 월별 막대 차트 -->
         <div class="card" style="margin-bottom:16px;">
           <div class="card-header">
             <span class="card-title">${yr}년 월별 현황</span>
-            <span style="font-size:12px;color:#aaa;">막대 클릭 → 상세보기</span>
+            <span style="font-size:12px;color:#aaa;">막대 클릭 → 유종/트림 상세</span>
           </div>
-          <div style="position:relative;height:220px;"><canvas id="p1_month_chart"></canvas></div>
+          <div style="position:relative;height:240px;"><canvas id="p1_month_chart"></canvas></div>
         </div>
 
-        <!-- 상세 패널 (클릭 시 표시) -->
+        <!-- 상세 패널 -->
         <div id="p1_detail_panel" style="display:${p1ClickedMonth?'block':'none'};">
           <div class="card" style="margin-bottom:16px;">
             <div class="card-header">
               <div style="display:flex;align-items:center;gap:10px;">
-                <span style="font-size:15px;font-weight:700;">${p1ClickedMonth?parseInt(p1ClickedMonth.split('.')[1])+'월 상세':''}
-                </span>
+                <span style="font-size:15px;font-weight:700;">${p1ClickedMonth?parseInt(p1ClickedMonth.split('.')[1])+'월 상세':''}</span>
                 <div style="display:flex;gap:6px;">
                   <button onclick="setP1Detail('fuel')" id="p1_fuel_btn"
-                    style="padding:5px 12px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid #6C63FF;background:#6C63FF;color:#fff;">유종별</button>
+                    style="padding:5px 12px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid ${p1DetailMode==='fuel'?'#6C63FF':'#e0e0ee'};background:${p1DetailMode==='fuel'?'#6C63FF':'#fff'};color:${p1DetailMode==='fuel'?'#fff':'#888'};">유종별</button>
                   <button onclick="setP1Detail('trim')" id="p1_trim_btn"
-                    style="padding:5px 12px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid #e0e0ee;background:#fff;color:#888;">트림별</button>
+                    style="padding:5px 12px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid ${p1DetailMode==='trim'?'#6C63FF':'#e0e0ee'};background:${p1DetailMode==='trim'?'#6C63FF':'#fff'};color:${p1DetailMode==='trim'?'#fff':'#888'};">트림별</button>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:8px;">
                 <span class="card-badge">${clickedRows.length}건</span>
-                <button onclick="p1ClickedMonth=null;renderP1();"
-                  style="padding:4px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid #e0e0ee;background:#fff;color:#888;">✕ 닫기</button>
+                <button onclick="p1ClickedMonth=null;renderP1();" style="padding:4px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid #e0e0ee;background:#fff;color:#888;">✕ 닫기</button>
               </div>
             </div>
-            <div id="p1_detail_bar">
-              ${renderP1DetailBarHTML(p1DetailMode==='trim'?trimMap:fuelMap)}
-            </div>
+            <div id="p1_detail_bar">${renderP1DetailBarHTML(p1DetailMode==='trim'?trimMap:fuelMap)}</div>
           </div>
         </div>
-
       </div>
     </div>`;
 
-  // 월별 차트 (클릭 이벤트 포함)
+  // 차트 그리기
   const mc=document.getElementById('p1_month_chart');
   if(mc){
     if(charts['p1_month'])charts['p1_month'].destroy();
     charts['p1_month']=new Chart(mc.getContext('2d'),{
       type:'bar',
-      data:{
-        labels:months.map(m=>parseInt(m.split('.')[1])+'월'),
-        datasets:[{
-          data:months.map(m=>monthMap[m]||0),
-          backgroundColor:months.map(m=>m===p1ClickedMonth?'#FF6B6B':'#6C63FF'),
-          borderRadius:6,
-          borderSkipped:false
-        }]
-      },
+      data:{labels:months.map(m=>parseInt(m.split('.')[1])+'월'),datasets:chartDatasets},
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:ctx=>`${ctx.raw}건 (클릭하여 상세보기)`}}
+          legend:{display:isAll,position:'bottom',labels:{font:{size:11},usePointStyle:true}},
+          tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label||''}${ctx.raw}건`}},
+          datalabels:{display:false} // 기본 datalabels 끄고 직접 처리
         },
         scales:{
           x:{grid:{display:false},border:{display:false},ticks:{font:{size:12}}},
@@ -967,7 +971,21 @@ function renderP1(){
             p1ClickedMonth=p1ClickedMonth===clickedM?null:clickedM;
             renderP1();
           }
-        }
+        },
+        animation:{onComplete:function(){
+          // 막대 위에 숫자 직접 그리기
+          const ctx=this.ctx;
+          ctx.font='bold 12px Noto Sans KR, sans-serif';
+          ctx.fillStyle='#555';
+          ctx.textAlign='center';
+          ctx.textBaseline='bottom';
+          this.data.datasets.forEach((dataset,di)=>{
+            this.getDatasetMeta(di).data.forEach((bar,i)=>{
+              const val=dataset.data[i];
+              if(val>0)ctx.fillText(val,bar.x,bar.y-3);
+            });
+          });
+        }}
       }
     });
   }
@@ -990,12 +1008,8 @@ function renderP1DetailBarHTML(dataMap){
     </div>`).join('');
 }
 
-let p1DetailMode='fuel';
-
-function setP1Mode(mode){p1CarMode=mode;p1ClickedMonth=null;renderP1();}
-
+function setP1Mode(mode){p1CarMode=mode;p1ClickedMonth=null;p1SelectedCar=null;renderP1();}
 function selectCar(car){p1SelectedCar=car;p1ClickedMonth=null;renderP1();}
-
 function filterCarList(q){
   q=(q||'').toLowerCase();
   document.querySelectorAll('.car-item').forEach(el=>{
@@ -1003,13 +1017,8 @@ function filterCarList(q){
     el.style.display=car.toLowerCase().includes(q)?'flex':'none';
   });
 }
-
 function setP1Detail(mode){
   p1DetailMode=mode;
-  const fuelBtn=document.getElementById('p1_fuel_btn');
-  const trimBtn=document.getElementById('p1_trim_btn');
-  if(fuelBtn){fuelBtn.style.background=mode==='fuel'?'#6C63FF':'#fff';fuelBtn.style.color=mode==='fuel'?'#fff':'#888';fuelBtn.style.borderColor=mode==='fuel'?'#6C63FF':'#e0e0ee';}
-  if(trimBtn){trimBtn.style.background=mode==='trim'?'#6C63FF':'#fff';trimBtn.style.color=mode==='trim'?'#fff':'#888';trimBtn.style.borderColor=mode==='trim'?'#6C63FF':'#e0e0ee';}
   renderP1();
 }
 
