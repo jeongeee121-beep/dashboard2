@@ -234,7 +234,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 <!-- SHEET TABS -->
 <div class="sheet-tabs" id="sheetTabs">
   <button class="sheet-tab active" onclick="switchTab(0)" id="tab0">상품별 현황</button>
-  <button class="sheet-tab" onclick="switchTab(1)" id="tab1">차량별 현황</button>
+  <button class="sheet-tab" onclick="switchTab(1)" id="tab1">차종별 현황</button>
   <button class="sheet-tab" onclick="switchTab(2)" id="tab2">판매채널별 현황</button>
   <button class="sheet-tab" onclick="switchTab(3)" id="tab3">수행자별 현황</button>
 </div>
@@ -776,13 +776,12 @@ function buildInsights(filtered,shincha,rerent,prevTotal,prevShin,prevRe,shinTyp
 
 
 function getPrevYearRows(rows,iDate){
-  const now=new Date();
-  const curY=selYear||now.getFullYear().toString();
+  const curY=document.getElementById('yearSel')?.value||new Date().getFullYear().toString();
   const prevY=String(parseInt(curY)-1);
-  if(viewMode==='month'){
-    const mo=document.getElementById('monthSel')?.value||'';
-    if(mo){const pm=prevY+'.'+mo.split('.')[1];return rows.filter(r=>getYM(r[iDate])===pm);}
-    return rows.filter(r=>getYM(r[iDate])?.startsWith(prevY));
+  const mo=document.getElementById('monthSel')?.value||'';
+  if(viewMode==='month'&&mo){
+    const pm=prevY+'.'+mo.split('.')[1];
+    return rows.filter(r=>getYM(r[iDate])===pm);
   }
   return rows.filter(r=>getYM(r[iDate])?.startsWith(prevY));
 }
@@ -848,6 +847,7 @@ function renderP1(){
   const iFuelIdx=cols.findIndex(c=>c&&c.includes('유종'));
   const iTrimIdx=cols.findIndex(c=>c&&(c.includes('모델명')||c.includes('옵션')));
 
+  // 차종별 현황은 항상 년도별 (월별 선택 없음)
   const yr=document.getElementById('yearSel')?.value||new Date().getFullYear().toString();
   const yearRows=rows.filter(r=>getYM(r[iDate])?.startsWith(yr));
 
@@ -941,7 +941,7 @@ function renderP1(){
         <!-- 월별 막대 차트 -->
         <div class="card" style="margin-bottom:16px;">
           <div class="card-header">
-            <span class="card-title">${yr}년 월별 현황</span>
+            <span class="card-title">${yr}년 월별 출고 현황</span>
             <span style="font-size:12px;color:#aaa;">막대 클릭 → 유종/트림 상세</span>
           </div>
           <div style="position:relative;height:240px;"><canvas id="p1_month_chart"></canvas></div>
