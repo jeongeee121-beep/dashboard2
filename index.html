@@ -1370,31 +1370,29 @@ function renderTakso(){
   const rows=rawTaksoTable.rows.map(r=>r.c.map(c=>c?c.v:null));
   const idx=n=>cols.findIndex(c=>c&&c.includes(n));
 
-  // 컬럼 인덱스
-  const iDate=idx('요청일시');   // D열 - 희망일자(출고일)
-  const iWorker=idx('수행자');   // F열
-  const iProd=idx('상품명');     // K열
-  const iType=idx('신차구분');   // M열 - 신차/재렌트
-  const iCar=idx('차종');        // N열
-
-  // 희망일자(U열) 따로 찾기
+  const iWorker=idx('수행자');
+  const iProd=idx('상품명');
+  const iType=idx('신차구분');
+  const iCar=idx('차종');
   const iHope=cols.findIndex(c=>c&&(c.includes('희망일자')||c.includes('희망')));
-  const iDateFinal = iHope >= 0 ? iHope : iDate;
+  const iDateFallback=idx('요청일시');
+  const iDateFinal=iHope>=0?iHope:iDateFallback;
 
-  // 금월 필터
   const tYr=document.getElementById('takso_year_sel')?.value||new Date().getFullYear().toString();
   const tMo=document.getElementById('takso_month_sel')?.value||'';
-  const filteredAll = tMo
+  const allFiltered=tMo
     ? rows.filter(r=>getYM(r[iDateFinal])===tMo)
     : rows.filter(r=>getYM(r[iDateFinal])?.startsWith(tYr));
   const displayLabel=tMo
     ? (tMo.split('.')[0]+'년 '+parseInt(tMo.split('.')[1])+'월')
     : (tYr+'년 전체');
-  const vehicleChange=filteredAll.filter(r=>mapTaksoWorker(r[iWorker])==='특이건');
-  const filtered=filteredAll.filter(r=>mapTaksoWorker(r[iWorker])!=='특이건');
-  const vcNote=vehicleChange.length?` <span style="font-size:10px;color:#bbb;font-weight:400;">* 차량교체 ${vehicleChange.length}건</span>`:'';
+
+  const isSpecial=r=>mapTaksoWorker(r[iWorker])==='특이건';
+  const specialRows=allFiltered.filter(isSpecial);
+  const filtered=allFiltered.filter(r=>!isSpecial(r));
   const shincha=filtered.filter(r=>(r[iType]||'').toString().includes('신차'));
   const rerent=filtered.filter(r=>{const v=(r[iType]||'').toString();return v.includes('재렌트')||v.includes('재');});
+  const specialCount=specialRows.length;
 
   const prodMap=iProd>=0?countMap(filtered,r=>(r[iProd]||'기타').toString().trim()):{};
   const shinProdMap=iProd>=0?countMap(shincha,r=>(r[iProd]||'기타').toString().trim()):{};
@@ -1402,9 +1400,19 @@ function renderTakso(){
   const carMap=iCar>=0?countMap(filtered,r=>(r[iCar]||'미확인').toString().trim()):{};
   const shinCarMap=iCar>=0?countMap(shincha,r=>(r[iCar]||'미확인').toString().trim()):{};
   const reCarMap=iCar>=0?countMap(rerent,r=>(r[iCar]||'미확인').toString().trim()):{};
-  const workerMap=iWorker>=0?countMap(filtered,r=>mapTaksoWorker(r[iWorker])):{};
-  const shinWorkerMap=iWorker>=0?countMap(shincha,r=>mapTaksoWorker(r[iWorker])):{};
-  const reWorkerMap=iWorker>=0?countMap(rerent,r=>mapTaksoWorker(r[iWorker])):{};
+
+  // 수행자별 집계
+  const workerStats={};
+  filtered.forEach(r=>{
+    const w=mapTaksoWorker(r[iWorker]);
+    if(!workerStats[w])workerStats[w]={total:0,shin:0,re:0};
+    workerStats[w].total++;
+    if((r[iType]||'').toString().includes('신차'))workerStats[w].shin++;
+    else if((r[iType]||'').toString().includes('재렌트')||(r[iType]||'').toString().includes('재'))workerStats[w].re++;
+  });
+  const workerSorted=Object.entries(workerStats).sort((a,b)=>b[1].total-a[1].total);
+  const workerMaxTotal=workerSorted[0]?.[1]?.total||1;
+  const workerMap={};workerSorted.forEach(([k,v])=>workerMap[k]=v.total);
 
   document.getElementById('p0_content').innerHTML=`
     <div style="text-align:center;padding:6px 0 20px;color:#888;font-size:13px;">📦 탁송 출고 현황 · ${displayLabel} 기준</div>
@@ -1413,91 +1421,142 @@ function renderTakso(){
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;">
       <div class="sum-card" style="border-left:4px solid #6C63FF;">
         <div class="sum-label">총 탁송 출고</div>
-        <div class="sum-value">${filtered.length.toLocaleString()}<span style="font-size:16px;color:#aaa;"> 건</span></div>
-        ${vcNote?`<div style="margin-top:2px;">${vcNote}</div>`:''}
+        <div class="sum-value">${filtered.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
+        ${specialCount>0?`<div style="font-size:11px;color:#bbb;margin-top:4px;">* 차량교체 ${specialCount}건 제외</div>`:''}
       </div>
-      <div class="sum-card" style="border-left:4px solid #22c997;">
+      <div class="sum-card" style="border-left:4px solid #6C63FF;">
         <div class="sum-label">신차</div>
         <div class="sum-value" style="color:#6C63FF;">${shincha.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
       </div>
-      <div class="sum-card" style="border-left:4px solid #FF6B6B;">
+      <div class="sum-card" style="border-left:4px solid #22c997;">
         <div class="sum-label">재렌트</div>
         <div class="sum-value" style="color:#22c997;">${rerent.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
-        ${vcNote?`<div style="margin-top:2px;">${vcNote}</div>`:''}
+        ${specialCount>0?`<div style="font-size:11px;color:#bbb;margin-top:4px;">* 차량교체 ${specialCount}건</div>`:''}
       </div>
     </div>
 
-    <!-- 상품별 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+    <!-- 상품별 도넛 3개 -->
+    <div class="section-title-mini" style="margin-bottom:12px;">상품별 현황</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
       <div class="card">
         <div class="card-header"><span class="card-title">상품별 전체</span><span class="card-badge">${filtered.length}건</span></div>
-        <div class="donut-wrap">
-          <div class="donut-canvas-wrap"><canvas id="t_donut_prod"></canvas>
-            <div class="donut-center"><div class="donut-center-val">${filtered.length}</div><div class="donut-center-label">전체</div></div>
-          </div>
-          <div class="donut-legend" id="t_legend_prod"></div>
-        </div>
+        <div class="donut-wrap"><div class="donut-canvas-wrap"><canvas id="t_donut_prod_all"></canvas><div class="donut-center"><div class="donut-center-val">${filtered.length}</div><div class="donut-center-label">전체</div></div></div><div class="donut-legend" id="t_legend_prod_all"></div></div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">신차 상품별</span><span class="card-badge">${shincha.length}건</span></div>
-        <div class="donut-wrap">
-          <div class="donut-canvas-wrap"><canvas id="t_donut_shin_prod"></canvas>
-            <div class="donut-center"><div class="donut-center-val">${shincha.length}</div><div class="donut-center-label">신차</div></div>
-          </div>
-          <div class="donut-legend" id="t_legend_shin_prod"></div>
-        </div>
+        <div class="donut-wrap"><div class="donut-canvas-wrap"><canvas id="t_donut_prod_shin"></canvas><div class="donut-center"><div class="donut-center-val">${shincha.length}</div><div class="donut-center-label">신차</div></div></div><div class="donut-legend" id="t_legend_prod_shin"></div></div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">재렌트 상품별</span><span class="card-badge">${rerent.length}건</span>${vcNote}</div>
-        <div class="donut-wrap">
-          <div class="donut-canvas-wrap"><canvas id="t_donut_re_prod"></canvas>
-            <div class="donut-center"><div class="donut-center-val">${rerent.length}</div><div class="donut-center-label">재렌트</div></div>
-          </div>
-          <div class="donut-legend" id="t_legend_re_prod"></div>
-        </div>
+        <div class="card-header"><span class="card-title">재렌트 상품별</span><span class="card-badge">${rerent.length}건</span></div>
+        <div class="donut-wrap"><div class="donut-canvas-wrap"><canvas id="t_donut_prod_re"></canvas><div class="donut-center"><div class="donut-center-val">${rerent.length}</div><div class="donut-center-label">재렌트</div></div></div><div class="donut-legend" id="t_legend_prod_re"></div></div>
       </div>
     </div>
 
-    <!-- 수행자별 -->
-    <div class="card" style="margin-bottom:16px;">
-      <div class="card-header"><span class="card-title">수행자별 전체</span><span class="card-badge">${filtered.length}건</span></div>
-      <div class="donut-wrap" style="margin-bottom:18px;">
-        <div class="donut-canvas-wrap"><canvas id="t_donut_worker"></canvas>
-          <div class="donut-center"><div class="donut-center-val">${filtered.length}</div><div class="donut-center-label">전체</div></div>
-        </div>
+    <!-- 수행자별: 도넛+상위7명 기본 표시 / 상세 테이블 접기 -->
+    <div class="section-title-mini" style="margin-bottom:12px;">수행자별 현황</div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><span class="card-title">수행자별 전체</span><span class="card-badge">전체 ${filtered.length}건</span></div>
+      <!-- 도넛 + 상위 7명 레전드 (항상 표시) -->
+      <div class="donut-wrap" style="margin-bottom:16px;">
+        <div class="donut-canvas-wrap"><canvas id="t_donut_worker"></canvas><div class="donut-center"><div class="donut-center-val">${filtered.length}</div><div class="donut-center-label">전체</div></div></div>
         <div class="donut-legend" id="t_legend_worker"></div>
       </div>
-      <div style="border-top:1px solid #f0f0f8;padding-top:14px;">
-        <div id="t_worker_bars"></div>
+      <!-- 상세 테이블 토글 -->
+      <button onclick="toggleTaksoWorkerDetail()" id="takso_worker_toggle"
+        style="width:100%;padding:8px;border:1px solid #e0e0ee;border-radius:8px;background:#f8f9fc;font-size:12px;font-family:inherit;cursor:pointer;color:#666;">
+        ▼ 수행자별 상세 보기
+      </button>
+      <div id="takso_worker_detail" style="display:none;margin-top:12px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="border-bottom:2px solid #f0f0f8;">
+            <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;width:36px;">순위</th>
+            <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;width:90px;">수행자</th>
+            <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;">건수</th>
+            <th style="text-align:right;padding:8px 10px;color:#999;font-weight:500;width:50px;">계</th>
+            <th style="text-align:right;padding:8px 10px;color:#999;font-weight:500;width:50px;">신차</th>
+            <th style="text-align:right;padding:8px 10px;color:#999;font-weight:500;width:50px;">재렌트</th>
+          </tr></thead>
+          <tbody>${workerSorted.map(([name,s],i)=>`
+            <tr style="border-bottom:1px solid #f5f5f8;">
+              <td style="padding:8px 10px;color:#aaa;">${i+1}</td>
+              <td style="padding:8px 10px;font-weight:600;">${name}</td>
+              <td style="padding:8px 10px;">
+                <div style="background:#f3f3f8;border-radius:5px;height:16px;overflow:hidden;">
+                  <div style="height:100%;border-radius:5px;background:${COLORS[i%COLORS.length]};width:${Math.round(s.total/workerMaxTotal*100)}%;"></div>
+                </div>
+              </td>
+              <td style="text-align:right;padding:8px 10px;font-weight:700;">${s.total}</td>
+              <td style="text-align:right;padding:8px 10px;color:#6C63FF;">${s.shin}</td>
+              <td style="text-align:right;padding:8px 10px;color:#22c997;">${s.re}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <!-- 차량별 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
-      <div class="card">
-        <div class="card-header"><span class="card-title">차종별 전체</span><span class="card-badge">${filtered.length}건</span></div>
-        <div id="t_car_bar"></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">신차 차종별</span><span class="card-badge">${shincha.length}건</span></div>
-        <div id="t_shin_car_bar"></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">재렌트 차종별</span><span class="card-badge">${rerent.length}건</span>${vcNote}</div>
-        <div id="t_re_car_bar"></div>
+    <!-- 차종별: 기본 숨김, ▼ 더보기 -->
+    <div class="section-title-mini" style="margin-bottom:12px;">차종별 현황</div>
+    <button onclick="toggleTaksoCarDetail()" id="takso_car_toggle"
+      style="width:100%;padding:10px;border:1px solid #e0e0ee;border-radius:10px;background:#f8f9fc;font-size:13px;font-family:inherit;cursor:pointer;color:#666;margin-bottom:12px;">
+      ▼ 차종별 상세 보기
+    </button>
+    <div id="takso_car_detail" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div class="card">
+          <div class="card-header"><span class="card-title">차종별 전체</span><span class="card-badge">${filtered.length}건</span></div>
+          <div id="t_car_bar"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">신차 차종별</span><span class="card-badge">${shincha.length}건</span></div>
+          <div id="t_shin_car_bar"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">재렌트 차종별</span><span class="card-badge">${rerent.length}건</span></div>
+          <div id="t_re_car_bar"></div>
+        </div>
       </div>
     </div>`;
 
-  // 차트 렌더
-  renderDonut('t_donut_prod','t_legend_prod',prodMap);
-  renderDonut('t_donut_shin_prod','t_legend_shin_prod',shinProdMap);
-  renderDonut('t_donut_re_prod','t_legend_re_prod',reProdMap);
-  renderBar('t_car_bar',carMap,8);
-  renderBar('t_shin_car_bar',shinCarMap,8);
-  renderBar('t_re_car_bar',reCarMap,8);
+  renderDonut('t_donut_prod_all','t_legend_prod_all',prodMap);
+  renderDonut('t_donut_prod_shin','t_legend_prod_shin',shinProdMap);
+  renderDonut('t_donut_prod_re','t_legend_prod_re',reProdMap);
   renderDonut('t_donut_worker','t_legend_worker',workerMap);
-  renderWorkerBars('t_worker_bars',workerMap,shinWorkerMap,reWorkerMap);
+
+  // 차종별은 펼쳐진 상태일 때만 렌더
+  if(document.getElementById('takso_car_detail')?.style.display!=='none'){
+    renderBar('t_car_bar',carMap,10);
+    renderBar('t_shin_car_bar',shinCarMap,10);
+    renderBar('t_re_car_bar',reCarMap,10);
+  }
+  // 토글 함수 - 펼칠 때 차종 바 렌더
+  window._taksoCarMap=carMap;
+  window._taksoShinCarMap=shinCarMap;
+  window._taksoReCarMap=reCarMap;
 }
+
+function toggleTaksoWorkerDetail(){
+  const el=document.getElementById('takso_worker_detail');
+  const btn=document.getElementById('takso_worker_toggle');
+  if(!el)return;
+  const show=el.style.display==='none';
+  el.style.display=show?'block':'none';
+  if(btn)btn.textContent=show?'▲ 수행자별 상세 접기':'▼ 수행자별 상세 보기';
+}
+
+function toggleTaksoCarDetail(){
+  const el=document.getElementById('takso_car_detail');
+  const btn=document.getElementById('takso_car_toggle');
+  if(!el)return;
+  const show=el.style.display==='none';
+  el.style.display=show?'block':'none';
+  if(btn)btn.textContent=show?'▲ 차종별 접기':'▼ 차종별 상세 보기';
+  if(show){
+    renderBar('t_car_bar',window._taksoCarMap||{},10);
+    renderBar('t_shin_car_bar',window._taksoShinCarMap||{},10);
+    renderBar('t_re_car_bar',window._taksoReCarMap||{},10);
+  }
+}
+
 
 // ===================== 공통 렌더 함수 =====================
 function renderDonut(canvasId,legendId,dataMap){
