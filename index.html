@@ -382,7 +382,19 @@ function setDataMode(mode){
 function switchTab(idx){
   currentTab=idx;
   [0,1,2,3].forEach(i=>{document.getElementById(`tab${i}`).classList.toggle('active',i===idx);document.getElementById(`panel${i}`).classList.toggle('active',i===idx);});
-  // 추세 비교 버튼은 0,1만
+  // 차종별 탭(1)은 월별/년도별 버튼 숨기고 년도만
+  const segEl=document.querySelector('.period-seg');
+  const sepEl=document.querySelector('.period-bar .period-sep');
+  const monthSel=document.getElementById('monthSel');
+  if(idx===1){
+    if(segEl)segEl.style.display='none';
+    if(sepEl)sepEl.style.display='none';
+    if(monthSel)monthSel.style.display='none';
+  } else {
+    if(segEl)segEl.style.display='flex';
+    if(sepEl)sepEl.style.display='block';
+    if(monthSel)monthSel.style.display=viewMode==='month'?'inline-block':'none';
+  }
   setTimeout(()=>renderCurrent(),30);
 }
 
