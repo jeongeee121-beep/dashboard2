@@ -810,11 +810,13 @@ function extractTrim(modelName){
   if(!modelName)return'기타';
   const s=modelName.toString().trim();
 
-  // 포터/봉고 등 캡 타입 처리 (슈퍼캡/더블캡 + 트림)
+  // 캡 타입 (포터/봉고)
   const capMatch=s.match(/(슈퍼캡|더블캡|싱글캡)/);
   const capType=capMatch?capMatch[1]:null;
 
-  // 트림 키워드 목록 (긴 것부터 매칭)
+  const exclude=['가솔린','디젤','LPG','하이브리드','전기','터보','가스','수소','천연','그래비티'];
+
+  // 트림 키워드 우선 매칭
   const trimKeywords=[
     '더 에센셜','디 에센셜','디에센셜',
     '캘리그라피','노블레스',
@@ -825,25 +827,23 @@ function extractTrim(modelName){
     '인스퍼레이션','익스프레스','어드밴스드',
     '투어링','르블랑','퍼스트','하이라이프',
     '스탠다드','베이직','라이트','엔트리',
-    'Luxury','Premium','Modern','Smart','Style',
     'N Line','N 라인',
   ];
-
   let trimName='';
-  for(const kw of trimKeywords){
-    if(s.includes(kw)){trimName=kw;break;}
-  }
+  for(const kw of trimKeywords){if(s.includes(kw)){trimName=kw;break;}}
 
-  // 배기량 패턴 뒤 단어로 트림 추출 (예: 1.6 모던)
+  // 못 찾으면 2WD/4WD 앞 한글 단어
   if(!trimName){
-    const m=s.match(/\d+\.\d+\s+([가-힣]{2,6})/);
-    const excludeWords=['가솔린','디젤','LPG','하이브리드','전기','터보','가스','수소','천연'];
-    if(m&&m[1]&&!excludeWords.includes(m[1])){
-      trimName=m[1];
-    }
+    const m=s.match(/([가-힣]{2,6})\s+(?:2WD|4WD|AWD)/);
+    if(m&&!exclude.includes(m[1]))trimName=m[1];
   }
 
-  // 캡 타입 있으면 조합
+  // 그래도 못 찾으면 괄호 뒤 첫 한글 단어
+  if(!trimName){
+    const m=s.match(/\)\s*([가-힣]{2,6})/);
+    if(m&&!exclude.includes(m[1]))trimName=m[1];
+  }
+
   if(capType&&trimName)return capType+' - '+trimName;
   if(capType)return capType;
   if(trimName)return trimName;
