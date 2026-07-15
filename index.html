@@ -197,24 +197,27 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
   <div class="topbar-left">
     <span class="app-title">판매지원팀 판매현황</span>
   </div>
-  <div class="topbar-right">
-    <span class="last-update" id="lastUpdate">데이터를 불러와 주세요</span>
+  <div class="topbar-right" style="display:flex;align-items:center;gap:14px;">
+    <span id="loadingMsg" style="font-size:12px;color:#aaa;font-style:italic;">잠시만 기다려주시면 데이터가 뜹니다 :)</span>
+    <span class="last-update" id="lastUpdate" style="display:none;"></span>
+    <button onclick="openNotice()" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid #6C63FF;background:#fff;color:#6C63FF;white-space:nowrap;">📢 공지 / 요청사항</button>
   </div>
 </div>
 
 <!-- CONNECT -->
-<div class="connect-bar">
+<div class="connect-bar" style="display:none;">
   <label>시트 ID</label>
   <input id="sheetId" value="14j3hDW3Hn-1ftkJlqZhEZhWTt38eZU8S4yMoadenrR4"/>
   <button class="btn-load" onclick="loadAll()">불러오기</button>
   <span id="statusMsg"></span>
-  <div id="dataModeBtns" style="display:none;margin-left:8px;">
-    <div style="display:flex;background:#f0f0f8;border-radius:8px;padding:3px;gap:2px;">
-      <button onclick="setDataMode('exec')" id="btn_exec"
-        style="padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:#6C63FF;color:#fff;transition:all 0.15s;">실행</button>
-      <button onclick="setDataMode('takso')" id="btn_takso"
-        style="padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s;">탁송</button>
-    </div>
+</div>
+<!-- 실행/탁송 버튼 (period-bar 옆에) -->
+<div id="dataModeBtns" style="display:none;padding:8px 28px;background:#fff;border-bottom:1px solid #e8e8f0;">
+  <div style="display:flex;background:#f0f0f8;border-radius:8px;padding:3px;gap:2px;width:fit-content;">
+    <button onclick="setDataMode('exec')" id="btn_exec"
+      style="padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:#6C63FF;color:#fff;transition:all 0.15s;">실행</button>
+    <button onclick="setDataMode('takso')" id="btn_takso"
+      style="padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s;">탁송</button>
   </div>
 </div>
 
@@ -237,6 +240,42 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
   <button class="sheet-tab" onclick="switchTab(1)" id="tab1">차종별 현황</button>
   <button class="sheet-tab" onclick="switchTab(2)" id="tab2">판매채널별 현황</button>
   <button class="sheet-tab" onclick="switchTab(3)" id="tab3">수행자별 현황</button>
+</div>
+
+<!-- 공지 팝업 -->
+<div id="noticePopup" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:28px;width:92%;max-width:520px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <span style="font-size:16px;font-weight:700;">📢 공지 / 요청사항</span>
+      <button onclick="closeNotice()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;">×</button>
+    </div>
+
+    <!-- 공지사항 -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:600;color:#6C63FF;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #f0eeff;">📌 공지사항</div>
+      <div style="font-size:13px;color:#555;line-height:1.8;background:#f8f9fc;border-radius:10px;padding:14px;">
+        • 데이터는 매일 수동 업데이트됩니다.<br>
+        • 탁송 데이터는 희망출고일 기준입니다.<br>
+        • 문의사항은 아래 요청란에 남겨주세요!
+      </div>
+    </div>
+
+    <!-- 요청사항 입력 -->
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#6C63FF;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #f0eeff;">✏️ 요청사항</div>
+      <input type="text" id="noticeNameInput" placeholder="이름 (예: 홍길동)" 
+        style="width:100%;padding:10px 12px;font-size:13px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:10px;outline:none;box-sizing:border-box;margin-bottom:8px;"
+        onfocus="this.style.borderColor='#6C63FF'" onblur="this.style.borderColor='#e8e8f0'"/>
+      <textarea id="noticeInput" placeholder="개선사항이나 요청사항을 남겨주세요 😊" rows="4"
+        style="width:100%;padding:12px;font-size:13px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:10px;resize:none;outline:none;box-sizing:border-box;"
+        onfocus="this.style.borderColor='#6C63FF'" onblur="this.style.borderColor='#e8e8f0'"></textarea>
+      <div id="noticeList" style="margin-top:12px;max-height:160px;overflow-y:auto;"></div>
+      <button onclick="submitNotice()"
+        style="margin-top:10px;width:100%;padding:10px;background:#6C63FF;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;">
+        등록하기
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- TREND POPUP -->
@@ -280,7 +319,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
   <!-- P0: 상품별 현황 -->
   <div id="panel0" class="sheet-panel active">
     <!-- 탁송 모드 전용 기간 선택 -->
-    <div id="takso_period_bar" style="display:none;margin-bottom:16px;display:none;">
+    <div id="takso_period_bar" style="display:none;margin-bottom:16px;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span style="font-size:13px;color:#888;font-weight:500;">📅 기간</span>
         <select id="takso_year_sel" onchange="onTaksoYearChange()"
@@ -459,12 +498,17 @@ async function loadAll(){
 
     // 실행/탁송 버튼 표시
     const modeBtns=document.getElementById('dataModeBtns');
-    if(modeBtns)modeBtns.style.display='flex';
+    if(modeBtns)modeBtns.style.display='block';
 
     [0,1,2,3].forEach(i=>setBadge(`tab${i}`,rawTable.rows.length));
     populatePickers();
     renderCurrent();
     setStatus(`✓ ${rawTable.rows.length.toLocaleString()}건`+(rawTaksoTable?` / 탁송 ${rawTaksoTable.rows.length.toLocaleString()}건`:' / 탁송 로드안됨'),true);
+    // 로딩 메시지 숨기고 업데이트 시간 표시
+    const loadMsg=document.getElementById('loadingMsg');
+    const lastUpEl=document.getElementById('lastUpdate');
+    if(loadMsg)loadMsg.style.display='none';
+    if(lastUpEl)lastUpEl.style.display='inline';
   }catch(e){setStatus('❌ '+e.message+' / '+e.stack?.split('\n')[0],false);console.error(e);}
 }
 
@@ -1469,51 +1513,58 @@ function renderTakso(){
       <div id="takso_worker_detail" style="display:none;margin-top:12px;">
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
           <thead><tr style="border-bottom:2px solid #f0f0f8;">
-            <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;width:36px;">순위</th>
-            <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;width:90px;">수행자</th>
-            <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;">건수</th>
-            <th style="text-align:right;padding:8px 10px;color:#999;font-weight:500;width:50px;">계</th>
-            <th style="text-align:right;padding:8px 10px;color:#999;font-weight:500;width:50px;">신차</th>
-            <th style="text-align:right;padding:8px 10px;color:#999;font-weight:500;width:50px;">재렌트</th>
+            <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;width:100px;">수행자</th>
+            <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;">건수 (신차 / 재렌트)</th>
+            <th style="text-align:right;padding:8px 10px;color:#999;font-weight:500;width:40px;">계</th>
+            <th style="text-align:right;padding:8px 10px;color:#6C63FF;font-weight:500;width:40px;">신차</th>
+            <th style="text-align:right;padding:8px 10px;color:#22c997;font-weight:500;width:50px;">재렌트</th>
           </tr></thead>
-          <tbody>${workerSorted.map(([name,s],i)=>`
-            <tr style="border-bottom:1px solid #f5f5f8;">
-              <td style="padding:8px 10px;color:#aaa;">${i+1}</td>
+          <tbody>${workerSorted.map(([name,s],i)=>{
+            const shinW=workerMaxTotal>0?Math.round(s.shin/workerMaxTotal*100):0;
+            const reW=workerMaxTotal>0?Math.round(s.re/workerMaxTotal*100):0;
+            return`<tr style="border-bottom:1px solid #f5f5f8;">
               <td style="padding:8px 10px;font-weight:600;">${name}</td>
               <td style="padding:8px 10px;">
-                <div style="background:#f3f3f8;border-radius:5px;height:16px;overflow:hidden;">
-                  <div style="height:100%;border-radius:5px;background:${COLORS[i%COLORS.length]};width:${Math.round(s.total/workerMaxTotal*100)}%;"></div>
+                <div style="background:#f3f3f8;border-radius:5px;height:18px;overflow:hidden;display:flex;">
+                  <div style="height:100%;background:#6C63FF;width:${shinW}%;"></div>
+                  <div style="height:100%;background:#22c997;width:${reW}%;"></div>
                 </div>
               </td>
               <td style="text-align:right;padding:8px 10px;font-weight:700;">${s.total}</td>
-              <td style="text-align:right;padding:8px 10px;color:#6C63FF;">${s.shin}</td>
-              <td style="text-align:right;padding:8px 10px;color:#22c997;">${s.re}</td>
-            </tr>`).join('')}
+              <td style="text-align:right;padding:8px 10px;color:#6C63FF;font-weight:600;">${s.shin}</td>
+              <td style="text-align:right;padding:8px 10px;color:#22c997;font-weight:600;">${s.re}</td>
+            </tr>`;}).join('')}
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- 차종별: 기본 숨김, ▼ 더보기 -->
+    <!-- 차종별: 기본 상위 8개, 상세보기 누르면 전체 -->
     <div class="section-title-mini" style="margin-bottom:12px;">차종별 현황</div>
-    <button onclick="toggleTaksoCarDetail()" id="takso_car_toggle"
-      style="width:100%;padding:10px;border:1px solid #e0e0ee;border-radius:10px;background:#f8f9fc;font-size:13px;font-family:inherit;cursor:pointer;color:#666;margin-bottom:12px;">
-      ▼ 차종별 상세 보기
-    </button>
-    <div id="takso_car_detail" style="display:none;">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
-        <div class="card">
-          <div class="card-header"><span class="card-title">차종별 전체</span><span class="card-badge">${filtered.length}건</span></div>
-          <div id="t_car_bar"></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">신차 차종별</span><span class="card-badge">${shincha.length}건</span></div>
-          <div id="t_shin_car_bar"></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">재렌트 차종별</span><span class="card-badge">${rerent.length}건</span></div>
-          <div id="t_re_car_bar"></div>
-        </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:12px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">차종별 전체</span><span class="card-badge">${Object.keys(carMap).length}종</span></div>
+        <div id="t_car_bar"></div>
+        <button onclick="toggleTaksoCarDetail('all')" id="takso_car_toggle_all"
+          style="width:100%;margin-top:10px;padding:7px;border:1px solid #e0e0ee;border-radius:8px;background:#f8f9fc;font-size:12px;font-family:inherit;cursor:pointer;color:#666;">
+          ▼ 전체 보기
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">신차 차종별</span><span class="card-badge">${shincha.length}건</span></div>
+        <div id="t_shin_car_bar"></div>
+        <button onclick="toggleTaksoCarDetail('shin')" id="takso_car_toggle_shin"
+          style="width:100%;margin-top:10px;padding:7px;border:1px solid #e0e0ee;border-radius:8px;background:#f8f9fc;font-size:12px;font-family:inherit;cursor:pointer;color:#666;">
+          ▼ 전체 보기
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">재렌트 차종별</span><span class="card-badge">${rerent.length}건</span></div>
+        <div id="t_re_car_bar"></div>
+        <button onclick="toggleTaksoCarDetail('re')" id="takso_car_toggle_re"
+          style="width:100%;margin-top:10px;padding:7px;border:1px solid #e0e0ee;border-radius:8px;background:#f8f9fc;font-size:12px;font-family:inherit;cursor:pointer;color:#666;">
+          ▼ 전체 보기
+        </button>
       </div>
     </div>`;
 
@@ -1522,13 +1573,11 @@ function renderTakso(){
   renderDonut('t_donut_prod_re','t_legend_prod_re',reProdMap);
   renderDonut('t_donut_worker','t_legend_worker',workerMap);
 
-  // 차종별은 펼쳐진 상태일 때만 렌더
-  if(document.getElementById('takso_car_detail')?.style.display!=='none'){
-    renderBar('t_car_bar',carMap,10);
-    renderBar('t_shin_car_bar',shinCarMap,10);
-    renderBar('t_re_car_bar',reCarMap,10);
-  }
-  // 토글 함수 - 펼칠 때 차종 바 렌더
+  // 차종별 기본 상위 8개
+  renderBar('t_car_bar',carMap,8);
+  renderBar('t_shin_car_bar',shinCarMap,8);
+  renderBar('t_re_car_bar',reCarMap,8);
+  // 전체보기용 저장
   window._taksoCarMap=carMap;
   window._taksoShinCarMap=shinCarMap;
   window._taksoReCarMap=reCarMap;
@@ -1543,17 +1592,21 @@ function toggleTaksoWorkerDetail(){
   if(btn)btn.textContent=show?'▲ 수행자별 상세 접기':'▼ 수행자별 상세 보기';
 }
 
-function toggleTaksoCarDetail(){
-  const el=document.getElementById('takso_car_detail');
-  const btn=document.getElementById('takso_car_toggle');
-  if(!el)return;
-  const show=el.style.display==='none';
-  el.style.display=show?'block':'none';
-  if(btn)btn.textContent=show?'▲ 차종별 접기':'▼ 차종별 상세 보기';
-  if(show){
-    renderBar('t_car_bar',window._taksoCarMap||{},10);
-    renderBar('t_shin_car_bar',window._taksoShinCarMap||{},10);
-    renderBar('t_re_car_bar',window._taksoReCarMap||{},10);
+function toggleTaksoCarDetail(type){
+  const barId=type==='all'?'t_car_bar':type==='shin'?'t_shin_car_bar':'t_re_car_bar';
+  const btnId=type==='all'?'takso_car_toggle_all':type==='shin'?'takso_car_toggle_shin':'takso_car_toggle_re';
+  const dataMap=type==='all'?window._taksoCarMap:type==='shin'?window._taksoShinCarMap:window._taksoReCarMap;
+  const btn=document.getElementById(btnId);
+  // 토글 상태 확인 (data-expanded 속성)
+  const expanded=btn&&btn.getAttribute('data-expanded')==='true';
+  if(expanded){
+    // 접기 - 상위 8개만
+    renderBar(barId,dataMap||{},8);
+    if(btn){btn.textContent='▼ 전체 보기';btn.setAttribute('data-expanded','false');}
+  } else {
+    // 전체 보기 - limit 999
+    renderBar(barId,dataMap||{},999);
+    if(btn){btn.textContent='▲ 접기';btn.setAttribute('data-expanded','true');}
   }
 }
 
@@ -1628,6 +1681,69 @@ function moveTip(box,e){
   box.style.left=x+'px';box.style.top=y+'px';
 }
 function calcPctGlobal(curr,prev){if(!prev)return null;return((curr-prev)/prev*100).toFixed(1);}
+// 공지 팝업
+function openNotice(){
+  document.getElementById('noticePopup').style.display='flex';
+  loadNotices();
+}
+function closeNotice(){
+  document.getElementById('noticePopup').style.display='none';
+}
+document.getElementById('noticePopup').addEventListener('click',e=>{
+  if(e.target===document.getElementById('noticePopup'))closeNotice();
+});
+const NOTICE_URL='https://script.google.com/macros/s/AKfycbwNszvunfsY5YWEYe6vE3OB5a7Tqqp_CYR8oxFuW5uP1OpKkXv7J7lLUTWNbLTrku6uDw/exec';
+
+async function submitNotice(){
+  const val=document.getElementById('noticeInput')?.value.trim();
+  const nameVal=document.getElementById('noticeNameInput')?.value.trim()||'익명';
+  if(!val)return;
+  const btn=document.querySelector('#noticePopup button[onclick="submitNotice()"]');
+  if(btn)btn.textContent='등록 중...';
+  try{
+    await fetch(NOTICE_URL,{method:'POST',body:JSON.stringify({action:'add',text:val,name:nameVal})});
+    document.getElementById('noticeInput').value='';
+    await loadNotices();
+  }catch(e){console.error(e);}
+  if(btn)btn.textContent='등록하기';
+}
+
+async function loadNotices(){
+  const el=document.getElementById('noticeList');
+  if(!el)return;
+  el.innerHTML='<div style="font-size:12px;color:#ccc;text-align:center;padding:10px;">불러오는 중...</div>';
+  try{
+    const res=await fetch(NOTICE_URL);
+    const data=await res.json();
+    if(!data.length){el.innerHTML='<div style="font-size:12px;color:#ccc;text-align:center;padding:10px;">등록된 요청사항이 없어요</div>';return;}
+    el.innerHTML=[...data].reverse().map((n,i)=>`
+      <div style="padding:10px 12px;background:#f8f9fc;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="flex:1;">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:3px;">
+            <span style="font-weight:600;color:#6C63FF;">${n.name||'익명'}</span>
+            <span style="color:#ddd;">|</span>
+            <span style="color:#bbb;font-size:11px;">${n.time}</span>
+          </div>
+          <div style="color:#555;line-height:1.5;">${n.text}</div>
+        </div>
+        <button onclick="deleteNotice('${n.time}')"
+          style="padding:3px 8px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid #e0e0ee;background:#fff;color:#FF6B6B;flex-shrink:0;">
+          삭제
+        </button>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div style="font-size:12px;color:#FF6B6B;text-align:center;padding:10px;">불러오기 실패</div>';}
+}
+
+async function deleteNotice(time){
+  if(!confirm('삭제할까요?'))return;
+  try{
+    await fetch(NOTICE_URL,{method:'POST',body:JSON.stringify({action:'delete',time:time})});
+    await loadNotices();
+  }catch(e){console.error(e);}
+}
+
+// 페이지 로드 시 자동 불러오기
+window.addEventListener('load', ()=>{ loadAll(); });
 </script>
 </body>
 </html>
