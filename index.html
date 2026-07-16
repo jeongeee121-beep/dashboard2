@@ -193,12 +193,28 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 <body>
 
 <!-- TOP BAR -->
+<!-- 로딩 팝업 -->
+<div id="loadingPopup" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;display:flex;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:36px 48px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <div style="font-size:36px;margin-bottom:16px;">📊</div>
+    <div style="font-size:16px;font-weight:700;color:#1c1c2e;margin-bottom:8px;">데이터를 불러오는 중이에요</div>
+    <div style="font-size:13px;color:#aaa;">잠시만 기다려 주세요!</div>
+    <div style="margin-top:20px;display:flex;justify-content:center;gap:6px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#6C63FF;animation:bounce 1s infinite 0s;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#6C63FF;animation:bounce 1s infinite 0.2s;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#6C63FF;animation:bounce 1s infinite 0.4s;"></div>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+</style>
+
 <div class="topbar">
   <div class="topbar-left">
     <span class="app-title">판매지원팀 판매현황</span>
   </div>
   <div class="topbar-right" style="display:flex;align-items:center;gap:14px;">
-    <span id="loadingMsg" style="font-size:12px;color:#aaa;font-style:italic;">잠시만 기다려주시면 데이터가 뜹니다 :)</span>
     <span class="last-update" id="lastUpdate" style="display:none;"></span>
     <button onclick="openNotice()" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid #6C63FF;background:#fff;color:#6C63FF;white-space:nowrap;">📢 공지 / 요청사항</button>
   </div>
@@ -318,6 +334,25 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 <main>
   <!-- P0: 상품별 현황 -->
   <div id="panel0" class="sheet-panel active">
+    <!-- 상품유형 필터 -->
+    <div id="typeFilterBar" style="display:none;padding:10px 0 14px;border-bottom:1px solid #f0f0f8;margin-bottom:16px;flex-wrap:wrap;gap:8px;align-items:center;">
+      <span style="font-size:12px;color:#999;margin-right:4px;">상품 필터</span>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
+        <input type="checkbox" value="동반차" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 동반차
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
+        <input type="checkbox" value="믿음카" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 믿음카
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
+        <input type="checkbox" value="동반차리스" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 동반차리스
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
+        <input type="checkbox" value="6&12렌트" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 6&12렌트
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
+        <input type="checkbox" value="__all__" onchange="toggleTypeAll(this)" checked style="accent-color:#1c1c2e;"> 전체
+      </label>
+    </div>
     <!-- 탁송 모드 전용 기간 선택 -->
     <div id="takso_period_bar" style="display:none;margin-bottom:16px;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -501,15 +536,21 @@ async function loadAll(){
     if(modeBtns)modeBtns.style.display='block';
 
     [0,1,2,3].forEach(i=>setBadge(`tab${i}`,rawTable.rows.length));
+    const tfBar=document.getElementById('typeFilterBar');
+    if(tfBar)tfBar.style.display='flex';
     populatePickers();
     renderCurrent();
     setStatus(`✓ ${rawTable.rows.length.toLocaleString()}건`+(rawTaksoTable?` / 탁송 ${rawTaksoTable.rows.length.toLocaleString()}건`:' / 탁송 로드안됨'),true);
-    // 로딩 메시지 숨기고 업데이트 시간 표시
-    const loadMsg=document.getElementById('loadingMsg');
+    // 로딩 팝업 숨기기
+    const loadPopup=document.getElementById('loadingPopup');
+    if(loadPopup)loadPopup.style.display='none';
     const lastUpEl=document.getElementById('lastUpdate');
-    if(loadMsg)loadMsg.style.display='none';
     if(lastUpEl)lastUpEl.style.display='inline';
-  }catch(e){setStatus('❌ '+e.message+' / '+e.stack?.split('\n')[0],false);console.error(e);}
+  }catch(e){
+    setStatus('❌ '+e.message,false);console.error(e);
+    const loadPopup=document.getElementById('loadingPopup');
+    if(loadPopup)loadPopup.style.display='none';
+  }
 }
 
 function setBadge(id,count){const old=document.getElementById(id).querySelector('.tab-badge');if(old)old.remove();const b=document.createElement('span');b.className='tab-badge';b.textContent=count.toLocaleString()+'건';document.getElementById(id).appendChild(b);}
@@ -596,6 +637,30 @@ function toggleTrendTable(){
   if(btn)btn.textContent=show?'▲ 숨기기':'▼ 상세';
 }
 
+function toggleType(cb){
+  if(cb.checked) selectedTypes.add(cb.value);
+  else selectedTypes.delete(cb.value);
+  // 전체 체크박스 상태 업데이트
+  const allTypes=['동반차','믿음카','동반차리스','6&12렌트'];
+  const allCb=document.querySelector('input[value="__all__"]');
+  if(allCb)allCb.checked=allTypes.every(t=>selectedTypes.has(t));
+  if(currentTab===0)renderP0();
+}
+
+function toggleTypeAll(cb){
+  const allTypes=['동반차','믿음카','동반차리스','6&12렌트'];
+  if(cb.checked){
+    allTypes.forEach(t=>selectedTypes.add(t));
+  } else {
+    selectedTypes.clear();
+  }
+  // 개별 체크박스 상태 업데이트
+  document.querySelectorAll('#typeFilterBar input[type="checkbox"]:not([value="__all__"])').forEach(el=>{
+    el.checked=cb.checked;
+  });
+  if(currentTab===0)renderP0();
+}
+
 function renderCurrent(){
   if(!rawTable)return;
   if(dataMode==='takso'){renderTakso();return;}
@@ -613,7 +678,11 @@ function renderP0(){
   const iNoDepo=idx('무보증여부'),iEnd=idx('종료후처리'),iWorker=idx('수행원');
   const iAge=idx('계약 당시 연령대'),iRental=idx('렌탈료');
 
-  const filtered=getFilteredRows(rows,iDate);
+  const filtered=getFilteredRows(rows,iDate).filter(r=>{
+    if(selectedTypes.size===0)return true;
+    const t=(r[iType]||'').toString().trim();
+    return selectedTypes.size===4 || [...selectedTypes].some(st=>t.includes(st));
+  });
   const shincha=filtered.filter(r=>(r[iProd]||'').includes('신차'));
   const rerent=filtered.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');});
 
@@ -843,6 +912,7 @@ function getPrevYearRows(rows,iDate){
 }
 
 // ===================== P1: 차량별 현황 =====================
+let selectedTypes=new Set(['동반차','믿음카','동반차리스','6&12렌트']);
 let p1CarMode='shin';
 let p1SelectedCar=null;
 let p1ClickedMonth=null;
@@ -1624,10 +1694,11 @@ function renderDonut(canvasId,legendId,dataMap){
 }
 function renderBar(elId,dataMap,limit=7){
   const el=document.getElementById(elId);if(!el)return;
-    const entries=Object.entries(dataMap).sort((a,b)=>b[1]-a[1]).slice(0,limit);
-  const total=entries.reduce((s,[,v])=>s+v,0);
+  const allEntries=Object.entries(dataMap).sort((a,b)=>b[1]-a[1]);
+  const totalAll=allEntries.reduce((s,[,v])=>s+v,0); // 전체 합계 기준
+  const entries=allEntries.slice(0,limit);
   if(!entries.length){el.innerHTML='<div class="empty">데이터 없음</div>';return;}
-  el.innerHTML=entries.map(([k,v],i)=>`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;"><span>${k}</span><span style="color:#999;">${v.toLocaleString()}건 · ${Math.round(v/total*100)}%</span></div><div style="background:#f3f3f8;border-radius:5px;height:6px;overflow:hidden;"><div style="height:100%;border-radius:5px;background:${COLORS[i%COLORS.length]};width:${Math.round(v/total*100)}%;"></div></div></div>`).join('');
+  el.innerHTML=entries.map(([k,v],i)=>`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;"><span>${k}</span><span style="color:#999;">${v.toLocaleString()}건 · ${Math.round(v/totalAll*100)}%</span></div><div style="background:#f3f3f8;border-radius:5px;height:6px;overflow:hidden;"><div style="height:100%;border-radius:5px;background:${COLORS[i%COLORS.length]};width:${Math.round(v/totalAll*100)}%;"></div></div></div>`).join('');
 }
 function renderWorkerBars(elId,totalMap,shinMap,reMap){
   const el=document.getElementById(elId);if(!el)return;
