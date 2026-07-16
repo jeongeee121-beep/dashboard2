@@ -337,31 +337,11 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
     <!-- 상품유형 필터 -->
     <div id="typeFilterBar" style="display:none;padding:10px 0 14px;border-bottom:1px solid #f0f0f8;margin-bottom:16px;flex-wrap:wrap;gap:8px;align-items:center;">
       <span style="font-size:12px;color:#999;margin-right:4px;">상품 필터</span>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
-        <input type="checkbox" value="동반차" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 동반차
-      </label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
-        <input type="checkbox" value="믿음카" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 믿음카
-      </label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
-        <input type="checkbox" value="동반차리스" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 동반차리스
-      </label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
-        <input type="checkbox" value="6&12렌트" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 6&12렌트
-      </label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
-        <input type="checkbox" value="구독카" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 구독카
-      </label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
-        <input type="checkbox" value="월렌트" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 월렌트
-      </label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
-        <input type="checkbox" value="구입형리스" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 구입형리스
-      </label>
+      <div id="typeCheckboxes" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
       <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #1c1c2e;background:#fff;">
-        <input type="checkbox" value="__all__" onchange="toggleTypeAll(this)" checked style="accent-color:#1c1c2e;"> 전체
+        <input type="checkbox" id="typeAllCb" onchange="toggleTypeAll(this)" checked style="accent-color:#1c1c2e;"> 전체
       </label>
-    </div>
+    </div>    </div>
     <!-- 탁송 모드 전용 기간 선택 -->
     <div id="takso_period_bar" style="display:none;margin-bottom:16px;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -647,28 +627,35 @@ function toggleTrendTable(){
 }
 
 function toggleType(cb){
-  if(cb.checked) selectedTypes.add(cb.value);
-  else selectedTypes.delete(cb.value);
-  // 전체 체크박스 상태 업데이트
-  const allTypes=['동반차','믿음카','동반차리스','6&12렌트','구독카','월렌트','구입형리스'];
-  const allCb=document.querySelector('input[value="__all__"]');
-  if(allCb)allCb.checked=allTypes.every(t=>selectedTypes.has(t));
+  if(cb.checked){selectedTypes.add(cb.value);_removedTypes.delete(cb.value);}
+  else{selectedTypes.delete(cb.value);_removedTypes.add(cb.value);}
+  const allCbs=document.querySelectorAll('#typeCheckboxes input[type="checkbox"]');
+  const allCb=document.getElementById('typeAllCb');
+  if(allCb)allCb.checked=[...allCbs].every(el=>el.checked);
   if(currentTab===0)renderP0();
 }
 
 function toggleTypeAll(cb){
-  const allTypes=['동반차','믿음카','동반차리스','6&12렌트'];
-  if(cb.checked){
-    allTypes.forEach(t=>selectedTypes.add(t));
-  } else {
-    selectedTypes.clear();
-  }
-  // 개별 체크박스 상태 업데이트
-  document.querySelectorAll('#typeFilterBar input[type="checkbox"]:not([value="__all__"])').forEach(el=>{
+  const allCbs=document.querySelectorAll('#typeCheckboxes input[type="checkbox"]');
+  allCbs.forEach(el=>{
     el.checked=cb.checked;
+    if(cb.checked){selectedTypes.add(el.value);_removedTypes.delete(el.value);}
+    else{selectedTypes.delete(el.value);_removedTypes.add(el.value);}
   });
   if(currentTab===0)renderP0();
 }
+
+function buildTypeCheckboxes(types){
+  const box=document.getElementById('typeCheckboxes');
+  const allCb=document.getElementById('typeAllCb');
+  if(!box)return;
+  box.innerHTML=types.map(t=>`
+    <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
+      <input type="checkbox" value="${t}" onchange="toggleType(this)" ${selectedTypes.has(t)?'checked':''} style="accent-color:#6C63FF;"> ${t}
+    </label>`).join('');
+  if(allCb)allCb.checked=types.length>0&&types.every(t=>selectedTypes.has(t));
+}
+
 
 function renderCurrent(){
   if(!rawTable)return;
@@ -682,17 +669,25 @@ function renderCurrent(){
 // ===================== P0: 상품별 현황 =====================
 function renderP0(){
   if(!rawTable)return;
-  const allTypeList=['동반차','믿음카','동반차리스','6&12렌트','구독카','월렌트','구입형리스'];
-  const isAllSelected=allTypeList.every(t=>selectedTypes.has(t));
   const{rows,idx}=getRows();
+  const iDateTmp=idx('계약실행일'),iTypeTmp=idx('상품유형');
+  // 해당 기간의 실제 상품 목록 추출
+  const periodRows=getFilteredRows(rows,iDateTmp);
+  const availTypes=[...new Set(periodRows.map(r=>(r[iTypeTmp]||'').toString().trim()).filter(Boolean))].sort();
+  // 새 상품 자동 추가 (selectedTypes에 없던 것)
+  availTypes.forEach(t=>{if(!selectedTypes.has(t)&&!_removedTypes.has(t))selectedTypes.add(t);});
+  // 사라진 상품 제거
+  [...selectedTypes].forEach(t=>{if(!availTypes.includes(t))selectedTypes.delete(t);});
+  buildTypeCheckboxes(availTypes);
+  const isAllSelected=availTypes.length>0&&availTypes.every(t=>selectedTypes.has(t));
   const iDate=idx('계약실행일'),iProd=idx('상품구분'),iType=idx('상품유형');
   const iNoDepo=idx('무보증여부'),iEnd=idx('종료후처리'),iWorker=idx('수행원');
   const iAge=idx('계약 당시 연령대'),iRental=idx('렌탈료');
 
   const filtered=getFilteredRows(rows,iDate).filter(r=>{
-    if(selectedTypes.size===0)return true;
+    if(selectedTypes.size===0)return false;
     const t=(r[iType]||'').toString().trim();
-    return [...selectedTypes].some(st=>t.includes(st));
+    return selectedTypes.has(t);
   });
   const shincha=filtered.filter(r=>(r[iProd]||'').includes('신차'));
   const rerent=filtered.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');});
@@ -923,7 +918,8 @@ function getPrevYearRows(rows,iDate){
 }
 
 // ===================== P1: 차량별 현황 =====================
-let selectedTypes=new Set(['동반차','믿음카','동반차리스','6&12렌트','구독카','월렌트','구입형리스']);
+let selectedTypes=new Set();
+let _removedTypes=new Set(); // 사용자가 체크 해제한 상품
 let p1CarMode='shin';
 let p1SelectedCar=null;
 let p1ClickedMonth=null;
