@@ -350,6 +350,15 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
         <input type="checkbox" value="6&12렌트" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 6&12렌트
       </label>
       <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
+        <input type="checkbox" value="구독카" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 구독카
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
+        <input type="checkbox" value="월렌트" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 월렌트
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
+        <input type="checkbox" value="구입형리스" onchange="toggleType(this)" checked style="accent-color:#6C63FF;"> 구입형리스
+      </label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #1c1c2e;background:#fff;">
         <input type="checkbox" value="__all__" onchange="toggleTypeAll(this)" checked style="accent-color:#1c1c2e;"> 전체
       </label>
     </div>
@@ -641,7 +650,7 @@ function toggleType(cb){
   if(cb.checked) selectedTypes.add(cb.value);
   else selectedTypes.delete(cb.value);
   // 전체 체크박스 상태 업데이트
-  const allTypes=['동반차','믿음카','동반차리스','6&12렌트'];
+  const allTypes=['동반차','믿음카','동반차리스','6&12렌트','구독카','월렌트','구입형리스'];
   const allCb=document.querySelector('input[value="__all__"]');
   if(allCb)allCb.checked=allTypes.every(t=>selectedTypes.has(t));
   if(currentTab===0)renderP0();
@@ -673,6 +682,8 @@ function renderCurrent(){
 // ===================== P0: 상품별 현황 =====================
 function renderP0(){
   if(!rawTable)return;
+  const allTypeList=['동반차','믿음카','동반차리스','6&12렌트','구독카','월렌트','구입형리스'];
+  const isAllSelected=allTypeList.every(t=>selectedTypes.has(t));
   const{rows,idx}=getRows();
   const iDate=idx('계약실행일'),iProd=idx('상품구분'),iType=idx('상품유형');
   const iNoDepo=idx('무보증여부'),iEnd=idx('종료후처리'),iWorker=idx('수행원');
@@ -681,7 +692,7 @@ function renderP0(){
   const filtered=getFilteredRows(rows,iDate).filter(r=>{
     if(selectedTypes.size===0)return true;
     const t=(r[iType]||'').toString().trim();
-    return selectedTypes.size===4 || [...selectedTypes].some(st=>t.includes(st));
+    return [...selectedTypes].some(st=>t.includes(st));
   });
   const shincha=filtered.filter(r=>(r[iProd]||'').includes('신차'));
   const rerent=filtered.filter(r=>{const v=(r[iProd]||'');return v.includes('재렌트')||v.includes('재');});
@@ -726,7 +737,7 @@ function renderP0(){
 
   document.getElementById('p0_content').innerHTML=`
     <!-- 요약 카드 -->
-    <div class="summary-row">
+    <div class="summary-row" style="grid-template-columns:${isAllSelected?'1fr 1fr 1fr auto':'1fr 1fr 1fr'};">
       <div class="sum-card">
         <div class="sum-label">전체 계약</div>
         <div class="sum-value" style="color:#1c1c2e;">${filtered.length.toLocaleString()}<span style="font-size:16px;font-weight:500;color:#aaa;"> 건</span></div>
@@ -742,7 +753,7 @@ function renderP0(){
         <div class="sum-value" style="color:#22c997;">${rerent.length.toLocaleString()}<span style="font-size:16px;font-weight:500;color:#aaa;"> 건</span></div>
         <div class="sum-sub">${pctBadge(rerent.length,prevRe)} <span style="color:#bbb;font-size:11px;">전년 동기 대비</span></div>
       </div>
-      <div class="yoy-card">
+      <div class="yoy-card" style="display:${isAllSelected?'flex':'none'};flex-direction:column;justify-content:space-between;">
         <div class="yoy-title">📊 전년 동기 대비 요약</div>
         <div class="yoy-items">
           <div class="yoy-item"><div class="yoy-item-icon">📋</div><div class="yoy-item-label">전체 계약</div><div class="yoy-item-val ${parseFloat(calcPctGlobal(filtered.length,prevTotal)||0)>=0?'up':'dn'}">${calcPctGlobal(filtered.length,prevTotal)!==null?(parseFloat(calcPctGlobal(filtered.length,prevTotal))>=0?'▲':'▼')+Math.abs(calcPctGlobal(filtered.length,prevTotal))+'%':'-'}</div></div>
@@ -912,7 +923,7 @@ function getPrevYearRows(rows,iDate){
 }
 
 // ===================== P1: 차량별 현황 =====================
-let selectedTypes=new Set(['동반차','믿음카','동반차리스','6&12렌트']);
+let selectedTypes=new Set(['동반차','믿음카','동반차리스','6&12렌트','구독카','월렌트','구입형리스']);
 let p1CarMode='shin';
 let p1SelectedCar=null;
 let p1ClickedMonth=null;
