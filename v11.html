@@ -344,6 +344,32 @@ main{padding:20px 28px 40px;}
 .ex-hold .t .tag{font-size:10.5px;background:#EDEEF5;border-radius:6px;padding:2px 8px;font-weight:700;}
 .ex-hold p{font-size:12px;margin-top:6px;line-height:1.6;}
 
+/* ===== 상세 화면 폭 보정 ===== */
+main{width:100%;box-sizing:border-box;}
+main .main-grid{width:100%;}
+@media (max-width:1350px){ main .main-grid.wide{grid-template-columns:1fr 1fr;} }
+@media (max-width:1150px){ main .main-grid, main .main-grid.wide{grid-template-columns:1fr 1fr;} }
+@media (max-width:950px){ main .main-grid, main .main-grid.wide{grid-template-columns:1fr;} }
+
+/* ===== 월별 비교 ===== */
+#monthlyPage{padding:22px 28px 44px;max-width:1400px;width:100%;margin:0 auto;}
+.mc-chartwrap{position:relative;height:330px;}
+.mc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:12px;}
+.mc-month{border:1px solid var(--line);border-radius:13px;padding:13px 14px;background:#fff;display:flex;flex-direction:column;gap:9px;}
+.mc-mhead{display:flex;justify-content:space-between;align-items:baseline;}
+.mc-mhead b{font-size:15px;}
+.mc-mhead span{color:var(--muted);font-size:11.5px;font-weight:600;}
+.mc-memos{display:flex;flex-direction:column;gap:6px;min-height:26px;}
+.mc-memo{font-size:12px;line-height:1.5;background:var(--bg);border-radius:8px;padding:7px 24px 7px 9px;position:relative;word-break:break-all;}
+.mc-memo.shared{background:var(--primary-soft);}
+.mc-del{position:absolute;right:4px;top:4px;border:none;background:none;color:#C6C9D6;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;}
+.mc-del:hover{color:var(--down);}
+.mc-empty{font-size:11.5px;color:#C6C9D6;padding:2px 0;}
+.mc-add{display:flex;gap:6px;}
+.mc-add input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;min-width:0;background:#fff;}
+.mc-add input:focus{border-color:var(--primary);}
+.mc-add button{border:none;background:var(--primary);color:#fff;border-radius:8px;width:32px;height:30px;font-size:16px;cursor:pointer;flex-shrink:0;}
+
 </style>
 </head>
 <body>
@@ -361,6 +387,7 @@ main{padding:20px 28px 40px;}
 
     <div class="nav-label">판매</div>
     <button class="sb-item active" data-page="exec" onclick="goPage('exec')"><span>🏠</span><span>판매현황</span></button>
+    <button class="sb-item" data-page="monthly" onclick="goPage('monthly')"><span>📊</span><span>월별 비교</span></button>
 
     <div class="nav-label">상세 분석 (실무)</div>
     <button class="sb-item" data-page="product" onclick="goPage('product')"><span>📦</span><span>상품별 현황</span></button>
@@ -465,6 +492,35 @@ main{padding:20px 28px 40px;}
       </div>
     </div><!-- /execPage -->
 
+    <!-- ===================== 월별 비교 페이지 ===================== -->
+    <div id="monthlyPage" style="display:none;">
+      <div class="ex-toprow">
+        <div>
+          <div class="ex-pagetitle">월별 비교</div>
+          <div class="ex-pagedesc">신차·재렌트 월별 출고 비교와 프로모션 메모</div>
+        </div>
+        <label class="ex-basedate">📅 연도
+          <select id="mcYearSel" onchange="mcYearChange(this.value)"
+            style="border:none;font-family:inherit;font-size:13px;font-weight:700;outline:none;background:none;cursor:pointer;"></select>
+        </label>
+      </div>
+
+      <section class="ex-card">
+        <div class="ex-head"><div class="ex-badge">📊</div><div class="ex-title">월별 출고 비교</div></div>
+        <div class="mc-chartwrap"><canvas id="mcChart"></canvas></div>
+      </section>
+
+      <section class="ex-card">
+        <div class="ex-head"><div class="ex-badge">📝</div><div class="ex-title">월별 메모 <small>프로모션·이슈 기록</small></div></div>
+        <div class="mc-grid" id="mcMemoGrid"></div>
+        <div style="margin-top:14px;font-size:11.5px;color:#8A8FA3;line-height:1.7;">
+          📌 구글시트 <b>이슈</b> 탭 내용 — 팀 전체에게 공유돼요 (월 | 내용 형식으로 입력)<br>
+          ✏️ 화면에서 입력한 메모 — 지금은 <b>이 기기(브라우저)에만</b> 저장돼요. 팀 공유가 필요하면 시트 이슈 탭에 적어주세요!
+        </div>
+      </section>
+    </div><!-- /monthlyPage -->
+
+
 
 <!-- ===================== 상세 분석 (기존 화면) ===================== -->
 
@@ -505,7 +561,7 @@ main{padding:20px 28px 40px;}
 </div>
 
 <!-- PERIOD BAR -->
-<div class="period-bar" id="periodBar">
+<div class="period-bar" id="periodBar" style="display:none;">
   <div class="period-seg">
     <button class="seg-btn active" onclick="setMode('month')" id="seg_month">월별</button>
     <button class="seg-btn" onclick="setMode('year')" id="seg_year">년도별</button>
@@ -598,7 +654,7 @@ main{padding:20px 28px 40px;}
   </div>
 </div>
 
-<main>
+<main style="display:none">
   <!-- P0: 상품별 현황 -->
   <div id="panel0" class="sheet-panel active">
     <!-- 상품유형 필터 -->
@@ -2101,6 +2157,7 @@ let navPage='exec', targetsMap=null, issuesList=null, exDrillKey='상품별';
 const exCharts={};
 const PAGE_TITLES={
   exec:['판매현황 요약','한눈에 보는 판매 실적과 주요 지표'],
+  monthly:['월별 비교','신차·재렌트 월별 출고 비교와 프로모션 메모'],
   product:['상품별 현황','상품별 출고 상세 (실무)'],
   model:['차종별 현황','차종별 출고 상세 (실무)'],
   channel:['판매채널별 현황','채널별 출고 상세 (실무)'],
@@ -2116,13 +2173,16 @@ function goPage(p){
   const t=PAGE_TITLES[p]||['판매현황',''];
   const tEl=document.getElementById('pageTitle'),dEl=document.getElementById('pageDesc');
   if(tEl)tEl.textContent=t[0]; if(dEl)dEl.textContent=t[1];
-  if(p==='exec'){
-    exec.style.display='block';
+  const mon=document.getElementById('monthlyPage');
+  if(p==='exec'||p==='monthly'){
+    exec.style.display=(p==='exec')?'block':'none';
+    if(mon)mon.style.display=(p==='monthly')?'block':'none';
     if(mainEl)mainEl.style.display='none';
     if(pb)pb.style.display='none';
-    renderExec();
+    if(p==='exec')renderExec();else renderMonthly();
   }else{
     exec.style.display='none';
+    if(mon)mon.style.display='none';
     if(mainEl)mainEl.style.display='block';
     if(p==='takso'){setDataMode('takso');}
     else{
@@ -2131,6 +2191,7 @@ function goPage(p){
       const map={product:0,model:1,channel:2,agent:3};
       switchTab(map[p]);
     }
+    setTimeout(()=>window.dispatchEvent(new Event('resize')),160);
   }
 }
 
@@ -2418,14 +2479,84 @@ function renderExec(){
 
 function setExDrill(k){exDrillKey=k;renderExec();}
 
+/* ===================== 월별 비교 ===================== */
+let mcYear=null;
+function escH(s){return (s==null?'':s).toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function renderMonthly(){
+  if(!rawTable)return;
+  const{rows,idx}=getRows();
+  const iDate=idx('계약실행일'),iProd=idx('상품구분');
+  const years=[...new Set(rows.map(r=>{const ym=getYM(r[iDate]);return ym?ym.slice(0,4):null;}).filter(Boolean))].sort();
+  const nowY=new Date().getFullYear().toString();
+  if(!mcYear)mcYear=years.includes(nowY)?nowY:(years[years.length-1]||nowY);
+  const sel=document.getElementById('mcYearSel');
+  sel.innerHTML=(years.length?years:[nowY]).map(y=>`<option value="${y}" ${y===mcYear?'selected':''}>${y}년</option>`).join('');
+
+  const labels=Array.from({length:12},(_,i)=>`${mcYear}.${String(i+1).padStart(2,'0')}`);
+  const isShin=r=>((r[iProd]||'')+'').includes('신차');
+  const isRe=r=>{const v=(r[iProd]||'')+'';return v.includes('재렌트')||v.includes('재');};
+  const shinArr=labels.map(l=>rows.filter(r=>getYM(r[iDate])===l&&isShin(r)).length);
+  const reArr=labels.map(l=>rows.filter(r=>getYM(r[iDate])===l&&isRe(r)).length);
+
+  if(exCharts.mc)exCharts.mc.destroy();
+  exCharts.mc=new Chart(document.getElementById('mcChart'),{
+    type:'bar',
+    data:{labels:labels.map(l=>parseInt(l.split('.')[1])+'월'),datasets:[
+      {label:'신차',data:shinArr,backgroundColor:'#3B82F6',borderRadius:6,maxBarThickness:28},
+      {label:'재렌트',data:reArr,backgroundColor:'#10B981',borderRadius:6,maxBarThickness:28}
+    ]},
+    options:{
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',align:'start',labels:{boxWidth:8,boxHeight:8,usePointStyle:true,pointStyle:'circle',font:{family:"Pretendard",size:12}}},
+        tooltip:{callbacks:{footer:(items)=>'전체 '+items.reduce((s,i)=>s+i.parsed.y,0)+'대'}}
+      },
+      scales:{
+        y:{beginAtZero:true,grid:{color:'#F0F1F7'},ticks:{font:{family:"Pretendard",size:11},color:'#8A8FA3'}},
+        x:{grid:{display:false},ticks:{font:{family:"Pretendard",size:11},color:'#8A8FA3'}}
+      }
+    }
+  });
+
+  const memos=getLocalMemos();
+  document.getElementById('mcMemoGrid').innerHTML=labels.map((ym,i)=>{
+    const shared=(issuesList||[]).filter(e=>e.ym===ym);
+    const local=memos[ym]||[];
+    return `<div class="mc-month">
+      <div class="mc-mhead"><b>${i+1}월</b><span>신차 ${shinArr[i]} · 재렌트 ${reArr[i]}</span></div>
+      <div class="mc-memos">
+        ${shared.map(e=>`<div class="mc-memo shared">📌 ${escH(e.text)}</div>`).join('')}
+        ${local.map((m,j)=>`<div class="mc-memo local">✏️ ${escH(m)}<button class="mc-del" onclick="delMemo('${ym}',${j})">×</button></div>`).join('')}
+        ${(!shared.length&&!local.length)?'<div class="mc-empty">메모 없음</div>':''}
+      </div>
+      <div class="mc-add">
+        <input type="text" id="mcIn_${ym}" placeholder="프로모션·이슈 메모" onkeydown="if(event.key==='Enter')addMemo('${ym}')"/>
+        <button onclick="addMemo('${ym}')">＋</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function mcYearChange(v){mcYear=v;renderMonthly();}
+function getLocalMemos(){try{return JSON.parse(localStorage.getItem('harmony_memos')||'{}');}catch(e){return{};}}
+function saveLocalMemos(m){try{localStorage.setItem('harmony_memos',JSON.stringify(m));}catch(e){}}
+function addMemo(ym){
+  const inp=document.getElementById('mcIn_'+ym);
+  const v=(inp&&inp.value||'').trim();if(!v)return;
+  const m=getLocalMemos();(m[ym]=m[ym]||[]).push(v);saveLocalMemos(m);renderMonthly();
+}
+function delMemo(ym,j){const m=getLocalMemos();if(m[ym]){m[ym].splice(j,1);saveLocalMemos(m);renderMonthly();}}
+
 
 window.addEventListener('load', async ()=>{
   const inp=document.getElementById('baseDateInput');
   const n=new Date();
   inp.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
-  await loadAll();
-  await loadExecExtras();
-  goPage('exec');
+  goPage('exec');   // 데이터 로딩 전에 판매현황 화면부터 표시
+  try{ await loadAll(); }catch(e){ console.error(e); }
+  try{ await loadExecExtras(); }catch(e){ console.error(e); }
+  if(navPage==='exec')renderExec();
+  else if(navPage==='monthly')renderMonthly();
 });
 
 </script>
