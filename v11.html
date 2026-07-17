@@ -355,12 +355,12 @@ main{padding:20px 28px 40px;}
       <div class="brand-logo">🚗</div>
       <div>
         <div class="brand-name">하모니렌트카</div>
-        <div class="brand-sub">판매지원팀 경영 대시보드</div>
+        <div class="brand-sub">판매지원팀 대시보드</div>
       </div>
     </div>
 
-    <div class="nav-label">경영</div>
-    <button class="sb-item active" data-page="exec" onclick="goPage('exec')"><span>🏠</span><span>경영현황</span></button>
+    <div class="nav-label">판매</div>
+    <button class="sb-item active" data-page="exec" onclick="goPage('exec')"><span>🏠</span><span>판매현황</span></button>
 
     <div class="nav-label">상세 분석 (실무)</div>
     <button class="sb-item" data-page="product" onclick="goPage('product')"><span>📦</span><span>상품별 현황</span></button>
@@ -378,7 +378,7 @@ main{padding:20px 28px 40px;}
   <div class="main-col">
     <header class="nx-topbar">
       <div>
-        <h1 id="pageTitle">경영현황 요약</h1>
+        <h1 id="pageTitle">판매현황 요약</h1>
         <div class="desc" id="pageDesc">한눈에 보는 판매 실적과 주요 지표</div>
       </div>
       <div class="nx-right">
@@ -392,7 +392,7 @@ main{padding:20px 28px 40px;}
     <div id="execPage">
       <div class="ex-toprow">
         <div>
-          <div class="ex-pagetitle">경영현황</div>
+          <div class="ex-pagetitle">판매현황</div>
           <div class="ex-pagedesc">KPI · 목표 · 추세 · 원인 · 예측</div>
         </div>
         <label class="ex-basedate">📅 기준일 <input type="date" id="baseDateInput" onchange="renderExec()"></label>
@@ -608,7 +608,7 @@ main{padding:20px 28px 40px;}
       <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #1c1c2e;background:#fff;">
         <input type="checkbox" id="typeAllCb" onchange="toggleTypeAll(this)" checked style="accent-color:#1c1c2e;"> 전체
       </label>
-    </div>    </div>
+    </div>
     <!-- 탁송 모드 전용 기간 선택 -->
     <div id="takso_period_bar" style="display:none;margin-bottom:16px;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -2100,7 +2100,7 @@ async function deleteNotice(time){
 let navPage='exec', targetsMap=null, issuesList=null, exDrillKey='상품별';
 const exCharts={};
 const PAGE_TITLES={
-  exec:['경영현황 요약','한눈에 보는 판매 실적과 주요 지표'],
+  exec:['판매현황 요약','한눈에 보는 판매 실적과 주요 지표'],
   product:['상품별 현황','상품별 출고 상세 (실무)'],
   model:['차종별 현황','차종별 출고 상세 (실무)'],
   channel:['판매채널별 현황','채널별 출고 상세 (실무)'],
