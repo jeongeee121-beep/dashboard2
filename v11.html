@@ -514,10 +514,7 @@ main .main-grid{width:100%;}
       <section class="ex-card">
         <div class="ex-head"><div class="ex-badge">📝</div><div class="ex-title">월별 메모 <small>프로모션·이슈 기록</small></div></div>
         <div class="mc-grid" id="mcMemoGrid"></div>
-        <div style="margin-top:14px;font-size:11.5px;color:#8A8FA3;line-height:1.7;">
-          📌 구글시트 <b>이슈</b> 탭 내용 — 팀 전체에게 공유돼요 (월 | 내용 형식으로 입력)<br>
-          ✏️ 화면에서 입력한 메모 — 지금은 <b>이 기기(브라우저)에만</b> 저장돼요. 팀 공유가 필요하면 시트 이슈 탭에 적어주세요!
-        </div>
+        <div id="mcNote" style="margin-top:14px;font-size:11.5px;color:#8A8FA3;line-height:1.7;"></div>
       </section>
     </div><!-- /monthlyPage -->
 
@@ -2155,6 +2152,9 @@ async function deleteNotice(time){
 
 // ===================== v10: 경영현황 =====================
 let navPage='exec', targetsMap=null, issuesList=null, exDrillKey='상품별', assetBuyMap=null;
+// ▼▼▼ 팀 공유 메모: Apps Script 배포 URL을 아래 따옴표 안에 붙여넣으세요 ▼▼▼
+const ISSUE_URL='https://script.google.com/macros/s/AKfycbzK57bSaTVSDyMtvz9raJ8I92NncY-XNqC756elylrDzVwP9tsVWVHQBkcVlQVTs_pt/exec';
+// ▲▲▲ 비워두면 화면 입력 메모는 내 기기에만 저장됩니다 ▲▲▲
 const exCharts={};
 const PAGE_TITLES={
   exec:['판매현황 요약','한눈에 보는 판매 실적과 주요 지표'],
@@ -2232,6 +2232,21 @@ function findColFlexible(t,name){
   return null;
 }
 
+function parseIssuesTable(tI){
+  const cols=tI.cols.map(c=>(c.label||'').toString());
+  const iM=cols.findIndex(c=>c.includes('월')||c.includes('날짜'));
+  const iT=cols.findIndex(c=>c.includes('내용')||c.includes('이슈'));
+  if(iM>=0&&iT>=0){
+    issuesList=[];
+    tI.rows.forEach(r=>{
+      const c=r.c;if(!c)return;
+      const ym=cellYM(c[iM]);const txt=cellStr(c[iT]);
+      if(ym&&txt)issuesList.push({ym,text:txt});
+    });
+    if(!issuesList.length)issuesList=null;
+  }
+}
+
 async function loadExecExtras(){
   const [tT,tI,tV]=await Promise.all([fetchSheetTab('목표설정'),fetchSheetTab('이슈'),fetchSheetTab('차량 RAW DATA')]);
   targetsMap=null;issuesList=null;assetBuyMap=null;
@@ -2263,20 +2278,7 @@ async function loadExecExtras(){
       if(!Object.keys(targetsMap).length)targetsMap=null;
     }
   }
-  if(tI){
-    const cols=tI.cols.map(c=>(c.label||'').toString());
-    const iM=cols.findIndex(c=>c.includes('월')||c.includes('날짜'));
-    const iT=cols.findIndex(c=>c.includes('내용')||c.includes('이슈'));
-    if(iM>=0&&iT>=0){
-      issuesList=[];
-      tI.rows.forEach(r=>{
-        const c=r.c;if(!c)return;
-        const ym=cellYM(c[iM]);const txt=cellStr(c[iT]);
-        if(ym&&txt)issuesList.push({ym,text:txt});
-      });
-      if(!issuesList.length)issuesList=null;
-    }
-  }
+  if(tI)parseIssuesTable(tI);
 }
 
 // --- 영업일 계산 (주말 제외, 공휴일 미반영) ---
@@ -2413,7 +2415,7 @@ function renderExec(){
     {label:'전체',data:totalArr,borderColor:'#EF4444',backgroundColor:'#EF4444',borderDash:[6,5],tension:.35,pointRadius:3,borderWidth:2},
   ];
   if(tgtArr&&tgtArr.some(v=>v!=null))
-    datasets.push({label:'목표',data:tgtArr,borderColor:'#b8bccb',backgroundColor:'#b8bccb',stepped:true,borderDash:[3,4],pointRadius:0,borderWidth:2,spanGaps:false});
+    datasets.push({label:'목표',data:tgtArr,borderColor:'#F59E0B',backgroundColor:'#F59E0B',stepped:true,borderDash:[8,5],pointRadius:0,borderWidth:2.5,spanGaps:false});
   if(exCharts.trend)exCharts.trend.destroy();
   exCharts.trend=new Chart(document.getElementById('exTrendChart'),{
     type:'line',
@@ -2429,13 +2431,18 @@ function renderExec(){
   });
 
   const evEl=document.getElementById('exEvents');
-  if(issuesList){
+  const lm=(typeof getLocalMemos==='function')?getLocalMemos():{};
+  const hasAny=!!issuesList||labels.some(l=>(lm[l]||[]).length>0);
+  if(hasAny){
     evEl.innerHTML=labels.map(l=>{
-      const items=issuesList.filter(e=>e.ym===l).slice(0,2);
-      return `<div class="ex-event ${items.length?'hl':''}"><div class="dot"></div>${items.length?items.map(i=>i.text).join('<br>'):'&nbsp;'}</div>`;
+      const items=[
+        ...(issuesList||[]).filter(e=>e.ym===l).map(e=>escH(e.text)),
+        ...((lm[l]||[]).map(m=>'✏️ '+escH(m)))
+      ].slice(0,3);
+      return `<div class="ex-event ${items.length?'hl':''}"><div class="dot"></div>${items.length?items.join('<br>'):'&nbsp;'}</div>`;
     }).join('');
   }else{
-    evEl.innerHTML=`<div style="width:100%;text-align:center;font-size:11px;color:#ccc;">시트에 <b>이슈</b> 탭 (월 | 내용) 을 추가하면 여기에 이벤트 타임라인이 표시됩니다</div>`;
+    evEl.innerHTML=`<div style="width:100%;text-align:center;font-size:11px;color:#ccc;">시트 <b>이슈</b> 탭(월 | 내용)이나 <b>월별 비교</b> 페이지에서 메모를 추가하면 여기에 타임라인이 표시됩니다</div>`;
   }
 
   // ---- 5. Drill Down ----
@@ -2571,12 +2578,12 @@ function renderMonthly(){
 
   const memos=getLocalMemos();
   document.getElementById('mcMemoGrid').innerHTML=labels.map((ym,i)=>{
-    const shared=(issuesList||[]).filter(e=>e.ym===ym);
+    const shared=(issuesList||[]).map((e,gi)=>({ym:e.ym,text:e.text,gi})).filter(e=>e.ym===ym);
     const local=memos[ym]||[];
     return `<div class="mc-month">
       <div class="mc-mhead"><b>${i+1}월</b><span>신차 ${shinArr[i]} · 재렌트 ${reArr[i]}${(canUsed&&reArr[i]>0&&reUsedArr[i]>0)?` (중고 ${Math.round(reUsedArr[i]/reArr[i]*100)}%)`:''}</span></div>
       <div class="mc-memos">
-        ${shared.map(e=>`<div class="mc-memo shared">📌 ${escH(e.text)}</div>`).join('')}
+        ${shared.map(e=>`<div class="mc-memo shared">📌 ${escH(e.text)}${ISSUE_URL?`<button class="mc-del" onclick="delSharedMemo(${e.gi})">×</button>`:''}</div>`).join('')}
         ${local.map((m,j)=>`<div class="mc-memo local">✏️ ${escH(m)}<button class="mc-del" onclick="delMemo('${ym}',${j})">×</button></div>`).join('')}
         ${(!shared.length&&!local.length)?'<div class="mc-empty">메모 없음</div>':''}
       </div>
@@ -2586,16 +2593,54 @@ function renderMonthly(){
       </div>
     </div>`;
   }).join('');
+  const note=document.getElementById('mcNote');
+  if(note){
+    note.innerHTML=ISSUE_URL
+      ?"📌 메모는 구글시트 <b>이슈</b> 탭에 저장되어 <b>팀 전체에게 공유</b>돼요. 화면에서 ＋로 추가/× 로 삭제하거나 시트에서 직접 편집해도 됩니다.<br>✏️ 는 공유 기능 연결 전에 이 기기에 저장된 예전 메모예요."
+      :"📌 구글시트 <b>이슈</b> 탭 내용 — 팀 전체에게 공유돼요 (월 | 내용 형식으로 입력)<br>✏️ 화면에서 입력한 메모 — 지금은 <b>이 기기(브라우저)에만</b> 저장돼요. 팀 공유가 필요하면 시트 이슈 탭에 적어주세요!";
+  }
 }
 function mcYearChange(v){mcYear=v;renderMonthly();}
 function getLocalMemos(){try{return JSON.parse(localStorage.getItem('harmony_memos')||'{}');}catch(e){return{};}}
 function saveLocalMemos(m){try{localStorage.setItem('harmony_memos',JSON.stringify(m));}catch(e){}}
-function addMemo(ym){
+async function addMemo(ym){
   const inp=document.getElementById('mcIn_'+ym);
   const v=(inp&&inp.value||'').trim();if(!v)return;
+  if(ISSUE_URL){
+    try{
+      inp.disabled=true;
+      await fetch(ISSUE_URL,{method:'POST',body:JSON.stringify({action:'add',ym:ym,text:v})});
+      if(!issuesList)issuesList=[];
+      issuesList.push({ym:ym,text:v});
+      renderMonthly();
+      refreshIssuesSoon();
+    }catch(e){alert('메모 저장에 실패했어요. 네트워크를 확인해주세요.');}
+    return;
+  }
   const m=getLocalMemos();(m[ym]=m[ym]||[]).push(v);saveLocalMemos(m);renderMonthly();
 }
 function delMemo(ym,j){const m=getLocalMemos();if(m[ym]){m[ym].splice(j,1);saveLocalMemos(m);renderMonthly();}}
+async function delSharedMemo(gi){
+  const e=issuesList&&issuesList[gi];if(!e)return;
+  if(!confirm('이 메모를 팀 전체에서 삭제할까요?\n"'+e.text+'"'))return;
+  try{
+    await fetch(ISSUE_URL,{method:'POST',body:JSON.stringify({action:'delete',ym:e.ym,text:e.text})});
+    issuesList.splice(gi,1);
+    if(!issuesList.length)issuesList=null;
+    renderMonthly();
+    refreshIssuesSoon();
+  }catch(err){alert('삭제에 실패했어요. 네트워크를 확인해주세요.');}
+}
+let issueRefreshTimer=null;
+function refreshIssuesSoon(){
+  clearTimeout(issueRefreshTimer);
+  issueRefreshTimer=setTimeout(async()=>{
+    const tI=await fetchSheetTab('이슈');
+    if(tI)parseIssuesTable(tI);
+    if(navPage==='monthly')renderMonthly();
+    else if(navPage==='exec')renderExec();
+  },5000);
+}
 
 function stripedPattern(base){
   try{
