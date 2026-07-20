@@ -2411,58 +2411,32 @@ function renderExec(){
   const tgtArr=targetsMap?labels.map(l=>{const t=targetsMap[l];return t?(t.shin||0)+(t.re||0):null;}):null;
 
   const hasTgt=!!(tgtArr&&tgtArr.some(v=>v!=null));
-  // 달성=초록, 미달=빨강, 목표없음=회색
-  const barColors=totalArr.map((v,i)=>{
-    if(!hasTgt||tgtArr[i]==null||!tgtArr[i])return '#C7CAD9';
-    return v>=tgtArr[i]?'#10B981':'#F87171';
-  });
-  const isCurMonth=labels.map(l=>l===baseYM);
   const datasets=[
-    {type:'bar',label:'월 출고(전체)',data:totalArr,backgroundColor:barColors,borderRadius:6,maxBarThickness:44,order:2}
+    {label:'신차',data:shinArr,borderColor:'#3B82F6',backgroundColor:'#3B82F6',tension:.35,pointRadius:3.5,borderWidth:2.5},
+    {label:'재렌트',data:reArr,borderColor:'#10B981',backgroundColor:'#10B981',tension:.35,pointRadius:3.5,borderWidth:2.5},
+    {label:'전체',data:totalArr,borderColor:'#EF4444',backgroundColor:'#EF4444',borderDash:[6,5],tension:.35,pointRadius:3,borderWidth:2},
   ];
   if(hasTgt)
-    datasets.push({type:'line',label:'목표',data:tgtArr,borderColor:'#F59E0B',backgroundColor:'#F59E0B',stepped:'middle',borderDash:[8,5],pointRadius:0,borderWidth:2.5,spanGaps:false,order:1});
-  // 막대 위 달성률 % 표시
-  const pctPlugin={id:'pctLabels',afterDatasetsDraw(chart){
-    try{
-      const meta=chart.getDatasetMeta(0);
-      const ctx=chart.ctx;
-      meta.data.forEach((bar,i)=>{
-        if(!hasTgt||tgtArr[i]==null||!tgtArr[i]||!totalArr[i])return;
-        const pct=Math.round(totalArr[i]/tgtArr[i]*100);
-        ctx.save();
-        ctx.font=(isCurMonth[i]?'800 12px ':'700 11px ')+'Pretendard';
-        ctx.fillStyle=totalArr[i]>=tgtArr[i]?'#10B981':'#EF4444';
-        ctx.textAlign='center';
-        ctx.fillText(pct+'%',bar.x,bar.y-7);
-        ctx.restore();
-      });
-    }catch(e){}
-  }};
+    datasets.push({label:'목표',data:tgtArr,borderColor:'#F59E0B',backgroundColor:'#F59E0B',tension:.35,borderDash:[8,5],pointRadius:0,borderWidth:2.5,spanGaps:false});
   if(exCharts.trend)exCharts.trend.destroy();
   exCharts.trend=new Chart(document.getElementById('exTrendChart'),{
+    type:'line',
     data:{labels:labels.map(l=>parseInt(l.split('.')[1])+'월'),datasets},
-    plugins:[pctPlugin],
     options:{
       maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
       plugins:{
-        legend:{display:false},
+        legend:{position:'top',align:'start',labels:{boxWidth:8,boxHeight:8,usePointStyle:true,pointStyle:'circle',font:{family:"Pretendard",size:11}}},
         tooltip:{callbacks:{
-          label:(item)=>{
-            if(item.dataset.label==='목표')return '목표 '+item.parsed.y.toLocaleString()+'대';
-            let s='출고 '+item.parsed.y.toLocaleString()+'대 (신차 '+shinArr[item.dataIndex]+' · 재렌트 '+reArr[item.dataIndex]+')';
-            return s;
-          },
           footer:(items)=>{
             const i=items[0].dataIndex;
             if(!hasTgt||tgtArr[i]==null||!tgtArr[i])return '';
             const diff=totalArr[i]-tgtArr[i];
-            return (diff>=0?'목표 달성 ✓ (+':'목표 미달 (')+Math.abs(diff).toLocaleString()+'대)';
+            return (diff>=0?'목표 달성 ✓ (+':'목표 미달 (')+Math.abs(diff).toLocaleString()+'대) · 달성률 '+Math.round(totalArr[i]/tgtArr[i]*100)+'%';
           }
         }}
       },
       scales:{
-        y:{beginAtZero:true,grace:'12%',grid:{color:'#f2f3f8'},ticks:{font:{family:"Pretendard",size:10.5},color:'#aaa'}},
+        y:{suggestedMin:200,suggestedMax:1000,ticks:{stepSize:200,font:{family:"Pretendard",size:10.5},color:'#aaa'},grid:{color:'#f2f3f8'}},
         x:{grid:{display:false},ticks:{font:{family:"Pretendard",size:10.5},color:'#aaa'}}
       }
     }
@@ -2470,8 +2444,8 @@ function renderExec(){
   const tcap=document.getElementById('exTrendCap');
   if(tcap){
     tcap.innerHTML=hasTgt
-      ?'<span style="color:#10B981;font-weight:700;">■ 목표 달성</span> · <span style="color:#F87171;font-weight:700;">■ 목표 미달</span> · <span style="color:#F59E0B;font-weight:700;">┅ 목표선</span> · 막대 위 숫자는 달성률'
-      :'<span style="color:#C7CAD9;font-weight:700;">■</span> 월별 전체 출고 (목표설정 탭에 목표를 넣으면 달성/미달 색이 표시돼요)';
+      ?'<span style="color:#F59E0B;font-weight:700;">┅ 목표선</span> · 빨간 전체선이 목표선 위면 달성 · 선에 마우스를 올리면 달성률이 표시돼요'
+      :'목표설정 탭에 목표를 넣으면 목표선이 함께 표시돼요';
   }
 
   const evEl=document.getElementById('exEvents');
