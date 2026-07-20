@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>판매지원팀 판매현황</title>
+<title>하모니렌트카 · 판매지원팀 대시보드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+/* ===== 기존 컴포넌트 스타일 (상세 화면·팝업용) ===== */
+
+
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f7;color:#1c1c2e;font-size:14px;}
 
@@ -16,7 +19,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f7;color:#1c1c2e;font
 .app-title{font-size:17px;font-weight:700;letter-spacing:-0.3px;white-space:nowrap;}
 .tab-nav{display:flex;gap:2px;}
 .tab-nav-btn{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#999;transition:all 0.2s;}
-.tab-nav-btn.active{background:#6C63FF;color:#fff;}
+.tab-nav-btn.active{background:#5B5FE8;color:#fff;}
 .tab-nav-btn:hover:not(.active){background:#f0f0f8;color:#555;}
 .topbar-right{display:flex;align-items:center;gap:10px;white-space:nowrap;}
 .last-update{font-size:11px;color:#bbb;}
@@ -25,8 +28,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f7;color:#1c1c2e;font
 .connect-bar{background:#fff;border-bottom:1px solid #eee;padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .connect-bar label{font-size:12px;color:#888;}
 .connect-bar input{padding:7px 12px;font-size:13px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:8px;background:#fafafa;color:#1c1c2e;width:280px;}
-.connect-bar input:focus{outline:none;border-color:#6C63FF;}
-.btn-load{padding:7px 16px;background:#6C63FF;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;}
+.connect-bar input:focus{outline:none;border-color:#5B5FE8;}
+.btn-load{padding:7px 16px;background:#5B5FE8;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;}
 .btn-load:hover{background:#574fd6;}
 #statusMsg{font-size:12px;}
 
@@ -34,31 +37,31 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f7;color:#1c1c2e;font
 .period-bar{background:#fff;border-bottom:1px solid #e8e8f0;padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .period-seg{display:flex;background:#f0f0f8;border-radius:8px;padding:3px;}
 .seg-btn{padding:5px 14px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s;}
-.seg-btn.active{background:#fff;color:#6C63FF;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.seg-btn.active{background:#fff;color:#5B5FE8;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
 .period-sep{width:1px;height:20px;background:#e0e0ee;margin:0 4px;}
 .period-sel{padding:6px 12px;border:1.5px solid #e0e0ee;border-radius:8px;font-size:13px;font-family:inherit;background:#fff;cursor:pointer;color:#333;}
-.period-sel:focus{outline:none;border-color:#6C63FF;}
-.trend-btn-top{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid #6C63FF;background:#fff;color:#6C63FF;margin-left:auto;transition:all 0.2s;}
-.trend-btn-top.active{background:#6C63FF;color:#fff;}
+.period-sel:focus{outline:none;border-color:#5B5FE8;}
+.trend-btn-top{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid #5B5FE8;background:#fff;color:#5B5FE8;margin-left:auto;transition:all 0.2s;}
+.trend-btn-top.active{background:#5B5FE8;color:#fff;}
 
 /* SHEET TABS (하단 탭) */
 .sheet-tabs{background:#fff;border-bottom:2px solid #eee;padding:0 28px;display:flex;overflow-x:auto;}
 .sheet-tab{padding:12px 18px;font-size:13px;font-weight:500;color:#aaa;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;}
-.sheet-tab:hover{color:#6C63FF;}
-.sheet-tab.active{color:#6C63FF;border-bottom-color:#6C63FF;}
-.tab-badge{display:inline-block;margin-left:5px;font-size:10px;background:#f0eeff;color:#6C63FF;padding:1px 6px;border-radius:20px;}
+.sheet-tab:hover{color:#5B5FE8;}
+.sheet-tab.active{color:#5B5FE8;border-bottom-color:#5B5FE8;}
+.tab-badge{display:inline-block;margin-left:5px;font-size:10px;background:#f0eeff;color:#5B5FE8;padding:1px 6px;border-radius:20px;}
 
 main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 .sheet-panel{display:none;}
 .car-item{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:#555;display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
-.car-item:hover{background:#f0eeff;color:#6C63FF;}
-.car-item.active{background:#6C63FF;color:#fff;font-weight:600;}
+.car-item:hover{background:#f0eeff;color:#5B5FE8;}
+.car-item.active{background:#5B5FE8;color:#fff;font-weight:600;}
 .car-item .car-cnt{font-size:11px;opacity:0.7;}
 .car-detail-panel{background:#fff;border-radius:12px;padding:20px;border:1px solid #ebebf5;margin-top:16px;}
 .seg-mini{display:flex;background:#f0f0f8;border-radius:8px;padding:3px;gap:2px;display:inline-flex;}
 .seg-mini-btn{padding:4px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s;}
-.seg-mini-btn.active{background:#fff;color:#6C63FF;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
-.section-title-mini{font-size:14px;font-weight:700;color:#1c1c2e;margin-bottom:12px;padding-left:8px;border-left:3px solid #6C63FF;}
+.seg-mini-btn.active{background:#fff;color:#5B5FE8;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.section-title-mini{font-size:14px;font-weight:700;color:#1c1c2e;margin-bottom:12px;padding-left:8px;border-left:3px solid #5B5FE8;}
 .sheet-panel.active{display:block;}
 
 /* SUMMARY CARDS */
@@ -83,9 +86,9 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 .card{background:#fff;border-radius:14px;padding:20px;border:1px solid #ebebf5;}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .card-title{font-size:13px;font-weight:600;color:#1c1c2e;display:flex;align-items:center;gap:6px;}
-.card-title::before{content:'';display:inline-block;width:3px;height:14px;border-radius:2px;background:#6C63FF;}
-.card-badge{font-size:11px;color:#6C63FF;background:#f0eeff;padding:2px 8px;border-radius:20px;}
-.card-link{font-size:11px;color:#6C63FF;cursor:pointer;border:none;background:none;font-family:inherit;}
+.card-title::before{content:'';display:inline-block;width:3px;height:14px;border-radius:2px;background:#5B5FE8;}
+.card-badge{font-size:11px;color:#5B5FE8;background:#f0eeff;padding:2px 8px;border-radius:20px;}
+.card-link{font-size:11px;color:#5B5FE8;cursor:pointer;border:none;background:none;font-family:inherit;}
 
 /* DONUT */
 .donut-wrap{display:flex;align-items:center;gap:16px;}
@@ -106,7 +109,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 .trend-table td{padding:7px 10px;text-align:center;border-bottom:1px solid #f5f5f8;}
 .trend-table td:first-child{text-align:left;font-weight:500;}
 .trend-table tr:last-child td{background:#f8f9fc;font-weight:700;border-bottom:none;}
-.shin-c{color:#6C63FF;font-weight:600;}
+.shin-c{color:#5B5FE8;font-weight:600;}
 .re-c{color:#22c997;font-weight:600;}
 .diff-up{color:#22c997;font-size:11px;}
 .diff-dn{color:#FF6B6B;font-size:11px;}
@@ -141,24 +144,24 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 .popup-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .popup-title{font-size:15px;font-weight:700;}
 .popup-close{background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;}
-.cal-toggle-btn{width:100%;text-align:center;font-size:13px;font-weight:600;color:#6C63FF;margin-bottom:8px;padding:9px;background:#f0eeff;border-radius:10px;cursor:pointer;border:none;font-family:inherit;}
+.cal-toggle-btn{width:100%;text-align:center;font-size:13px;font-weight:600;color:#5B5FE8;margin-bottom:8px;padding:9px;background:#f0eeff;border-radius:10px;cursor:pointer;border:none;font-family:inherit;}
 .cal-wrap{display:none;gap:16px;flex-wrap:wrap;margin-bottom:14px;padding:14px;background:#f8f9fc;border-radius:10px;border:1px solid #e8e8f0;}
 .cal-wrap.open{display:flex;}
 .cal-box{flex:1;min-width:190px;}
 .cal-box-title{font-size:11px;color:#999;margin-bottom:6px;font-weight:500;}
 .cal-year-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .cal-year-btn{background:none;border:none;font-size:15px;cursor:pointer;color:#aaa;padding:0 4px;}
-.cal-year-btn:hover{color:#6C63FF;}
+.cal-year-btn:hover{color:#5B5FE8;}
 .cal-year-label{font-size:13px;font-weight:700;}
 .cal-months{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
 .cal-month-btn{padding:5px 2px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1px solid #e8e8f0;background:#fff;color:#555;text-align:center;}
-.cal-month-btn:hover{border-color:#6C63FF;color:#6C63FF;}
-.cal-month-btn.selected{background:#6C63FF;color:#fff;border-color:#6C63FF;}
+.cal-month-btn:hover{border-color:#5B5FE8;color:#5B5FE8;}
+.cal-month-btn.selected{background:#5B5FE8;color:#fff;border-color:#5B5FE8;}
 .trend-chart-wrap{position:relative;height:200px;margin-bottom:16px;}
 .series-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
 .series-chip{padding:5px 12px;border-radius:50px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid #e0e0ee;background:#fff;color:#888;transition:all 0.15s;}
-.series-chip:hover{border-color:#6C63FF;color:#6C63FF;}
-.series-chip.active{background:#6C63FF;color:#fff;border-color:#6C63FF;}
+.series-chip:hover{border-color:#5B5FE8;color:#5B5FE8;}
+.series-chip.active{background:#5B5FE8;color:#fff;border-color:#5B5FE8;}
 .series-chip.all-chip.active{background:#1c1c2e;border-color:#1c1c2e;}
 
 /* 기타 */
@@ -173,8 +176,8 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 .accum-panel-title{font-size:12px;color:#888;margin-bottom:10px;}
 .accum-btns{display:flex;gap:8px;flex-wrap:wrap;}
 .accum-btn{padding:6px 16px;border-radius:50px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid #e0e0ee;background:#fff;color:#888;transition:all 0.2s;}
-.accum-btn:hover{border-color:#6C63FF;color:#6C63FF;}
-.accum-btn.active{background:#6C63FF;color:#fff;border-color:#6C63FF;}
+.accum-btn:hover{border-color:#5B5FE8;color:#5B5FE8;}
+.accum-btn.active{background:#5B5FE8;color:#fff;border-color:#5B5FE8;}
 
 /* P2 판매채널 */
 .seller-filter-wrap{display:none;margin-bottom:14px;}
@@ -188,9 +191,343 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
   main{padding:16px 14px 40px;}
   .topbar,.period-bar,.sheet-tabs,.connect-bar{padding-left:14px;padding-right:14px;}
 }
+
+</style>
+<style>
+
+/* ===================== 새 디자인 셸 (처음 만든 틀 기반) ===================== */
+:root{
+  --primary:#5B5FE8; --primary-soft:#EEEFFE;
+  --bg:#F4F5FA; --card:#FFFFFF; --line:#E9EAF2;
+  --text:#1E2130; --muted:#8A8FA3;
+  --up:#10B981; --down:#EF4444; --blue:#3B82F6; --green:#10B981;
+}
+body{font-family:'Pretendard',-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;margin:0;}
+.sheet-tabs{display:none !important;}
+#dataModeBtns{display:none !important;}
+
+.app{display:flex;min-height:100vh;}
+.main-col{flex:1;min-width:0;display:flex;flex-direction:column;}
+main{padding:20px 28px 40px;}
+
+/* --- Sidebar --- */
+.sidebar{
+  width:216px;flex-shrink:0;background:var(--card);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:20px 12px;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 18px;}
+.brand-logo{width:38px;height:38px;border-radius:11px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.brand-name{font-weight:800;font-size:15px;letter-spacing:-0.3px;}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.nav-label{font-size:11px;color:var(--muted);font-weight:700;padding:13px 10px 6px;letter-spacing:.04em;}
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;
+  color:#5A5F73;font-weight:600;cursor:pointer;margin-bottom:2px;
+  border:none;background:none;width:100%;text-align:left;font-size:14px;font-family:inherit;transition:all .15s;
+}
+.sb-item:hover{background:var(--bg);}
+.sb-item.active{background:var(--primary);color:#fff;}
+.sb-foot{margin-top:auto;padding:12px 10px 2px;font-size:11px;color:var(--muted);line-height:1.6;}
+
+@media (max-width:900px){
+  .app{flex-direction:column;}
+  .sidebar{position:static;width:100%;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:2px;padding:12px 14px;border-right:none;border-bottom:1px solid var(--line);}
+  .brand{padding:0 10px 0 0;}
+  .nav-label,.sb-foot{display:none;}
+  .sb-item{width:auto;padding:8px 12px;font-size:13px;}
+}
+
+/* --- Topbar --- */
+.nx-topbar{
+  background:var(--card);border-bottom:1px solid var(--line);
+  padding:15px 28px;display:flex;align-items:center;gap:16px;
+  position:sticky;top:0;z-index:100;
+}
+.nx-topbar h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.3px;}
+.nx-topbar .desc{font-size:12px;color:var(--muted);margin-top:3px;}
+.nx-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.nx-notice-btn{padding:7px 14px;border-radius:9px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:1.5px solid var(--primary);background:#fff;color:var(--primary);white-space:nowrap;}
+.nx-notice-btn:hover{background:var(--primary-soft);}
+.user-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 8px;font-weight:700;font-size:13px;}
+.user-chip .avatar{width:26px;height:26px;border-radius:50%;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.last-update{font-size:11.5px;color:var(--muted);}
+
+/* ===================== 경영현황 페이지 ===================== */
+#execPage{display:none;padding:22px 28px 44px;max-width:1400px;width:100%;margin:0 auto;}
+.ex-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:16px;}
+.ex-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.ex-badge{width:22px;height:22px;border-radius:7px;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ex-title{font-size:15px;font-weight:800;}
+.ex-title small{font-weight:600;color:var(--muted);font-size:12px;margin-left:4px;}
+.ex-head .ex-more{margin-left:auto;padding:6px 13px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--primary);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;}
+.ex-head .ex-more:hover{background:var(--primary-soft);}
+
+.ex-toprow{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.ex-pagetitle{font-size:19px;font-weight:800;letter-spacing:-0.3px;}
+.ex-pagedesc{font-size:12.5px;color:var(--muted);margin-top:2px;}
+.ex-basedate{margin-left:auto;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 13px;font-size:13px;font-weight:600;color:#4A4F63;}
+.ex-basedate input{border:none;font-family:inherit;font-size:13px;font-weight:700;color:var(--text);outline:none;background:none;}
+
+.ex-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.ex-kpi{border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;}
+.ex-kpi-top{display:flex;align-items:center;gap:12px;}
+.ex-kpi-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ex-kpi-label{font-size:13px;color:var(--muted);font-weight:600;}
+.ex-kpi-value{font-size:29px;font-weight:800;letter-spacing:-.02em;}
+.ex-kpi-value small{font-size:15px;font-weight:700;color:#4A4F63;margin-left:1px;}
+.ex-delta{font-size:12.5px;font-weight:700;}
+.ex-delta .vs{color:var(--muted);font-weight:500;}
+.ex-up{color:var(--up);} .ex-down{color:var(--down);} .ex-flat{color:var(--muted);}
+.ex-kpi-bar{height:6px;border-radius:99px;background:#EDEEF5;overflow:hidden;}
+.ex-kpi-bar i{display:block;height:100%;background:linear-gradient(90deg,#8d90f2,var(--primary));border-radius:99px;}
+
+.ex-row23{display:grid;grid-template-columns:minmax(310px,380px) 1fr;gap:16px;}
+.ex-row56{display:grid;grid-template-columns:1.15fr 0.85fr;gap:16px;}
+@media (max-width:1080px){.ex-row23,.ex-row56{grid-template-columns:1fr;}.ex-kpis{grid-template-columns:1fr;}}
+
+.ex-goal-table{width:100%;border-collapse:collapse;margin-bottom:12px;}
+.ex-goal-table th{font-size:12px;color:var(--muted);font-weight:600;text-align:right;padding-bottom:8px;}
+.ex-goal-table th:first-child{text-align:left;}
+.ex-goal-table td{font-size:14.5px;font-weight:800;padding:3px 0;text-align:right;}
+.ex-goal-table td:first-child{text-align:left;font-size:13px;color:#5A5F73;font-weight:600;}
+.ex-goal-table tr.ex-total td{border-top:1px solid var(--line);padding-top:8px;font-size:15.5px;}
+.ex-progress{height:8px;border-radius:99px;background:#EDEEF5;overflow:hidden;margin:4px 0 14px;}
+.ex-progress i{display:block;height:100%;background:var(--primary);border-radius:99px;}
+.ex-minis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.ex-mini{border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center;}
+.ex-mini .l{font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:6px;}
+.ex-mini .v{font-size:18px;font-weight:800;}
+.ex-mini .v.red{color:var(--down);}
+.ex-outlook{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;}
+.ex-outlook .l{font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:5px;}
+.ex-outlook .v{font-size:17px;font-weight:800;}
+.ex-warn{margin-top:12px;text-align:center;font-weight:800;font-size:13px;border-radius:10px;padding:9px;}
+.ex-warn.bad{color:var(--down);background:#FEF1F1;}
+.ex-warn.good{color:var(--up);background:#E6F8F1;}
+.ex-noteset{margin-top:11px;font-size:11px;color:var(--muted);text-align:center;line-height:1.6;}
+
+.ex-trendwrap{position:relative;height:265px;}
+.ex-events{display:flex;margin-top:14px;border-top:1px dashed var(--line);padding-top:12px;}
+.ex-event{flex:1;text-align:center;font-size:10.5px;color:var(--muted);line-height:1.45;padding:0 2px;}
+.ex-event .dot{width:8px;height:8px;border-radius:50%;margin:0 auto 5px;background:#D6D8E4;}
+.ex-event.hl .dot{background:var(--primary);}
+.ex-event.hl{color:#4A4F63;font-weight:600;}
+
+.ex-tabs{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:11px;margin-bottom:15px;}
+.ex-tab{flex:1;border:none;background:none;padding:8px 4px;border-radius:8px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;}
+.ex-tab.active{background:var(--primary);color:#fff;}
+.ex-dcols{display:grid;grid-template-columns:1.1fr 1.6fr 62px 74px;gap:10px;font-size:12px;color:var(--muted);font-weight:600;padding:0 2px 8px;border-bottom:1px solid var(--line);}
+.ex-drow{display:grid;grid-template-columns:1.1fr 1.6fr 62px 74px;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid #F3F4F9;}
+.ex-drow:last-child{border-bottom:none;}
+.ex-dname{font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ex-dbar{height:10px;border-radius:99px;background:#EDEEF5;overflow:hidden;}
+.ex-dbar i{display:block;height:100%;background:var(--primary);border-radius:99px;}
+.ex-dcnt{font-weight:800;text-align:right;font-size:13.5px;}
+.ex-ddelta{text-align:right;font-size:12.5px;font-weight:800;}
+
+.ex-gaugewrap{position:relative;width:min(300px,100%);margin:2px auto 0;}
+.ex-gaugecenter{position:absolute;left:0;right:0;bottom:10%;text-align:center;pointer-events:none;}
+.ex-gaugecenter .l{font-size:12.5px;color:var(--muted);font-weight:600;}
+.ex-gaugecenter .v{font-size:33px;font-weight:800;letter-spacing:-.02em;}
+.ex-gaugecenter .p{font-size:13px;font-weight:700;color:#4A4F63;margin-top:1px;}
+.ex-fstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:15px;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;}
+.ex-fstats .l{font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:5px;display:flex;align-items:center;justify-content:center;gap:5px;}
+.ex-fstats .l .d{width:8px;height:8px;border-radius:50%;}
+.ex-fstats .v{font-size:18px;font-weight:800;}
+.ex-fnote{margin-top:12px;font-size:11.5px;color:var(--muted);text-align:center;}
+
+.ex-holds{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media (max-width:1080px){.ex-holds{grid-template-columns:1fr;}}
+.ex-hold{border:1.5px dashed #D4D6E4;border-radius:16px;padding:17px 19px;color:var(--muted);}
+.ex-hold .t{font-weight:800;font-size:13px;color:#9BA0B4;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ex-hold .t .tag{font-size:10.5px;background:#EDEEF5;border-radius:6px;padding:2px 8px;font-weight:700;}
+.ex-hold p{font-size:12px;margin-top:6px;line-height:1.6;}
+
+/* ===== 상세 화면 폭 보정 ===== */
+main{width:100%;box-sizing:border-box;}
+main .main-grid{width:100%;}
+@media (max-width:1350px){ main .main-grid.wide{grid-template-columns:1fr 1fr;} }
+@media (max-width:1150px){ main .main-grid, main .main-grid.wide{grid-template-columns:1fr 1fr;} }
+@media (max-width:950px){ main .main-grid, main .main-grid.wide{grid-template-columns:1fr;} }
+
+/* ===== 월별 비교 ===== */
+#monthlyPage{padding:22px 28px 44px;max-width:1400px;width:100%;margin:0 auto;}
+.mc-chartwrap{position:relative;height:330px;}
+.mc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:12px;}
+.mc-month{border:1px solid var(--line);border-radius:13px;padding:13px 14px;background:#fff;display:flex;flex-direction:column;gap:9px;}
+.mc-mhead{display:flex;justify-content:space-between;align-items:baseline;}
+.mc-mhead b{font-size:15px;}
+.mc-mhead span{color:var(--muted);font-size:11.5px;font-weight:600;}
+.mc-memos{display:flex;flex-direction:column;gap:6px;min-height:26px;}
+.mc-memo{font-size:12px;line-height:1.5;background:var(--bg);border-radius:8px;padding:7px 24px 7px 9px;position:relative;word-break:break-all;}
+.mc-memo.shared{background:var(--primary-soft);}
+.mc-del{position:absolute;right:4px;top:4px;border:none;background:none;color:#C6C9D6;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;}
+.mc-del:hover{color:var(--down);}
+.mc-empty{font-size:11.5px;color:#C6C9D6;padding:2px 0;}
+.mc-add{display:flex;gap:6px;}
+.mc-add input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;min-width:0;background:#fff;}
+.mc-add input:focus{border-color:var(--primary);}
+.mc-add button{border:none;background:var(--primary);color:#fff;border-radius:8px;width:32px;height:30px;font-size:16px;cursor:pointer;flex-shrink:0;}
+
 </style>
 </head>
 <body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <div class="brand" style="flex-direction:column;align-items:flex-start;gap:7px;">
+      <img src="data:image/png;base64,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" alt="하모니렌트카" style="width:158px;height:auto;display:block;"/>
+    </div>
+
+    <div class="nav-label">판매</div>
+    <button class="sb-item active" data-page="exec" onclick="goPage('exec')"><span>🏠</span><span>판매현황</span></button>
+    <button class="sb-item" data-page="monthly" onclick="goPage('monthly')"><span>📊</span><span>월별 비교</span></button>
+
+    <div class="nav-label">상세 분석 (실무)</div>
+    <button class="sb-item" data-page="product" onclick="goPage('product')"><span>📦</span><span>상품별 현황</span></button>
+    <button class="sb-item" data-page="model" onclick="goPage('model')"><span>🚙</span><span>차종별 현황</span></button>
+    <button class="sb-item" data-page="channel" onclick="goPage('channel')"><span>📡</span><span>판매채널별 현황</span></button>
+    <button class="sb-item" data-page="agent" onclick="goPage('agent')"><span>👥</span><span>수행자별 현황</span></button>
+
+    <div class="nav-label">탁송</div>
+    <button class="sb-item" data-page="takso" onclick="goPage('takso')"><span>🚚</span><span>탁송 현황</span></button>
+
+    <div class="sb-foot" id="sbFoot"></div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main-col">
+    <header class="nx-topbar">
+      <div>
+        <h1 id="pageTitle">판매현황 요약</h1>
+        <div class="desc" id="pageDesc">한눈에 보는 판매 실적과 주요 지표</div>
+      </div>
+      <div class="nx-right">
+        <span class="last-update" id="lastUpdate" style="display:none;"></span>
+        <button class="nx-notice-btn" onclick="openNotice()">📢 공지 / 요청사항</button>
+        <div class="user-chip"><div class="avatar">👤</div>판매지원팀</div>
+      </div>
+    </header>
+
+    <!-- ===================== 경영현황 페이지 ===================== -->
+    <div id="execPage">
+      <div class="ex-toprow">
+        <div>
+          <div class="ex-pagetitle">판매현황</div>
+          <div class="ex-pagedesc">KPI · 목표 · 추세 · 원인 · 예측</div>
+        </div>
+        <label class="ex-basedate">📅 기준일 <input type="date" id="baseDateInput" onchange="renderExec()"></label>
+      </div>
+
+      <!-- 1. Executive Summary -->
+      <section class="ex-card">
+        <div class="ex-head"><div class="ex-badge">1</div><div class="ex-title">판매 요약</div></div>
+        <div class="ex-kpis" id="exKpis"><div style="color:#8A8FA3;font-size:13px;">데이터 로딩 중...</div></div>
+      </section>
+
+      <!-- 2 + 3 -->
+      <div class="ex-row23">
+        <section class="ex-card" style="margin-bottom:0;">
+          <div class="ex-head"><div class="ex-badge">2</div><div class="ex-title">목표 달성 현황</div></div>
+          <div id="exGoal"><div style="color:#8A8FA3;font-size:13px;">-</div></div>
+        </section>
+
+        <section class="ex-card" style="margin-bottom:0;display:flex;flex-direction:column;">
+          <div class="ex-head">
+            <div class="ex-badge">3</div><div class="ex-title">실적 추이</div>
+            <button class="ex-more" onclick="openTrendPopup()">기간별 상세 조회 →</button>
+          </div>
+          <div class="ex-trendwrap"><canvas id="exTrendChart"></canvas></div>
+          <div id="exTrendCap" style="margin-top:9px;font-size:11px;color:#8A8FA3;"></div>
+          <div class="ex-events" id="exEvents"></div>
+        </section>
+      </div>
+      <div style="height:16px;"></div>
+
+      <!-- 5 + 6 -->
+      <div class="ex-row56">
+        <section class="ex-card" style="margin-bottom:0;">
+          <div class="ex-head"><div class="ex-badge">5</div><div class="ex-title">원인 분석 <small>(Drill Down)</small></div></div>
+          <div class="ex-tabs" id="exDrillTabs"></div>
+          <div class="ex-dcols"><div id="exDrillCol">상품명</div><div></div><div style="text-align:right;">출고 건수</div><div style="text-align:right;">전월 대비</div></div>
+          <div id="exDrillRows"></div>
+        </section>
+
+        <section class="ex-card" style="margin-bottom:0;">
+          <div class="ex-head"><div class="ex-badge">6</div><div class="ex-title">예상 실적</div></div>
+          <div style="font-size:13px;color:#8A8FA3;font-weight:600;margin-bottom:2px;">이번달 예상 출고</div>
+          <div class="ex-gaugewrap">
+            <canvas id="exGaugeChart"></canvas>
+            <div class="ex-gaugecenter">
+              <div class="l">예상</div>
+              <div class="v" id="exFcExpect">-</div>
+              <div class="p" id="exFcProb"></div>
+            </div>
+          </div>
+          <div class="ex-fstats">
+            <div><div class="l"><span class="d" style="background:#3B82F6;"></span>목표</div><div class="v" id="exFcTarget">-</div></div>
+            <div><div class="l"><span class="d" style="background:#10B981;"></span>예상</div><div class="v" id="exFcExpect2">-</div></div>
+            <div><div class="l">부족 예상</div><div class="v" id="exFcShort" style="color:#EF4444;">-</div></div>
+          </div>
+          <div class="ex-fnote">※ 현재 페이스(영업일 기준) 유지 시 예측 · 공휴일 미반영</div>
+        </section>
+      </div>
+      <div style="height:16px;"></div>
+
+      <!-- 보류 -->
+      <div class="ex-holds">
+        <div class="ex-hold">
+          <div class="t">4 · Insight (원인 분석 요약) <span class="tag">보류</span></div>
+          <p>재고·계약취소 데이터 연동 후 반영 예정</p>
+        </div>
+        <div class="ex-hold">
+          <div class="t">7 · Action (추천 액션) &amp; Alert Center <span class="tag">보류</span></div>
+          <p>예측·재고·계약 데이터 연동 후 반영 예정</p>
+        </div>
+      </div>
+    </div><!-- /execPage -->
+
+    <!-- ===================== 월별 비교 페이지 ===================== -->
+    <div id="monthlyPage" style="display:none;">
+      <div class="ex-toprow">
+        <div>
+          <div class="ex-pagetitle">월별 비교</div>
+          <div class="ex-pagedesc">신차·재렌트 월별 출고 비교와 프로모션 메모</div>
+        </div>
+        <label class="ex-basedate">📅 연도
+          <select id="mcYearSel" onchange="mcYearChange(this.value)"
+            style="border:none;font-family:inherit;font-size:13px;font-weight:700;outline:none;background:none;cursor:pointer;"></select>
+        </label>
+      </div>
+
+      <section class="ex-card">
+        <div class="ex-head">
+          <div class="ex-badge">📊</div><div class="ex-title" id="mcChartTitle">월별 출고 비교</div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <select id="mcMonthSel" onchange="mcMonthChange(this.value)" style="display:none;border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--text);outline:none;background:#fff;cursor:pointer;"></select>
+            <div class="ex-tabs" style="margin:0;padding:3px;">
+              <button id="mcModeMonth" class="ex-tab active" onclick="mcModeChange('month')" style="flex:none;padding:6px 16px;">월별</button>
+              <button id="mcModeWeek" class="ex-tab" onclick="mcModeChange('week')" style="flex:none;padding:6px 16px;">주간</button>
+            </div>
+          </div>
+        </div>
+        <div class="mc-chartwrap"><canvas id="mcChart"></canvas></div>
+        <div id="mcCaption" style="margin-top:10px;font-size:11.5px;color:#8A8FA3;"></div>
+      </section>
+
+      <section class="ex-card">
+        <div class="ex-head"><div class="ex-badge">📝</div><div class="ex-title">월별 메모 <small>프로모션·이슈 기록</small></div></div>
+        <div class="mc-grid" id="mcMemoGrid"></div>
+        <div id="mcNote" style="margin-top:14px;font-size:11.5px;color:#8A8FA3;line-height:1.7;"></div>
+      </section>
+    </div><!-- /monthlyPage -->
+
+
+
+<!-- ===================== 상세 분석 (기존 화면) ===================== -->
+
 
 <!-- TOP BAR -->
 <!-- 로딩 팝업 -->
@@ -200,25 +537,15 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
     <div style="font-size:16px;font-weight:700;color:#1c1c2e;margin-bottom:8px;">데이터를 불러오는 중이에요</div>
     <div style="font-size:13px;color:#aaa;">잠시만 기다려 주세요!</div>
     <div style="margin-top:20px;display:flex;justify-content:center;gap:6px;">
-      <div style="width:8px;height:8px;border-radius:50%;background:#6C63FF;animation:bounce 1s infinite 0s;"></div>
-      <div style="width:8px;height:8px;border-radius:50%;background:#6C63FF;animation:bounce 1s infinite 0.2s;"></div>
-      <div style="width:8px;height:8px;border-radius:50%;background:#6C63FF;animation:bounce 1s infinite 0.4s;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#5B5FE8;animation:bounce 1s infinite 0s;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#5B5FE8;animation:bounce 1s infinite 0.2s;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#5B5FE8;animation:bounce 1s infinite 0.4s;"></div>
     </div>
   </div>
 </div>
 <style>
 @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
 </style>
-
-<div class="topbar">
-  <div class="topbar-left">
-    <span class="app-title">판매지원팀 판매현황</span>
-  </div>
-  <div class="topbar-right" style="display:flex;align-items:center;gap:14px;">
-    <span class="last-update" id="lastUpdate" style="display:none;"></span>
-    <button onclick="openNotice()" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:1.5px solid #6C63FF;background:#fff;color:#6C63FF;white-space:nowrap;">📢 공지 / 요청사항</button>
-  </div>
-</div>
 
 <!-- CONNECT -->
 <div class="connect-bar" style="display:none;">
@@ -231,14 +558,14 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 <div id="dataModeBtns" style="display:none;padding:8px 28px;background:#fff;border-bottom:1px solid #e8e8f0;">
   <div style="display:flex;background:#f0f0f8;border-radius:8px;padding:3px;gap:2px;width:fit-content;">
     <button onclick="setDataMode('exec')" id="btn_exec"
-      style="padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:#6C63FF;color:#fff;transition:all 0.15s;">실행</button>
+      style="padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:#5B5FE8;color:#fff;transition:all 0.15s;">실행</button>
     <button onclick="setDataMode('takso')" id="btn_takso"
       style="padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all 0.15s;">탁송</button>
   </div>
 </div>
 
 <!-- PERIOD BAR -->
-<div class="period-bar" id="periodBar">
+<div class="period-bar" id="periodBar" style="display:none;">
   <div class="period-seg">
     <button class="seg-btn active" onclick="setMode('month')" id="seg_month">월별</button>
     <button class="seg-btn" onclick="setMode('year')" id="seg_year">년도별</button>
@@ -268,7 +595,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 
     <!-- 공지사항 -->
     <div style="margin-bottom:20px;">
-      <div style="font-size:13px;font-weight:600;color:#6C63FF;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #f0eeff;">📌 공지사항</div>
+      <div style="font-size:13px;font-weight:600;color:#5B5FE8;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #f0eeff;">📌 공지사항</div>
       <div style="font-size:13px;color:#555;line-height:1.8;background:#f8f9fc;border-radius:10px;padding:14px;">
         • 데이터는 매일 수동 업데이트됩니다.<br>
         • 탁송 데이터는 희망출고일 기준입니다.<br>
@@ -278,16 +605,16 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 
     <!-- 요청사항 입력 -->
     <div>
-      <div style="font-size:13px;font-weight:600;color:#6C63FF;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #f0eeff;">✏️ 요청사항</div>
+      <div style="font-size:13px;font-weight:600;color:#5B5FE8;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #f0eeff;">✏️ 요청사항</div>
       <input type="text" id="noticeNameInput" placeholder="이름 (예: 홍길동)" 
         style="width:100%;padding:10px 12px;font-size:13px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:10px;outline:none;box-sizing:border-box;margin-bottom:8px;"
-        onfocus="this.style.borderColor='#6C63FF'" onblur="this.style.borderColor='#e8e8f0'"/>
+        onfocus="this.style.borderColor='#5B5FE8'" onblur="this.style.borderColor='#e8e8f0'"/>
       <textarea id="noticeInput" placeholder="개선사항이나 요청사항을 남겨주세요 😊" rows="4"
         style="width:100%;padding:12px;font-size:13px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:10px;resize:none;outline:none;box-sizing:border-box;"
-        onfocus="this.style.borderColor='#6C63FF'" onblur="this.style.borderColor='#e8e8f0'"></textarea>
+        onfocus="this.style.borderColor='#5B5FE8'" onblur="this.style.borderColor='#e8e8f0'"></textarea>
       <div id="noticeList" style="margin-top:12px;max-height:160px;overflow-y:auto;"></div>
       <button onclick="submitNotice()"
-        style="margin-top:10px;width:100%;padding:10px;background:#6C63FF;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;">
+        style="margin-top:10px;width:100%;padding:10px;background:#5B5FE8;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;">
         등록하기
       </button>
     </div>
@@ -331,7 +658,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
   </div>
 </div>
 
-<main>
+<main style="display:none">
   <!-- P0: 상품별 현황 -->
   <div id="panel0" class="sheet-panel active">
     <!-- 상품유형 필터 -->
@@ -341,7 +668,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
       <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #1c1c2e;background:#fff;">
         <input type="checkbox" id="typeAllCb" onchange="toggleTypeAll(this)" checked style="accent-color:#1c1c2e;"> 전체
       </label>
-    </div>    </div>
+    </div>
     <!-- 탁송 모드 전용 기간 선택 -->
     <div id="takso_period_bar" style="display:none;margin-bottom:16px;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -386,8 +713,14 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
   </div>
 </main>
 
+
+
+  </div><!-- /main-col -->
+</div><!-- /app -->
+
 <script>
-const COLORS=['#6C63FF','#22c997','#FF6B6B','#FFA94D','#4dabf7','#f06595','#a9e34b','#74c0fc','#e599f7','#ffd43b'];
+
+const COLORS=['#5B5FE8','#22c997','#FF6B6B','#FFA94D','#4dabf7','#f06595','#a9e34b','#74c0fc','#e599f7','#ffd43b'];
 const MONTHS_KR=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 let rawTable=null, rawTaksoTable=null, currentTab=0, dataMode='exec', selectedCar='__all__', carTypeMode='신차', allCarList=[];
 let viewMode='month'; // 'month' | 'accum'
@@ -420,8 +753,8 @@ function setDataMode(mode){
   dataMode=mode;
   const execBtn=document.getElementById('btn_exec');
   const taksoBtn=document.getElementById('btn_takso');
-  if(execBtn){execBtn.style.background=mode==='exec'?'#6C63FF':'transparent';execBtn.style.color=mode==='exec'?'#fff':'#888';}
-  if(taksoBtn){taksoBtn.style.background=mode==='takso'?'#6C63FF':'transparent';taksoBtn.style.color=mode==='takso'?'#fff':'#888';}
+  if(execBtn){execBtn.style.background=mode==='exec'?'#5B5FE8':'transparent';execBtn.style.color=mode==='exec'?'#fff':'#888';}
+  if(taksoBtn){taksoBtn.style.background=mode==='takso'?'#5B5FE8':'transparent';taksoBtn.style.color=mode==='takso'?'#fff':'#888';}
 
   const sheetTabsEl=document.getElementById('sheetTabs');
   if(sheetTabsEl)sheetTabsEl.style.display=mode==='takso'?'none':'flex';
@@ -651,7 +984,7 @@ function buildTypeCheckboxes(types){
   if(!box)return;
   box.innerHTML=types.map(t=>`
     <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:20px;border:1.5px solid #e0e0ee;background:#fff;">
-      <input type="checkbox" value="${t}" onchange="toggleType(this)" ${selectedTypes.has(t)?'checked':''} style="accent-color:#6C63FF;"> ${t}
+      <input type="checkbox" value="${t}" onchange="toggleType(this)" ${selectedTypes.has(t)?'checked':''} style="accent-color:#5B5FE8;"> ${t}
     </label>`).join('');
   if(allCb)allCb.checked=types.length>0&&types.every(t=>selectedTypes.has(t));
 }
@@ -740,7 +1073,7 @@ function renderP0(){
       </div>
       <div class="sum-card">
         <div class="sum-label">신차 계약</div>
-        <div class="sum-value" style="color:#6C63FF;">${shincha.length.toLocaleString()}<span style="font-size:16px;font-weight:500;color:#aaa;"> 건</span></div>
+        <div class="sum-value" style="color:#5B5FE8;">${shincha.length.toLocaleString()}<span style="font-size:16px;font-weight:500;color:#aaa;"> 건</span></div>
         <div class="sum-sub">${pctBadge(shincha.length,prevShin)} <span style="color:#bbb;font-size:11px;">전년 동기 대비</span></div>
       </div>
       <div class="sum-card">
@@ -781,13 +1114,13 @@ function renderP0(){
             <button onclick="toggleTrendTable()" id="trendTableToggle"
               style="padding:4px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid #e0e0ee;background:#fff;color:#888;">▼ 상세</button>
             <button onclick="openTrendPopup()"
-              style="padding:4px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid #6C63FF;background:#fff;color:#6C63FF;">자세히보기</button>
+              style="padding:4px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid #5B5FE8;background:#fff;color:#5B5FE8;">자세히보기</button>
           </div>
         </div>
         <div class="chart-wrap"><canvas id="trend_mini"></canvas></div>
         <div id="trendTableWrap2" style="display:none;margin-top:10px;">
           <table class="trend-table">
-            <thead><tr><th>월</th><th style="color:#6C63FF;">신차</th><th style="color:#22c997;">재렌트</th><th>총 계약</th></tr></thead>
+            <thead><tr><th>월</th><th style="color:#5B5FE8;">신차</th><th style="color:#22c997;">재렌트</th><th>총 계약</th></tr></thead>
             <tbody>
               ${recentMonths.map(m=>`<tr><td>${m}</td><td class="shin-c">${shinByM[m]||0}</td><td class="re-c">${reByM[m]||0}</td><td>${(shinByM[m]||0)+(reByM[m]||0)}</td></tr>`).join('')}
               <tr><td>합계</td><td class="shin-c">${recentMonths.reduce((a,m)=>a+(shinByM[m]||0),0)}</td><td class="re-c">${recentMonths.reduce((a,m)=>a+(reByM[m]||0),0)}</td><td>${recentMonths.reduce((a,m)=>a+(shinByM[m]||0)+(reByM[m]||0),0)}</td></tr>
@@ -804,8 +1137,8 @@ function renderP0(){
         <div class="stat-row">
           <div class="stat-item tooltip-wrap" data-tip="${buildAgeTip(shinND,iAge)}">
             <div class="stat-label">신차 무보증 <span style="font-size:10px;color:#c0b8ff;">● hover</span></div>
-            <div class="stat-val" style="color:#6C63FF;">${shinND.length}<span class="stat-unit">건</span>
-              <span class="stat-pct" style="background:#f0eeff;color:#6C63FF;">${shinNDpct}%</span>
+            <div class="stat-val" style="color:#5B5FE8;">${shinND.length}<span class="stat-unit">건</span>
+              <span class="stat-pct" style="background:#f0eeff;color:#5B5FE8;">${shinNDpct}%</span>
             </div>
           </div>
           <div class="stat-item tooltip-wrap" data-tip="${buildAgeTip(reND,iAge)}">
@@ -856,7 +1189,7 @@ function renderP0(){
     charts['trend_mini']=new Chart(mc.getContext('2d'),{
       type:'line',
       data:{labels:recentMonths,datasets:[
-        {label:'신차',data:recentMonths.map(m=>shinByM[m]||0),borderColor:'#6C63FF',backgroundColor:'rgba(108,99,255,0.07)',tension:0.4,pointRadius:3,fill:true},
+        {label:'신차',data:recentMonths.map(m=>shinByM[m]||0),borderColor:'#5B5FE8',backgroundColor:'rgba(108,99,255,0.07)',tension:0.4,pointRadius:3,fill:true},
         {label:'재렌트',data:recentMonths.map(m=>reByM[m]||0),borderColor:'#22c997',backgroundColor:'rgba(34,201,151,0.05)',tension:0.4,pointRadius:3,fill:true},
         {label:'총 계약',data:recentMonths.map(m=>(shinByM[m]||0)+(reByM[m]||0)),borderColor:'#FF6B6B',borderDash:[5,3],tension:0.4,pointRadius:3,fill:false},
       ]},
@@ -883,7 +1216,7 @@ function buildInsights(filtered,shincha,rerent,prevTotal,prevShin,prevRe,shinTyp
 
   const shinPct=filtered.length?Math.round(shincha.length/filtered.length*100):0;
   const prevShinPct=prevTotal?Math.round(prevShin/prevTotal*100):0;
-  ins.push({icon:'🚗',color:'#6C63FF',
+  ins.push({icon:'🚗',color:'#5B5FE8',
     title:`신차 비중 ${shinPct>=50?'강세':'약세'}`,
     desc:`신차 비중이 ${shinPct}%로, 전년 동기 대비 ${(shinPct-prevShinPct).toFixed(1)}%p 변동했습니다.`});
 
@@ -1031,12 +1364,12 @@ function renderP1(){
   const trimMap=iTrimIdx>=0?countMap(clickedRows,r=>extractTrim(r[iTrimIdx])):{};
 
   const chartDatasets=isAll?[
-    {label:'신차',data:months.map(m=>shinByM[m]||0),backgroundColor:'#6C63FF',borderRadius:4,borderSkipped:false},
+    {label:'신차',data:months.map(m=>shinByM[m]||0),backgroundColor:'#5B5FE8',borderRadius:4,borderSkipped:false},
     {label:'재렌트',data:months.map(m=>reByM[m]||0),backgroundColor:'#22c997',borderRadius:4,borderSkipped:false},
   ]:[{
     label:p1CarMode==='shin'?'신차':'재렌트',
     data:months.map(m=>p1CarMode==='shin'?shinByM[m]||0:reByM[m]||0),
-    backgroundColor:months.map(m=>m===p1ClickedMonth?'#FF6B6B':'#6C63FF'),
+    backgroundColor:months.map(m=>m===p1ClickedMonth?'#FF6B6B':'#5B5FE8'),
     borderRadius:4,borderSkipped:false
   }];
 
@@ -1051,7 +1384,7 @@ function renderP1(){
         <div id="p1_car_list_inner">
           ${carSorted.map(([car,cnt])=>`
             <div onclick="selectCar('${car.replace(/'/g,"\'")}')"
-              style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #f8f8fc;display:flex;justify-content:space-between;align-items:center;background:${p1SelectedCar===car?'#6C63FF':''};"
+              style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #f8f8fc;display:flex;justify-content:space-between;align-items:center;background:${p1SelectedCar===car?'#5B5FE8':''};"
               class="car-item" data-car="${car}">
               <span style="font-size:13px;font-weight:${p1SelectedCar===car?'700':'400'};color:${p1SelectedCar===car?'#fff':'#333'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${car}</span>
               <span style="font-size:11px;color:${p1SelectedCar===car?'rgba(255,255,255,0.8)':'#aaa'};flex-shrink:0;margin-left:4px;">${cnt}</span>
@@ -1067,7 +1400,7 @@ function renderP1(){
             <div style="font-size:12px;color:#aaa;margin-top:2px;">${yr}년 기준 · ${carRows.length}건</div>
           </div>
           <div style="display:flex;background:#f0f0f8;border-radius:8px;padding:3px;gap:2px;">
-            ${['shin','re','all'].map(m=>`<button onclick="setP1Mode('${m}')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:${p1CarMode===m?'#fff':'transparent'};color:${p1CarMode===m?'#6C63FF':'#888'};box-shadow:${p1CarMode===m?'0 1px 4px rgba(0,0,0,0.1)':'none'};">${m==='shin'?'신차':m==='re'?'재렌트':'전체'}</button>`).join('')}
+            ${['shin','re','all'].map(m=>`<button onclick="setP1Mode('${m}')" style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:${p1CarMode===m?'#fff':'transparent'};color:${p1CarMode===m?'#5B5FE8':'#888'};box-shadow:${p1CarMode===m?'0 1px 4px rgba(0,0,0,0.1)':'none'};">${m==='shin'?'신차':m==='re'?'재렌트':'전체'}</button>`).join('')}
           </div>
         </div>
 
@@ -1088,9 +1421,9 @@ function renderP1(){
                 <span style="font-size:15px;font-weight:700;">${p1ClickedMonth?parseInt(p1ClickedMonth.split('.')[1])+'월 상세':''}</span>
                 <div style="display:flex;gap:6px;">
                   <button onclick="setP1Detail('fuel')" id="p1_fuel_btn"
-                    style="padding:5px 12px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid ${p1DetailMode==='fuel'?'#6C63FF':'#e0e0ee'};background:${p1DetailMode==='fuel'?'#6C63FF':'#fff'};color:${p1DetailMode==='fuel'?'#fff':'#888'};">유종별</button>
+                    style="padding:5px 12px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid ${p1DetailMode==='fuel'?'#5B5FE8':'#e0e0ee'};background:${p1DetailMode==='fuel'?'#5B5FE8':'#fff'};color:${p1DetailMode==='fuel'?'#fff':'#888'};">유종별</button>
                   <button onclick="setP1Detail('trim')" id="p1_trim_btn"
-                    style="padding:5px 12px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid ${p1DetailMode==='trim'?'#6C63FF':'#e0e0ee'};background:${p1DetailMode==='trim'?'#6C63FF':'#fff'};color:${p1DetailMode==='trim'?'#fff':'#888'};">트림별</button>
+                    style="padding:5px 12px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;border:1.5px solid ${p1DetailMode==='trim'?'#5B5FE8':'#e0e0ee'};background:${p1DetailMode==='trim'?'#5B5FE8':'#fff'};color:${p1DetailMode==='trim'?'#fff':'#888'};">트림별</button>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:8px;">
@@ -1261,7 +1594,7 @@ function renderP2(){
     dealerDetail.innerHTML=`<div class="card"><div class="card-header"><span class="card-title">판매사별 상세</span><span class="card-badge">${sr.length}개 판매사</span></div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="border-bottom:2px solid #f0f0f8;"><th style="text-align:left;padding:9px 12px;color:#999;font-weight:500;">판매사</th><th style="padding:9px 12px;color:#999;font-weight:500;">계약수행자</th><th style="padding:9px 12px;color:#999;font-weight:500;">원수행자</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">전체</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">신차</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">재렌트</th></tr></thead>
-        <tbody>${sr.map(([name,s],i)=>`<tr style="border-bottom:1px solid #f5f5f8;"><td style="padding:9px 12px;font-weight:600;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:7px;"></span>${name}</td><td style="padding:9px 12px;color:#555;text-align:center;">${s.info?.계약수행자||'-'}</td><td style="padding:9px 12px;color:#888;text-align:center;">${s.info?.원수행자||'-'}</td><td style="text-align:right;padding:9px 12px;font-weight:700;">${s.total}</td><td style="text-align:right;padding:9px 12px;color:#6C63FF;">${s.shin}</td><td style="text-align:right;padding:9px 12px;color:#22c997;">${s.re}</td></tr>`).join('')}</tbody>
+        <tbody>${sr.map(([name,s],i)=>`<tr style="border-bottom:1px solid #f5f5f8;"><td style="padding:9px 12px;font-weight:600;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:7px;"></span>${name}</td><td style="padding:9px 12px;color:#555;text-align:center;">${s.info?.계약수행자||'-'}</td><td style="padding:9px 12px;color:#888;text-align:center;">${s.info?.원수행자||'-'}</td><td style="text-align:right;padding:9px 12px;font-weight:700;">${s.total}</td><td style="text-align:right;padding:9px 12px;color:#5B5FE8;">${s.shin}</td><td style="text-align:right;padding:9px 12px;color:#22c997;">${s.re}</td></tr>`).join('')}</tbody>
       </table></div>`;
   } else dealerDetail.style.display='none';
 
@@ -1333,14 +1666,14 @@ function renderP3(){
   document.getElementById('p3_content').innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
       <div class="sum-card"><div class="sum-label">전체 계약</div><div class="sum-value" style="font-size:24px;">${totalAll.toLocaleString()}</div></div>
-      <div class="sum-card"><div class="sum-label">신차</div><div class="sum-value" style="font-size:24px;color:#6C63FF;">${shincha.length}</div></div>
+      <div class="sum-card"><div class="sum-label">신차</div><div class="sum-value" style="font-size:24px;color:#5B5FE8;">${shincha.length}</div></div>
       <div class="sum-card"><div class="sum-label">재렌트</div><div class="sum-value" style="font-size:24px;color:#22c997;">${rerent.length}</div></div>
       <div class="sum-card"><div class="sum-label">무보증</div><div class="sum-value" style="font-size:24px;color:#FFA94D;">${filtered.filter(r=>isNoDepo(r[iNoDepo])).length}</div></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div class="card"><div class="card-header"><span class="card-title">신차 상품유형</span><span class="card-badge">${shincha.length}건</span></div>
         <div class="donut-wrap"><div class="donut-canvas-wrap"><canvas id="donut_p3_shin"></canvas><div class="donut-center"><div class="donut-center-val">${shincha.length}</div><div class="donut-center-label">신차</div></div></div><div class="donut-legend" id="legend_p3_shin"></div></div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f8;font-size:13px;color:#999;">무보증 <strong style="color:#6C63FF;margin-left:6px;">${filtered.filter(r=>(r[iProd]||'').includes('신차')&&isNoDepo(r[iNoDepo])).length}건</strong></div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f8;font-size:13px;color:#999;">무보증 <strong style="color:#5B5FE8;margin-left:6px;">${filtered.filter(r=>(r[iProd]||'').includes('신차')&&isNoDepo(r[iNoDepo])).length}건</strong></div>
       </div>
       <div class="card"><div class="card-header"><span class="card-title">재렌트 상품유형</span><span class="card-badge">${rerent.length}건</span></div>
         <div class="donut-wrap"><div class="donut-canvas-wrap"><canvas id="donut_p3_re"></canvas><div class="donut-center"><div class="donut-center-val">${rerent.length}</div><div class="donut-center-label">재렌트</div></div></div><div class="donut-legend" id="legend_p3_re"></div></div>
@@ -1352,14 +1685,14 @@ function renderP3(){
       <div class="card-header"><span class="card-title">수행자별 상세</span></div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="border-bottom:2px solid #f0f0f8;"><th style="text-align:left;padding:9px 12px;color:#999;font-weight:500;">수행자</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">전체</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">신차</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">재렌트</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">인수형</th><th style="text-align:right;padding:9px 12px;color:#999;font-weight:500;">무보증</th></tr></thead>
-        <tbody>${sorted.map(([name,s],i)=>`<tr style="border-bottom:1px solid #f5f5f8;"><td style="padding:9px 12px;font-weight:600;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:7px;"></span>${name}</td><td style="text-align:right;padding:9px 12px;font-weight:700;">${s.total}</td><td style="text-align:right;padding:9px 12px;color:#6C63FF;">${s.shin}</td><td style="text-align:right;padding:9px 12px;color:#22c997;">${s.re}</td><td style="text-align:right;padding:9px 12px;color:#FF6B6B;">${s.insu}</td><td style="text-align:right;padding:9px 12px;color:#FFA94D;">${s.noDepo}</td></tr>`).join('')}</tbody>
+        <tbody>${sorted.map(([name,s],i)=>`<tr style="border-bottom:1px solid #f5f5f8;"><td style="padding:9px 12px;font-weight:600;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:7px;"></span>${name}</td><td style="text-align:right;padding:9px 12px;font-weight:700;">${s.total}</td><td style="text-align:right;padding:9px 12px;color:#5B5FE8;">${s.shin}</td><td style="text-align:right;padding:9px 12px;color:#22c997;">${s.re}</td><td style="text-align:right;padding:9px 12px;color:#FF6B6B;">${s.insu}</td><td style="text-align:right;padding:9px 12px;color:#FFA94D;">${s.noDepo}</td></tr>`).join('')}</tbody>
       </table>
     </div>`;
   renderDonut('donut_p3_shin','legend_p3_shin',shinTypeMap);
   renderDonut('donut_p3_re','legend_p3_re',reTypeMap);
   const tc=document.getElementById('p3_trend_chart');
   if(tc){if(charts['p3_trend'])charts['p3_trend'].destroy();
-    charts['p3_trend']=new Chart(tc.getContext('2d'),{type:'bar',data:{labels:allMonths,datasets:[{label:'신차',data:allMonths.map(m=>shinByM[m]||0),backgroundColor:'#6C63FF',borderRadius:4,borderSkipped:false},{label:'재렌트',data:allMonths.map(m=>reByM[m]||0),backgroundColor:'#22c997',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{font:{size:10},maxRotation:45}},y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:10}},beginAtZero:true}}}});
+    charts['p3_trend']=new Chart(tc.getContext('2d'),{type:'bar',data:{labels:allMonths,datasets:[{label:'신차',data:allMonths.map(m=>shinByM[m]||0),backgroundColor:'#5B5FE8',borderRadius:4,borderSkipped:false},{label:'재렌트',data:allMonths.map(m=>reByM[m]||0),backgroundColor:'#22c997',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{font:{size:10},maxRotation:45}},y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:10}},beginAtZero:true}}}});
   }
 }
 function setWorker(w){selectedWorker=w;renderP3();}
@@ -1439,7 +1772,7 @@ function applyRange(){
   const tTot=allMonths.reduce((a,m)=>a+(totMap[m]||0),0);
   const canvas=document.getElementById('trendLineChart');
   if(canvas){if(charts['trendLine'])charts['trendLine'].destroy();
-    charts['trendLine']=new Chart(canvas.getContext('2d'),{type:'line',data:{labels:allMonths,datasets:[{label:'신차',data:allMonths.map(m=>shinMap[m]||0),borderColor:'#6C63FF',backgroundColor:'rgba(108,99,255,0.08)',tension:0.4,pointRadius:4,fill:true},{label:'재렌트',data:allMonths.map(m=>reMap[m]||0),borderColor:'#22c997',backgroundColor:'rgba(34,201,151,0.06)',tension:0.4,pointRadius:4,fill:true},{label:'총 출고',data:allMonths.map(m=>totMap[m]||0),borderColor:'#FF6B6B',tension:0.4,pointRadius:4,borderDash:[5,3],fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:10}},beginAtZero:true}}}});
+    charts['trendLine']=new Chart(canvas.getContext('2d'),{type:'line',data:{labels:allMonths,datasets:[{label:'신차',data:allMonths.map(m=>shinMap[m]||0),borderColor:'#5B5FE8',backgroundColor:'rgba(108,99,255,0.08)',tension:0.4,pointRadius:4,fill:true},{label:'재렌트',data:allMonths.map(m=>reMap[m]||0),borderColor:'#22c997',backgroundColor:'rgba(34,201,151,0.06)',tension:0.4,pointRadius:4,fill:true},{label:'총 출고',data:allMonths.map(m=>totMap[m]||0),borderColor:'#FF6B6B',tension:0.4,pointRadius:4,borderDash:[5,3],fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},usePointStyle:true}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#f0f0f8'},border:{display:false},ticks:{font:{size:10}},beginAtZero:true}}}});
   }
   const tw=document.getElementById('trendTableWrap');
   if(tw)tw.innerHTML=`<table class="trend-table"><thead><tr><th>월</th><th>신차</th><th>재렌트</th><th>총 출고</th></tr></thead><tbody>${allMonths.map(m=>`<tr><td>${m}</td><td class="shin-c">${shinMap[m]||0}</td><td class="re-c">${reMap[m]||0}</td><td style="font-weight:600;">${totMap[m]||0}</td></tr>`).join('')}<tr><td>합계</td><td class="shin-c">${tShin}</td><td class="re-c">${tRe}</td><td style="font-weight:700;">${tTot}</td></tr></tbody></table>`;
@@ -1540,14 +1873,14 @@ function renderTakso(){
 
     <!-- 요약 카드 -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;">
-      <div class="sum-card" style="border-left:4px solid #6C63FF;">
+      <div class="sum-card" style="border-left:4px solid #5B5FE8;">
         <div class="sum-label">총 탁송 출고</div>
         <div class="sum-value">${filtered.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
         ${specialCount>0?`<div style="font-size:11px;color:#bbb;margin-top:4px;">* 차량교체 ${specialCount}건 제외</div>`:''}
       </div>
-      <div class="sum-card" style="border-left:4px solid #6C63FF;">
+      <div class="sum-card" style="border-left:4px solid #5B5FE8;">
         <div class="sum-label">신차</div>
-        <div class="sum-value" style="color:#6C63FF;">${shincha.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
+        <div class="sum-value" style="color:#5B5FE8;">${shincha.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
       </div>
       <div class="sum-card" style="border-left:4px solid #22c997;">
         <div class="sum-label">재렌트</div>
@@ -1593,7 +1926,7 @@ function renderTakso(){
             <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;width:100px;">수행자</th>
             <th style="text-align:left;padding:8px 10px;color:#999;font-weight:500;">건수 (신차 / 재렌트)</th>
             <th style="text-align:right;padding:8px 10px;color:#999;font-weight:500;width:40px;">계</th>
-            <th style="text-align:right;padding:8px 10px;color:#6C63FF;font-weight:500;width:40px;">신차</th>
+            <th style="text-align:right;padding:8px 10px;color:#5B5FE8;font-weight:500;width:40px;">신차</th>
             <th style="text-align:right;padding:8px 10px;color:#22c997;font-weight:500;width:50px;">재렌트</th>
           </tr></thead>
           <tbody>${workerSorted.map(([name,s],i)=>{
@@ -1603,12 +1936,12 @@ function renderTakso(){
               <td style="padding:8px 10px;font-weight:600;">${name}</td>
               <td style="padding:8px 10px;">
                 <div style="background:#f3f3f8;border-radius:5px;height:18px;overflow:hidden;display:flex;">
-                  <div style="height:100%;background:#6C63FF;width:${shinW}%;"></div>
+                  <div style="height:100%;background:#5B5FE8;width:${shinW}%;"></div>
                   <div style="height:100%;background:#22c997;width:${reW}%;"></div>
                 </div>
               </td>
               <td style="text-align:right;padding:8px 10px;font-weight:700;">${s.total}</td>
-              <td style="text-align:right;padding:8px 10px;color:#6C63FF;font-weight:600;">${s.shin}</td>
+              <td style="text-align:right;padding:8px 10px;color:#5B5FE8;font-weight:600;">${s.shin}</td>
               <td style="text-align:right;padding:8px 10px;color:#22c997;font-weight:600;">${s.re}</td>
             </tr>`;}).join('')}
           </tbody>
@@ -1719,12 +2052,12 @@ function renderWorkerBars(elId,totalMap,shinMap,reMap){
     return `<tr style="border-bottom:1px solid #f5f5f8;">
       <td style="padding:10px 12px;font-weight:700;font-size:14px;">${k}</td>
       <td style="text-align:right;padding:10px 12px;font-weight:700;">${v.toLocaleString()}건</td>
-      <td style="text-align:right;padding:10px 12px;color:#6C63FF;">${shin.toLocaleString()}건</td>
+      <td style="text-align:right;padding:10px 12px;color:#5B5FE8;">${shin.toLocaleString()}건</td>
       <td style="text-align:right;padding:10px 12px;color:#22c997;">${re.toLocaleString()}건</td>
       <td style="padding:10px 12px 10px 18px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="flex:1;height:6px;border-radius:3px;background:#f3f3f8;overflow:hidden;display:flex;">
-            <div style="width:${shinPct}%;background:#6C63FF;height:100%;"></div>
+            <div style="width:${shinPct}%;background:#5B5FE8;height:100%;"></div>
             <div style="width:${rePct}%;background:#22c997;height:100%;"></div>
           </div>
           <span style="font-size:11px;color:#999;white-space:nowrap;">신차 ${shinPct}% / 재렌트 ${rePct}%</span>
@@ -1798,7 +2131,7 @@ async function loadNotices(){
       <div style="padding:10px 12px;background:#f8f9fc;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
         <div style="flex:1;">
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:3px;">
-            <span style="font-weight:600;color:#6C63FF;">${n.name||'익명'}</span>
+            <span style="font-weight:600;color:#5B5FE8;">${n.name||'익명'}</span>
             <span style="color:#ddd;">|</span>
             <span style="color:#bbb;font-size:11px;">${n.time}</span>
           </div>
@@ -1821,7 +2154,627 @@ async function deleteNotice(time){
 }
 
 // 페이지 로드 시 자동 불러오기
-window.addEventListener('load', ()=>{ loadAll(); });
+
+
+// ===================== v10: 경영현황 =====================
+let navPage='exec', targetsMap=null, issuesList=null, exDrillKey='상품별', assetBuyMap=null;
+// ▼▼▼ 팀 공유 메모: Apps Script 배포 URL을 아래 따옴표 안에 붙여넣으세요 ▼▼▼
+const ISSUE_URL='https://script.google.com/macros/s/AKfycbzK57bSaTVSDyMtvz9raJ8I92NncY-XNqC756elylrDzVwP9tsVWVHQBkcVlQVTs_pt/exec';
+// ▲▲▲ 비워두면 화면 입력 메모는 내 기기에만 저장됩니다 ▲▲▲
+const exCharts={};
+const PAGE_TITLES={
+  exec:['판매현황 요약','한눈에 보는 판매 실적과 주요 지표'],
+  monthly:['월별 비교','신차·재렌트 월별 출고 비교와 프로모션 메모'],
+  product:['상품별 현황','상품별 출고 상세 (실무)'],
+  model:['차종별 현황','차종별 출고 상세 (실무)'],
+  channel:['판매채널별 현황','채널별 출고 상세 (실무)'],
+  agent:['수행자별 현황','수행자별 출고 상세 (실무)'],
+  takso:['탁송 현황','탁송 처리 상세 (실무)']};
+
+function goPage(p){
+  navPage=p;
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.toggle('active',b.dataset.page===p));
+  const exec=document.getElementById('execPage');
+  const mainEl=document.querySelector('main');
+  const pb=document.getElementById('periodBar');
+  const t=PAGE_TITLES[p]||['판매현황',''];
+  const tEl=document.getElementById('pageTitle'),dEl=document.getElementById('pageDesc');
+  if(tEl)tEl.textContent=t[0]; if(dEl)dEl.textContent=t[1];
+  const mon=document.getElementById('monthlyPage');
+  if(p==='exec'||p==='monthly'){
+    exec.style.display=(p==='exec')?'block':'none';
+    if(mon)mon.style.display=(p==='monthly')?'block':'none';
+    if(mainEl)mainEl.style.display='none';
+    if(pb)pb.style.display='none';
+    if(p==='exec')renderExec();else renderMonthly();
+  }else{
+    exec.style.display='none';
+    if(mon)mon.style.display='none';
+    if(mainEl)mainEl.style.display='block';
+    if(p==='takso'){setDataMode('takso');}
+    else{
+      if(dataMode!=='exec')setDataMode('exec');
+      else{const mp=document.getElementById('periodBar');if(mp)mp.style.display='flex';}
+      const map={product:0,model:1,channel:2,agent:3};
+      switchTab(map[p]);
+    }
+    setTimeout(()=>window.dispatchEvent(new Event('resize')),160);
+  }
+}
+
+// --- 시트 탭 로더 (목표설정 / 이슈) ---
+async function fetchSheetTab(tab){
+  const id=document.getElementById('sheetId').value.trim();
+  const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tab)}`;
+  try{
+    const res=await fetch(url);const text=await res.text();
+    const m=text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if(!m)return null;
+    const j=JSON.parse(m[1]);
+    return (j.table&&j.table.rows&&j.table.rows.length)?j.table:null;
+  }catch(e){return null;}
+}
+
+function cellYM(c){
+  if(!c)return null;
+  return getYM(c.f!=null?c.f:c.v)||getYM(c.v);
+}
+function cellNum(c){
+  if(!c)return null;
+  const n=parseFloat((c.v!=null?c.v:c.f||'').toString().replace(/[^0-9.\-]/g,''));
+  return isNaN(n)?null:n;
+}
+function cellStr(c){return c?((c.f!=null?c.f:c.v)||'').toString().trim():'';}
+
+function findColFlexible(t,name){
+  const cols=t.cols.map(c=>((c.label||'')+'').trim());
+  let i=cols.findIndex(c=>c.includes(name));
+  if(i>=0)return{i,skipFirst:false};
+  const first=t.rows[0];
+  if(first&&first.c){
+    i=first.c.findIndex(c=>c&&((c.v!=null?c.v:c.f)||'').toString().includes(name));
+    if(i>=0)return{i,skipFirst:true};
+  }
+  return null;
+}
+
+function parseIssuesTable(tI){
+  const cols=tI.cols.map(c=>(c.label||'').toString());
+  const iM=cols.findIndex(c=>c.includes('월')||c.includes('날짜'));
+  const iT=cols.findIndex(c=>c.includes('내용')||c.includes('이슈'));
+  if(iM>=0&&iT>=0){
+    issuesList=[];
+    tI.rows.forEach(r=>{
+      const c=r.c;if(!c)return;
+      const ym=cellYM(c[iM]);const txt=cellStr(c[iT]);
+      if(ym&&txt)issuesList.push({ym,text:txt});
+    });
+    if(!issuesList.length)issuesList=null;
+  }
+}
+
+async function loadExecExtras(){
+  const [tT,tI,tV]=await Promise.all([fetchSheetTab('목표설정'),fetchSheetTab('이슈'),fetchSheetTab('차량 RAW DATA')]);
+  targetsMap=null;issuesList=null;assetBuyMap=null;
+  if(tV){
+    const fA=findColFlexible(tV,'자산번호'),fB=findColFlexible(tV,'매입구분');
+    if(fA&&fB){
+      assetBuyMap={};
+      const start=(fA.skipFirst||fB.skipFirst)?1:0;
+      for(let k=start;k<tV.rows.length;k++){
+        const c=tV.rows[k].c;if(!c)continue;
+        const a=cellStr(c[fA.i]);
+        if(a)assetBuyMap[a]=cellStr(c[fB.i]);
+      }
+      if(!Object.keys(assetBuyMap).length)assetBuyMap=null;
+    }
+  }
+  if(tT){
+    const cols=tT.cols.map(c=>(c.label||'').toString());
+    const iM=cols.findIndex(c=>c.includes('월')||c.includes('날짜'));
+    const iS=cols.findIndex(c=>c.includes('신차'));
+    const iR=cols.findIndex(c=>c.includes('재렌트')||c.includes('재'));
+    if(iM>=0){
+      targetsMap={};
+      tT.rows.forEach(r=>{
+        const c=r.c;if(!c)return;
+        const ym=cellYM(c[iM]);if(!ym)return;
+        targetsMap[ym]={shin:iS>=0?(cellNum(c[iS])||0):0,re:iR>=0?(cellNum(c[iR])||0):0};
+      });
+      if(!Object.keys(targetsMap).length)targetsMap=null;
+    }
+  }
+  if(tI)parseIssuesTable(tI);
+}
+
+// --- 영업일 계산 (주말 제외, 공휴일 미반영) ---
+function bizDays(d1,d2){
+  let c=0;const d=new Date(d1);
+  while(d<=d2){const w=d.getDay();if(w!==0&&w!==6)c++;d.setDate(d.getDate()+1);}
+  return c;
+}
+
+function exDeltaHtml(cur,prev){
+  if(prev==null||prev===0)return '<span class="ex-delta ex-flat">– <span class="vs">(전월 데이터 없음)</span></span>';
+  const p=(cur-prev)/prev*100;
+  const cls=p>0?'ex-up':p<0?'ex-down':'ex-flat';
+  const sym=p>0?'▲':p<0?'▼':'–';
+  return `<span class="ex-delta ${cls}">${sym} ${Math.abs(p).toFixed(0)}% <span class="vs">(전월 대비)</span></span>`;
+}
+
+function renderExec(){
+  if(!rawTable)return;
+  const inp=document.getElementById('baseDateInput');
+  if(!inp.value){
+    const n=new Date();
+    inp.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  }
+  const base=new Date(inp.value+'T00:00:00');
+  const bY=base.getFullYear(),bM=base.getMonth();
+  const baseYM=`${bY}.${String(bM+1).padStart(2,'0')}`;
+  const prevD=new Date(bY,bM-1,1);
+  const prevYM=`${prevD.getFullYear()}.${String(prevD.getMonth()+1).padStart(2,'0')}`;
+
+  const{rows,idx}=getRows();
+  const iDate=idx('계약실행일'),iProd=idx('상품구분'),iType=idx('상품유형'),
+        iSeries=idx('시리즈명'),iCh=idx('판매채널'),iWk=idx('수행원');
+  const isShin=r=>((r[iProd]||'')+'').includes('신차');
+  const isRe=r=>{const v=(r[iProd]||'')+'';return v.includes('재렌트')||v.includes('재');};
+
+  const monthRows=rows.filter(r=>getYM(r[iDate])===baseYM);
+  const prevRows=rows.filter(r=>getYM(r[iDate])===prevYM);
+  const shin=monthRows.filter(isShin).length, re=monthRows.filter(isRe).length;
+  const pShin=prevRows.filter(isShin).length, pRe=prevRows.filter(isRe).length;
+  const total=shin+re, pTotal=pShin+pRe;
+
+  const tgt=targetsMap?targetsMap[baseYM]:null;
+  const tTotal=tgt?((tgt.shin||0)+(tgt.re||0)):null;
+  const rate=(tTotal&&tTotal>0)?Math.round(total/tTotal*100):null;
+
+  // ---- 1. KPI ----
+  document.getElementById('exKpis').innerHTML=`
+    <div class="ex-kpi">
+      <div class="ex-kpi-top">
+        <div class="ex-kpi-ico" style="background:#efeefe;">🎯</div>
+        <div><div class="ex-kpi-label">목표 달성률 (${parseInt(baseYM.split('.')[1])}월)</div>
+        <div class="ex-kpi-value">${rate!=null?rate+'<small>%</small>':'<small style="font-size:13px;color:#bbb;">목표 미설정</small>'}</div></div>
+      </div>
+      ${rate!=null?`<div class="ex-kpi-bar"><i style="width:${Math.min(rate,100)}%"></i></div>`:''}
+      ${rate!=null?`<span class="ex-delta ex-flat"><span class="vs">${total.toLocaleString()}대 / 목표 ${tTotal.toLocaleString()}대</span></span>`
+        :'<span class="ex-delta ex-flat"><span class="vs">시트에 \'목표설정\' 탭을 추가해주세요</span></span>'}
+    </div>
+    <div class="ex-kpi">
+      <div class="ex-kpi-top">
+        <div class="ex-kpi-ico" style="background:#e8f3fe;">🚗</div>
+        <div><div class="ex-kpi-label">신차 출고</div>
+        <div class="ex-kpi-value">${shin.toLocaleString()}<small>대</small></div></div>
+      </div>
+      ${exDeltaHtml(shin,pShin)}
+    </div>
+    <div class="ex-kpi">
+      <div class="ex-kpi-top">
+        <div class="ex-kpi-ico" style="background:#e9f9f3;">🚙</div>
+        <div><div class="ex-kpi-label">재렌트 출고</div>
+        <div class="ex-kpi-value">${re.toLocaleString()}<small>대</small></div></div>
+      </div>
+      ${exDeltaHtml(re,pRe)}
+    </div>`;
+
+  // ---- 2. Goal Tracking ----
+  const mStart=new Date(bY,bM,1), mEnd=new Date(bY,bM+1,0);
+  const totalBiz=bizDays(mStart,mEnd);
+  const elapsedBiz=Math.max(bizDays(mStart,base),1);
+  const remainBiz=bizDays(base,mEnd);
+  const expect=Math.round(total/elapsedBiz*totalBiz);
+
+  const goalEl=document.getElementById('exGoal');
+  if(tTotal&&tTotal>0){
+    const short=Math.max(tTotal-total,0);
+    const perDay=remainBiz>0?(short/remainBiz).toFixed(1):'-';
+    const expectRate=Math.round(expect/tTotal*100);
+    const expectShort=tTotal-expect;
+    const rowRate=(c,t)=>t>0?Math.round(c/t*100)+'%':'-';
+    goalEl.innerHTML=`
+      <table class="ex-goal-table">
+        <tr><th>구분</th><th>목표</th><th>현재</th><th>달성률</th></tr>
+        <tr><td>신차</td><td>${(tgt.shin||0).toLocaleString()}대</td><td>${shin.toLocaleString()}대</td><td>${rowRate(shin,tgt.shin)}</td></tr>
+        <tr><td>재렌트</td><td>${(tgt.re||0).toLocaleString()}대</td><td>${re.toLocaleString()}대</td><td>${rowRate(re,tgt.re)}</td></tr>
+        <tr class="ex-total"><td>전체</td><td>${tTotal.toLocaleString()}대</td><td>${total.toLocaleString()}대</td><td>${rate}%</td></tr>
+      </table>
+      <div class="ex-progress"><i style="width:${Math.min(rate,100)}%"></i></div>
+      <div class="ex-minis">
+        <div class="ex-mini"><div class="l">부족</div><div class="v red">${short.toLocaleString()}대</div></div>
+        <div class="ex-mini"><div class="l">남은 영업일</div><div class="v">${remainBiz}일</div></div>
+        <div class="ex-mini"><div class="l">하루 필요 출고</div><div class="v">${perDay}대</div></div>
+      </div>
+      <div class="ex-outlook">
+        <div><div class="l">월말 예상</div><div class="v">${expect.toLocaleString()}대</div></div>
+        <div><div class="l">목표</div><div class="v">${tTotal.toLocaleString()}대</div></div>
+        <div><div class="l">예상 달성률</div><div class="v">${expectRate}%</div></div>
+      </div>
+      ${expectShort>0
+        ?`<div class="ex-warn bad">예상 미달 ${expectShort.toLocaleString()}대</div>`
+        :`<div class="ex-warn good">목표 달성 예상 🎉 (+${Math.abs(expectShort).toLocaleString()}대)</div>`}
+      <div class="ex-noteset">영업일은 주말 제외 기준 (공휴일 미반영)</div>`;
+  }else{
+    goalEl.innerHTML=`
+      <div style="text-align:center;padding:24px 10px;color:#aaa;font-size:12.5px;line-height:1.8;">
+        <div style="font-size:28px;margin-bottom:8px;">🎯</div>
+        아직 이번 달 목표가 설정되지 않았어요.<br>
+        구글시트에 <b style="color:#5B5FE8;">목표설정</b> 탭을 만들고<br>
+        <b>월 | 신차목표 | 재렌트목표</b> 형식으로 입력하면<br>자동으로 반영됩니다. (예: 2026.07 | 270 | 230)
+        <div style="margin-top:14px;font-size:13px;color:#555;">현재 출고 <b>${total.toLocaleString()}대</b> (신차 ${shin} · 재렌트 ${re})</div>
+      </div>`;
+  }
+
+  // ---- 3. Trend ----
+  const labels=[];
+  for(let m=0;m<=bM;m++)labels.push(`${bY}.${String(m+1).padStart(2,'0')}`);
+  const cntBy=(pred)=>labels.map(l=>rows.filter(r=>getYM(r[iDate])===l&&pred(r)).length);
+  const shinArr=cntBy(isShin), reArr=cntBy(isRe);
+  const totalArr=shinArr.map((v,i)=>v+reArr[i]);
+  const tgtArr=targetsMap?labels.map(l=>{const t=targetsMap[l];return t?(t.shin||0)+(t.re||0):null;}):null;
+
+  const hasTgt=!!(tgtArr&&tgtArr.some(v=>v!=null));
+  const datasets=[
+    {label:'신차',data:shinArr,borderColor:'#3B82F6',backgroundColor:'#3B82F6',tension:.35,pointRadius:3.5,borderWidth:2.5},
+    {label:'재렌트',data:reArr,borderColor:'#10B981',backgroundColor:'#10B981',tension:.35,pointRadius:3.5,borderWidth:2.5},
+    {label:'전체',data:totalArr,borderColor:'#EF4444',backgroundColor:'#EF4444',borderDash:[6,5],tension:.35,pointRadius:3,borderWidth:2},
+  ];
+  if(hasTgt)
+    datasets.push({label:'목표',data:tgtArr,borderColor:'#F59E0B',backgroundColor:'#F59E0B',tension:.35,borderDash:[8,5],pointRadius:3.5,pointHoverRadius:5,borderWidth:2.5,spanGaps:false});
+  if(exCharts.trend)exCharts.trend.destroy();
+  exCharts.trend=new Chart(document.getElementById('exTrendChart'),{
+    type:'line',
+    data:{labels:labels.map(l=>parseInt(l.split('.')[1])+'월'),datasets},
+    options:{
+      maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'top',align:'start',labels:{boxWidth:8,boxHeight:8,usePointStyle:true,pointStyle:'circle',font:{family:"Pretendard",size:11}}},
+        tooltip:{callbacks:{
+          footer:(items)=>{
+            const i=items[0].dataIndex;
+            if(!hasTgt||tgtArr[i]==null||!tgtArr[i])return '';
+            const diff=totalArr[i]-tgtArr[i];
+            return (diff>=0?'목표 달성 ✓ (+':'목표 미달 (')+Math.abs(diff).toLocaleString()+'대) · 달성률 '+Math.round(totalArr[i]/tgtArr[i]*100)+'%';
+          }
+        }}
+      },
+      scales:{
+        y:{suggestedMin:200,suggestedMax:1000,ticks:{stepSize:200,font:{family:"Pretendard",size:10.5},color:'#aaa'},grid:{color:'#f2f3f8'}},
+        x:{grid:{display:false},ticks:{font:{family:"Pretendard",size:10.5},color:'#aaa'}}
+      }
+    }
+  });
+  const tcap=document.getElementById('exTrendCap');
+  if(tcap){
+    tcap.innerHTML=hasTgt
+      ?'<span style="color:#F59E0B;font-weight:700;">┅ 목표선</span> · 빨간 전체선이 목표선 위면 달성 · 선에 마우스를 올리면 달성률이 표시돼요'
+      :'목표설정 탭에 목표를 넣으면 목표선이 함께 표시돼요';
+  }
+
+  const evEl=document.getElementById('exEvents');
+  const lm=(typeof getLocalMemos==='function')?getLocalMemos():{};
+  const hasAny=!!issuesList||labels.some(l=>(lm[l]||[]).length>0);
+  if(hasAny){
+    evEl.innerHTML=labels.map(l=>{
+      const items=[
+        ...(issuesList||[]).filter(e=>e.ym===l).map(e=>escH(e.text)),
+        ...((lm[l]||[]).map(m=>'✏️ '+escH(m)))
+      ].slice(0,3);
+      return `<div class="ex-event ${items.length?'hl':''}"><div class="dot"></div>${items.length?items.join('<br>'):'&nbsp;'}</div>`;
+    }).join('');
+  }else{
+    evEl.innerHTML=`<div style="width:100%;text-align:center;font-size:11px;color:#ccc;">시트 <b>이슈</b> 탭(월 | 내용)이나 <b>월별 비교</b> 페이지에서 메모를 추가하면 여기에 타임라인이 표시됩니다</div>`;
+  }
+
+  // ---- 5. Drill Down ----
+  const drillDefs={
+    '상품별':{col:'상품유형',key:r=>((r[iType]||'')+'').trim()},
+    '차종별':{col:'차종',key:r=>((iSeries>=0?r[iSeries]:'')+'').trim()},
+    '채널별':{col:'판매채널',key:r=>((r[iCh]||'')+'').trim()},
+    '수행자별':{col:'수행자',key:r=>mapWorker(r[iWk])||''}
+  };
+  const tabsEl=document.getElementById('exDrillTabs');
+  tabsEl.innerHTML=Object.keys(drillDefs).map(k=>
+    `<button class="ex-tab ${k===exDrillKey?'active':''}" onclick="setExDrill('${k}')">${k}</button>`).join('');
+  const def=drillDefs[exDrillKey];
+  document.getElementById('exDrillCol').textContent=def.col;
+  const curMap=countMap(monthRows,def.key), prvMap=countMap(prevRows,def.key);
+  const entries=Object.entries(curMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxV=Math.max(...entries.map(e=>e[1]),1);
+  document.getElementById('exDrillRows').innerHTML=entries.length?entries.map(([name,cnt])=>{
+    const d=cnt-(prvMap[name]||0);
+    const cls=d>0?'ex-up':d<0?'ex-down':'ex-flat';
+    const sym=d>0?'▲':d<0?'▼':'–';
+    return `<div class="ex-drow">
+      <div class="ex-dname" title="${name}">${name}</div>
+      <div class="ex-dbar"><i style="width:${cnt/maxV*100}%"></i></div>
+      <div class="ex-dcnt">${cnt.toLocaleString()}대</div>
+      <div class="ex-ddelta ${cls}">${sym}${d!==0?' '+Math.abs(d)+'대':''}</div>
+    </div>`;
+  }).join(''):'<div style="text-align:center;color:#ccc;font-size:12px;padding:20px;">해당 월 데이터가 없어요</div>';
+
+  // ---- 6. Forecast ----
+  if(exCharts.gauge)exCharts.gauge.destroy();
+  const fcTargetEl=document.getElementById('exFcTarget');
+  if(tTotal&&tTotal>0){
+    const pct=Math.min(expect/tTotal,1);
+    exCharts.gauge=new Chart(document.getElementById('exGaugeChart'),{
+      type:'doughnut',
+      data:{datasets:[{data:[pct,1-pct],backgroundColor:['#10B981','#FCA5A5'],borderWidth:0,borderRadius:6}]},
+      options:{rotation:-90,circumference:180,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},maintainAspectRatio:true,aspectRatio:1.85}
+    });
+    const expectRate=Math.round(expect/tTotal*100);
+    const prob=Math.max(1,Math.min(99,Math.round(expectRate*0.9)));
+    document.getElementById('exFcExpect').textContent=expect.toLocaleString()+'대';
+    document.getElementById('exFcExpect2').textContent=expect.toLocaleString()+'대';
+    fcTargetEl.textContent=tTotal.toLocaleString()+'대';
+    document.getElementById('exFcProb').textContent='달성확률(추정) '+prob+'%';
+    document.getElementById('exFcShort').textContent=Math.max(tTotal-expect,0).toLocaleString()+'대';
+  }else{
+    exCharts.gauge=new Chart(document.getElementById('exGaugeChart'),{
+      type:'doughnut',
+      data:{datasets:[{data:[1],backgroundColor:['#eef0f6'],borderWidth:0}]},
+      options:{rotation:-90,circumference:180,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},maintainAspectRatio:true,aspectRatio:1.85}
+    });
+    document.getElementById('exFcExpect').textContent=expect.toLocaleString()+'대';
+    document.getElementById('exFcExpect2').textContent=expect.toLocaleString()+'대';
+    fcTargetEl.textContent='미설정';
+    document.getElementById('exFcProb').textContent='목표 설정 시 표시';
+    document.getElementById('exFcShort').textContent='-';
+  }
+
+  // ---- footer ----
+  const foot=document.getElementById('sbFoot');
+  if(foot){
+    const lu=document.getElementById('lastUpdate');
+    foot.innerHTML='데이터 기준<br><b style="color:#999;">'+(lu&&lu.textContent?lu.textContent.replace('↻ 최종 업데이트: ',''):'-')+'</b>';
+  }
+}
+
+function setExDrill(k){exDrillKey=k;renderExec();}
+
+/* ===================== 월별 비교 ===================== */
+let mcYear=null, mcMode='month', mcMonth=null;
+function mcModeChange(m){mcMode=m;renderMonthly();}
+function mcMonthChange(v){mcMonth=parseInt(v);renderMonthly();}
+function getDayNum(v){
+  if(v==null)return null;
+  const s=v.toString();
+  let m=s.match(/Date\((\d{4}),(\d{1,2}),(\d{1,2})/);
+  if(m)return parseInt(m[3]);
+  m=s.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+  if(m)return parseInt(m[3]);
+  if(v instanceof Date)return v.getDate();
+  return null;
+}
+function escH(s){return (s==null?'':s).toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function renderMonthly(){
+  if(!rawTable)return;
+  const{rows,idx}=getRows();
+  const iDate=idx('계약실행일'),iProd=idx('상품구분');
+  const years=[...new Set(rows.map(r=>{const ym=getYM(r[iDate]);return ym?ym.slice(0,4):null;}).filter(Boolean))].sort();
+  const nowY=new Date().getFullYear().toString();
+  if(!mcYear)mcYear=years.includes(nowY)?nowY:(years[years.length-1]||nowY);
+  const sel=document.getElementById('mcYearSel');
+  sel.innerHTML=(years.length?years:[nowY]).map(y=>`<option value="${y}" ${y===mcYear?'selected':''}>${y}년</option>`).join('');
+
+  const labels=Array.from({length:12},(_,i)=>`${mcYear}.${String(i+1).padStart(2,'0')}`);
+  const isShin=r=>((r[iProd]||'')+'').includes('신차');
+  const isRe=r=>{const v=(r[iProd]||'')+'';return v.includes('재렌트')||v.includes('재');};
+  const shinArr=labels.map(l=>rows.filter(r=>getYM(r[iDate])===l&&isShin(r)).length);
+  const reArr=labels.map(l=>rows.filter(r=>getYM(r[iDate])===l&&isRe(r)).length);
+
+  // 중고매입 구분 (차량 RAW DATA 매칭)
+  const colLabels=rawTable.cols.map(c=>(c.label||'')+'');
+  const iAsset=colLabels.findIndex(c=>c.includes('자산번호'));
+  const canUsed=!!(assetBuyMap&&iAsset>=0);
+  const isUsed=r=>{const a=((r[iAsset]||'')+'').trim();return (assetBuyMap[a]||'').includes('중고');};
+  const reUsedArr=canUsed?labels.map(l=>rows.filter(r=>getYM(r[iDate])===l&&isRe(r)&&isUsed(r)).length):labels.map(()=>0);
+  const reOwnArr=reArr.map((v,i)=>v-reUsedArr[i]);
+
+  // ---- 월별/주간 모드 분기 ----
+  let chLabels=labels.map(l=>parseInt(l.split('.')[1])+'월');
+  let chShin=shinArr, chRe=reArr, chUsed=reUsedArr, chTitles=null;
+  const mSel=document.getElementById('mcMonthSel');
+  const mBtnM=document.getElementById('mcModeMonth'), mBtnW=document.getElementById('mcModeWeek');
+  if(mBtnM&&mBtnW){mBtnM.classList.toggle('active',mcMode==='month');mBtnW.classList.toggle('active',mcMode==='week');}
+  const ttl=document.getElementById('mcChartTitle');
+  if(mcMode==='week'){
+    if(mcMonth==null)mcMonth=(mcYear===String(new Date().getFullYear()))?(new Date().getMonth()+1):1;
+    if(mSel){
+      mSel.style.display='';
+      mSel.innerHTML=Array.from({length:12},(_,k)=>`<option value="${k+1}" ${(k+1)===mcMonth?'selected':''}>${k+1}월</option>`).join('');
+    }
+    if(ttl)ttl.textContent='주간 출고 비교';
+    const ymSel=`${mcYear}.${String(mcMonth).padStart(2,'0')}`;
+    const yNum=parseInt(mcYear);
+    const dim=new Date(yNum,mcMonth,0).getDate();
+    // 실제 달력 기준 주차: 일요일 시작 ~ 토요일 끝
+    // 예) 7/1(수)이면 1주차 = 7/1~7/4(토), 2주차 = 7/5(일)~7/11(토) ...
+    const weekRanges=[];
+    let dCur=1;
+    while(dCur<=dim){
+      const dow=new Date(yNum,mcMonth-1,dCur).getDay(); // 0=일 ~ 6=토
+      const dEnd=Math.min(dCur+(6-dow),dim);
+      weekRanges.push([dCur,dEnd]);
+      dCur=dEnd+1;
+    }
+    chLabels=[];chShin=[];chRe=[];chUsed=[];chTitles=[];
+    weekRanges.forEach(([s,e2],w)=>{
+      const wk=rows.filter(r=>{
+        if(getYM(r[iDate])!==ymSel)return false;
+        const d=getDayNum(r[iDate]);
+        return d!=null&&d>=s&&d<=e2;
+      });
+      chLabels.push((w+1)+'주차');
+      chTitles.push(`${mcMonth}월 ${w+1}주차 (${mcMonth}/${s} ~ ${mcMonth}/${e2})`);
+      chShin.push(wk.filter(isShin).length);
+      chRe.push(wk.filter(isRe).length);
+      chUsed.push(canUsed?wk.filter(r=>isRe(r)&&isUsed(r)).length:0);
+    });
+  }else{
+    if(mSel)mSel.style.display='none';
+    if(ttl)ttl.textContent='월별 출고 비교';
+  }
+  const chOwn=chRe.map((v,i)=>v-chUsed[i]);
+
+  if(exCharts.mc)exCharts.mc.destroy();
+  const datasets=canUsed?[
+    {label:'신차',data:chShin,backgroundColor:'#3B82F6',borderRadius:5,maxBarThickness:28,stack:'shin'},
+    {label:'재렌트(자사매입)',data:chOwn,backgroundColor:'#10B981',borderRadius:5,maxBarThickness:28,stack:'re'},
+    {label:'재렌트(중고매입)',data:chUsed,backgroundColor:stripedPattern('#10B981'),borderRadius:5,maxBarThickness:28,stack:'re'}
+  ]:[
+    {label:'신차',data:chShin,backgroundColor:'#3B82F6',borderRadius:6,maxBarThickness:28},
+    {label:'재렌트',data:chRe,backgroundColor:'#10B981',borderRadius:6,maxBarThickness:28}
+  ];
+  // 막대 위 총 대수 표시
+  const cntPlugin={id:'mcCounts',afterDatasetsDraw(chart){
+    try{
+      const ctx=chart.ctx;
+      ctx.save();
+      ctx.font='700 11px Pretendard';ctx.fillStyle='#5A5F73';ctx.textAlign='center';
+      const metaS=chart.getDatasetMeta(0);
+      metaS.data.forEach((bar,i)=>{if(chShin[i])ctx.fillText(chShin[i].toLocaleString(),bar.x,bar.y-5);});
+      const metaR=chart.getDatasetMeta(canUsed?2:1);
+      metaR.data.forEach((bar,i)=>{if(chRe[i])ctx.fillText(chRe[i].toLocaleString(),bar.x,bar.y-5);});
+      ctx.restore();
+    }catch(e){}
+  }};
+  exCharts.mc=new Chart(document.getElementById('mcChart'),{
+    type:'bar',
+    data:{labels:chLabels,datasets},
+    plugins:[cntPlugin],
+    options:{
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',align:'start',labels:{boxWidth:10,boxHeight:10,font:{family:"Pretendard",size:12}}},
+        tooltip:{
+          displayColors:false,
+          callbacks:{
+            title:(items)=>chTitles?chTitles[items[0].dataIndex]:items[0].label,
+            label:(item)=>{
+              const i=item.dataIndex;
+              if(item.dataset.label==='신차')return '신차 '+chShin[i].toLocaleString()+'대';
+              const lines=['재렌트 '+chRe[i].toLocaleString()+'대'];
+              if(canUsed){
+                lines.push('자사매입 : '+chOwn[i].toLocaleString());
+                lines.push('중고매입 : '+chUsed[i].toLocaleString());
+              }
+              return lines;
+            }
+          }
+        }
+      },
+      scales:{
+        y:{beginAtZero:true,grace:'10%',stacked:canUsed,grid:{color:'#F0F1F7'},ticks:{font:{family:"Pretendard",size:11},color:'#8A8FA3'}},
+        x:{stacked:canUsed,grid:{display:false},ticks:{font:{family:"Pretendard",size:11},color:'#8A8FA3'}}
+      }
+    }
+  });
+  const cap=document.getElementById('mcCaption');
+  if(cap){
+    cap.innerHTML=canUsed
+      ?'빗금 = <b>중고매입</b> 차량 · 막대에 마우스를 올리면 자사/중고매입 대수가 표시돼요'
+      :"※ 구글시트 '차량 RAW DATA' 탭(자산번호·매입구분)이 연동되면 재렌트 막대에 중고매입 비율이 빗금으로 표시돼요";
+  }
+
+  const memos=getLocalMemos();
+  document.getElementById('mcMemoGrid').innerHTML=labels.map((ym,i)=>{
+    const shared=(issuesList||[]).map((e,gi)=>({ym:e.ym,text:e.text,gi})).filter(e=>e.ym===ym);
+    const local=memos[ym]||[];
+    return `<div class="mc-month">
+      <div class="mc-mhead"><b>${i+1}월</b><span>신차 ${shinArr[i]} · 재렌트 ${reArr[i]}</span></div>
+      <div class="mc-memos">
+        ${shared.map(e=>`<div class="mc-memo shared">📌 ${escH(e.text)}${ISSUE_URL?`<button class="mc-del" onclick="delSharedMemo(${e.gi})">×</button>`:''}</div>`).join('')}
+        ${local.map((m,j)=>`<div class="mc-memo local">✏️ ${escH(m)}<button class="mc-del" onclick="delMemo('${ym}',${j})">×</button></div>`).join('')}
+        ${(!shared.length&&!local.length)?'<div class="mc-empty">메모 없음</div>':''}
+      </div>
+      <div class="mc-add">
+        <input type="text" id="mcIn_${ym}" placeholder="프로모션·이슈 메모" onkeydown="if(event.key==='Enter')addMemo('${ym}')"/>
+        <button onclick="addMemo('${ym}')">＋</button>
+      </div>
+    </div>`;
+  }).join('');
+  const note=document.getElementById('mcNote');
+  if(note){
+    note.innerHTML=ISSUE_URL
+      ?"📌 메모는 구글시트 <b>이슈</b> 탭에 저장되어 <b>팀 전체에게 공유</b>돼요. 화면에서 ＋로 추가/× 로 삭제하거나 시트에서 직접 편집해도 됩니다.<br>✏️ 는 공유 기능 연결 전에 이 기기에 저장된 예전 메모예요."
+      :"📌 구글시트 <b>이슈</b> 탭 내용 — 팀 전체에게 공유돼요 (월 | 내용 형식으로 입력)<br>✏️ 화면에서 입력한 메모 — 지금은 <b>이 기기(브라우저)에만</b> 저장돼요. 팀 공유가 필요하면 시트 이슈 탭에 적어주세요!";
+  }
+}
+function mcYearChange(v){mcYear=v;renderMonthly();}
+function getLocalMemos(){try{return JSON.parse(localStorage.getItem('harmony_memos')||'{}');}catch(e){return{};}}
+function saveLocalMemos(m){try{localStorage.setItem('harmony_memos',JSON.stringify(m));}catch(e){}}
+async function addMemo(ym){
+  const inp=document.getElementById('mcIn_'+ym);
+  const v=(inp&&inp.value||'').trim();if(!v)return;
+  if(ISSUE_URL){
+    try{
+      inp.disabled=true;
+      await fetch(ISSUE_URL,{method:'POST',body:JSON.stringify({action:'add',ym:ym,text:v})});
+      if(!issuesList)issuesList=[];
+      issuesList.push({ym:ym,text:v});
+      renderMonthly();
+      refreshIssuesSoon();
+    }catch(e){alert('메모 저장에 실패했어요. 네트워크를 확인해주세요.');}
+    return;
+  }
+  const m=getLocalMemos();(m[ym]=m[ym]||[]).push(v);saveLocalMemos(m);renderMonthly();
+}
+function delMemo(ym,j){const m=getLocalMemos();if(m[ym]){m[ym].splice(j,1);saveLocalMemos(m);renderMonthly();}}
+async function delSharedMemo(gi){
+  const e=issuesList&&issuesList[gi];if(!e)return;
+  if(!confirm('이 메모를 팀 전체에서 삭제할까요?\n"'+e.text+'"'))return;
+  try{
+    await fetch(ISSUE_URL,{method:'POST',body:JSON.stringify({action:'delete',ym:e.ym,text:e.text})});
+    issuesList.splice(gi,1);
+    if(!issuesList.length)issuesList=null;
+    renderMonthly();
+    refreshIssuesSoon();
+  }catch(err){alert('삭제에 실패했어요. 네트워크를 확인해주세요.');}
+}
+let issueRefreshTimer=null;
+function refreshIssuesSoon(){
+  clearTimeout(issueRefreshTimer);
+  issueRefreshTimer=setTimeout(async()=>{
+    const tI=await fetchSheetTab('이슈');
+    if(tI)parseIssuesTable(tI);
+    if(navPage==='monthly')renderMonthly();
+    else if(navPage==='exec')renderExec();
+  },5000);
+}
+
+function stripedPattern(base){
+  try{
+    const p=document.createElement('canvas');p.width=10;p.height=10;
+    const g=p.getContext('2d');
+    g.fillStyle=base;g.fillRect(0,0,10,10);
+    g.strokeStyle='rgba(255,255,255,0.85)';g.lineWidth=2.6;
+    g.beginPath();
+    g.moveTo(-3,13);g.lineTo(13,-3);
+    g.moveTo(2,15);g.lineTo(15,2);
+    g.moveTo(-8,8);g.lineTo(8,-8);
+    g.stroke();
+    const ctx=document.getElementById('mcChart').getContext('2d');
+    return ctx.createPattern(p,'repeat');
+  }catch(e){return base;}
+}
+
+
+window.addEventListener('load', async ()=>{
+  const inp=document.getElementById('baseDateInput');
+  const n=new Date();
+  inp.value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  goPage('exec');   // 데이터 로딩 전에 판매현황 화면부터 표시
+  try{ await loadAll(); }catch(e){ console.error(e); }
+  try{ await loadExecExtras(); }catch(e){ console.error(e); }
+  if(navPage==='exec')renderExec();
+  else if(navPage==='monthly')renderMonthly();
+});
+
 </script>
 </body>
 </html>
