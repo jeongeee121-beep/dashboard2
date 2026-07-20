@@ -507,7 +507,16 @@ main .main-grid{width:100%;}
       </div>
 
       <section class="ex-card">
-        <div class="ex-head"><div class="ex-badge">📊</div><div class="ex-title">월별 출고 비교</div></div>
+        <div class="ex-head">
+          <div class="ex-badge">📊</div><div class="ex-title" id="mcChartTitle">월별 출고 비교</div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <select id="mcMonthSel" onchange="mcMonthChange(this.value)" style="display:none;border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--text);outline:none;background:#fff;cursor:pointer;"></select>
+            <div class="ex-tabs" style="margin:0;padding:3px;">
+              <button id="mcModeMonth" class="ex-tab active" onclick="mcModeChange('month')" style="flex:none;padding:6px 16px;">월별</button>
+              <button id="mcModeWeek" class="ex-tab" onclick="mcModeChange('week')" style="flex:none;padding:6px 16px;">주간</button>
+            </div>
+          </div>
+        </div>
         <div class="mc-chartwrap"><canvas id="mcChart"></canvas></div>
         <div id="mcCaption" style="margin-top:10px;font-size:11.5px;color:#8A8FA3;"></div>
       </section>
@@ -2417,7 +2426,7 @@ function renderExec(){
     {label:'전체',data:totalArr,borderColor:'#EF4444',backgroundColor:'#EF4444',borderDash:[6,5],tension:.35,pointRadius:3,borderWidth:2},
   ];
   if(hasTgt)
-    datasets.push({label:'목표',data:tgtArr,borderColor:'#F59E0B',backgroundColor:'#F59E0B',tension:.35,borderDash:[8,5],pointRadius:0,borderWidth:2.5,spanGaps:false});
+    datasets.push({label:'목표',data:tgtArr,borderColor:'#F59E0B',backgroundColor:'#F59E0B',tension:.35,borderDash:[8,5],pointRadius:3.5,pointHoverRadius:5,borderWidth:2.5,spanGaps:false});
   if(exCharts.trend)exCharts.trend.destroy();
   exCharts.trend=new Chart(document.getElementById('exTrendChart'),{
     type:'line',
@@ -2531,7 +2540,19 @@ function renderExec(){
 function setExDrill(k){exDrillKey=k;renderExec();}
 
 /* ===================== 월별 비교 ===================== */
-let mcYear=null;
+let mcYear=null, mcMode='month', mcMonth=null;
+function mcModeChange(m){mcMode=m;renderMonthly();}
+function mcMonthChange(v){mcMonth=parseInt(v);renderMonthly();}
+function getDayNum(v){
+  if(v==null)return null;
+  const s=v.toString();
+  let m=s.match(/Date\((\d{4}),(\d{1,2}),(\d{1,2})/);
+  if(m)return parseInt(m[3]);
+  m=s.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+  if(m)return parseInt(m[3]);
+  if(v instanceof Date)return v.getDate();
+  return null;
+}
 function escH(s){return (s==null?'':s).toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 function renderMonthly(){
@@ -2558,26 +2579,74 @@ function renderMonthly(){
   const reUsedArr=canUsed?labels.map(l=>rows.filter(r=>getYM(r[iDate])===l&&isRe(r)&&isUsed(r)).length):labels.map(()=>0);
   const reOwnArr=reArr.map((v,i)=>v-reUsedArr[i]);
 
+  // ---- 월별/주간 모드 분기 ----
+  let chLabels=labels.map(l=>parseInt(l.split('.')[1])+'월');
+  let chShin=shinArr, chRe=reArr, chUsed=reUsedArr, chTitles=null;
+  const mSel=document.getElementById('mcMonthSel');
+  const mBtnM=document.getElementById('mcModeMonth'), mBtnW=document.getElementById('mcModeWeek');
+  if(mBtnM&&mBtnW){mBtnM.classList.toggle('active',mcMode==='month');mBtnW.classList.toggle('active',mcMode==='week');}
+  const ttl=document.getElementById('mcChartTitle');
+  if(mcMode==='week'){
+    if(mcMonth==null)mcMonth=(mcYear===String(new Date().getFullYear()))?(new Date().getMonth()+1):1;
+    if(mSel){
+      mSel.style.display='';
+      mSel.innerHTML=Array.from({length:12},(_,k)=>`<option value="${k+1}" ${(k+1)===mcMonth?'selected':''}>${k+1}월</option>`).join('');
+    }
+    if(ttl)ttl.textContent='주간 출고 비교';
+    const ymSel=`${mcYear}.${String(mcMonth).padStart(2,'0')}`;
+    const yNum=parseInt(mcYear);
+    const dim=new Date(yNum,mcMonth,0).getDate();
+    // 실제 달력 기준 주차: 일요일 시작 ~ 토요일 끝
+    // 예) 7/1(수)이면 1주차 = 7/1~7/4(토), 2주차 = 7/5(일)~7/11(토) ...
+    const weekRanges=[];
+    let dCur=1;
+    while(dCur<=dim){
+      const dow=new Date(yNum,mcMonth-1,dCur).getDay(); // 0=일 ~ 6=토
+      const dEnd=Math.min(dCur+(6-dow),dim);
+      weekRanges.push([dCur,dEnd]);
+      dCur=dEnd+1;
+    }
+    chLabels=[];chShin=[];chRe=[];chUsed=[];chTitles=[];
+    weekRanges.forEach(([s,e2],w)=>{
+      const wk=rows.filter(r=>{
+        if(getYM(r[iDate])!==ymSel)return false;
+        const d=getDayNum(r[iDate]);
+        return d!=null&&d>=s&&d<=e2;
+      });
+      chLabels.push((w+1)+'주차');
+      chTitles.push(`${mcMonth}월 ${w+1}주차 (${mcMonth}/${s} ~ ${mcMonth}/${e2})`);
+      chShin.push(wk.filter(isShin).length);
+      chRe.push(wk.filter(isRe).length);
+      chUsed.push(canUsed?wk.filter(r=>isRe(r)&&isUsed(r)).length:0);
+    });
+  }else{
+    if(mSel)mSel.style.display='none';
+    if(ttl)ttl.textContent='월별 출고 비교';
+  }
+  const chOwn=chRe.map((v,i)=>v-chUsed[i]);
+
   if(exCharts.mc)exCharts.mc.destroy();
   const datasets=canUsed?[
-    {label:'신차',data:shinArr,backgroundColor:'#3B82F6',borderRadius:5,maxBarThickness:28,stack:'shin'},
-    {label:'재렌트(자사매입)',data:reOwnArr,backgroundColor:'#10B981',borderRadius:5,maxBarThickness:28,stack:'re'},
-    {label:'재렌트(중고매입)',data:reUsedArr,backgroundColor:stripedPattern('#10B981'),borderRadius:5,maxBarThickness:28,stack:'re'}
+    {label:'신차',data:chShin,backgroundColor:'#3B82F6',borderRadius:5,maxBarThickness:28,stack:'shin'},
+    {label:'재렌트(자사매입)',data:chOwn,backgroundColor:'#10B981',borderRadius:5,maxBarThickness:28,stack:'re'},
+    {label:'재렌트(중고매입)',data:chUsed,backgroundColor:stripedPattern('#10B981'),borderRadius:5,maxBarThickness:28,stack:'re'}
   ]:[
-    {label:'신차',data:shinArr,backgroundColor:'#3B82F6',borderRadius:6,maxBarThickness:28},
-    {label:'재렌트',data:reArr,backgroundColor:'#10B981',borderRadius:6,maxBarThickness:28}
+    {label:'신차',data:chShin,backgroundColor:'#3B82F6',borderRadius:6,maxBarThickness:28},
+    {label:'재렌트',data:chRe,backgroundColor:'#10B981',borderRadius:6,maxBarThickness:28}
   ];
   exCharts.mc=new Chart(document.getElementById('mcChart'),{
     type:'bar',
-    data:{labels:labels.map(l=>parseInt(l.split('.')[1])+'월'),datasets},
+    data:{labels:chLabels,datasets},
     options:{
       maintainAspectRatio:false,
       plugins:{
         legend:{position:'top',align:'start',labels:{boxWidth:10,boxHeight:10,font:{family:"Pretendard",size:12}}},
-        tooltip:{callbacks:{footer:(items)=>{
+        tooltip:{callbacks:{
+          title:(items)=>chTitles?chTitles[items[0].dataIndex]:items[0].label,
+          footer:(items)=>{
           const i=items[0].dataIndex;
-          let s='전체 '+(shinArr[i]+reArr[i])+'대';
-          if(canUsed&&reArr[i]>0)s+='\n중고매입 '+reUsedArr[i]+'대 (재렌트의 '+Math.round(reUsedArr[i]/reArr[i]*100)+'%)';
+          let s='전체 '+(chShin[i]+chRe[i])+'대';
+          if(canUsed&&chRe[i]>0)s+='\n중고매입 '+chUsed[i]+'대 (재렌트의 '+Math.round(chUsed[i]/chRe[i]*100)+'%)';
           return s;
         }}}
       },
