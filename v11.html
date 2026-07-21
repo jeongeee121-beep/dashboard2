@@ -424,7 +424,7 @@ main .main-grid{width:100%;}
 
       <!-- 1. Executive Summary -->
       <section class="ex-card">
-        <div class="ex-head"><div class="ex-badge">1</div><div class="ex-title">판매 요약</div></div>
+        <div class="ex-head"><div class="ex-badge">1</div><div class="ex-title">판매 요약<small>탁송(출고) 기준</small></div></div>
         <div class="ex-kpis" id="exKpis"><div style="color:#8A8FA3;font-size:13px;">데이터 로딩 중...</div></div>
         <div id="exUnexecPanel" style="display:none;margin-top:14px;"></div>
       </section>
@@ -432,7 +432,7 @@ main .main-grid{width:100%;}
       <!-- 2 + 3 -->
       <div class="ex-row23">
         <section class="ex-card" style="margin-bottom:0;">
-          <div class="ex-head"><div class="ex-badge">2</div><div class="ex-title">목표 달성 현황</div></div>
+          <div class="ex-head"><div class="ex-badge">2</div><div class="ex-title">목표 달성 현황<small>탁송(출고) 기준</small></div></div>
           <div id="exGoal"><div style="color:#8A8FA3;font-size:13px;">-</div></div>
         </section>
 
@@ -451,7 +451,7 @@ main .main-grid{width:100%;}
       <!-- 5 + 6 -->
       <div class="ex-row56">
         <section class="ex-card" style="margin-bottom:0;">
-          <div class="ex-head"><div class="ex-badge">5</div><div class="ex-title">원인 분석 <small>(Drill Down)</small></div></div>
+          <div class="ex-head"><div class="ex-badge">5</div><div class="ex-title">원인 분석 <small>(Drill Down) · 실행 기준</small></div></div>
           <div class="ex-tabs" id="exDrillTabs"></div>
           <div class="ex-dcols"><div id="exDrillCol">상품명</div><div></div><div style="text-align:right;">출고 건수</div><div style="text-align:right;">전월 대비</div></div>
           <div id="exDrillRows"></div>
@@ -2362,8 +2362,44 @@ function renderExec(){
     return d==null||d<=baseDay;   // 기준일까지의 출고분만
   });
   const prevRows=rows.filter(r=>getYM(r[iDate])===prevYM);
-  const shin=monthRows.filter(isShin).length, re=monthRows.filter(isRe).length;
-  const pShin=prevRows.filter(isShin).length, pRe=prevRows.filter(isRe).length;
+
+  // ---- 판매 요약 · 목표 달성 현황 기준: 실행데이터가 아닌 "탁송데이터" 기준 ----
+  // (드릴다운·미실행 판정은 아래에서 계속 실행데이터인 monthRows/prevRows를 사용함)
+  let taksoShin=0,taksoRe=0,taksoPShin=0,taksoPRe=0,taksoAvail=false;
+  try{
+    if(typeof rawTaksoTable!=='undefined'&&rawTaksoTable){
+      const tkCols=rawTaksoTable.cols.map(c=>(c.label||'')+'');
+      const tkDate=(tkCols.findIndex(c=>c.includes('희망'))>=0)?tkCols.findIndex(c=>c.includes('희망')):tkCols.findIndex(c=>c.includes('요청일시'));
+      const tkType=tkCols.findIndex(c=>c.includes('신차구분'));
+      const tkAsset=tkCols.findIndex(c=>c.includes('자산번호'));
+      if(tkDate>=0){
+        const seenCur=new Set(),seenPrev=new Set();
+        rawTaksoTable.rows.forEach(rw=>{
+          const r=rw.c.map(c=>c?c.v:null);
+          const ym=getYM(r[tkDate]);
+          if(ym!==baseYM&&ym!==prevYM)return;
+          const a=(tkAsset>=0?((r[tkAsset]||'')+''):'').trim();
+          const tv=tkType>=0?((r[tkType]||'')+''):'';
+          const isS=tv.includes('신차'), isR=!isS&&(tv.includes('재렌트')||tv.includes('재'));
+          if(ym===baseYM){
+            const d=getDayNum(r[tkDate]);
+            if(d!=null&&d>baseDay)return;
+            if(a){if(seenCur.has(a))return;seenCur.add(a);}
+            if(isS)taksoShin++; else if(isR)taksoRe++;
+          }else{
+            if(a){if(seenPrev.has(a))return;seenPrev.add(a);}
+            if(isS)taksoPShin++; else if(isR)taksoPRe++;
+          }
+        });
+        taksoAvail=true;
+      }
+    }
+  }catch(e){console.error('탁송 기준 판매요약 집계 오류',e);}
+
+  const shin=taksoAvail?taksoShin:monthRows.filter(isShin).length;
+  const re=taksoAvail?taksoRe:monthRows.filter(isRe).length;
+  const pShin=taksoAvail?taksoPShin:prevRows.filter(isShin).length;
+  const pRe=taksoAvail?taksoPRe:prevRows.filter(isRe).length;
   const total=shin+re, pTotal=pShin+pRe;
 
   const tgt=targetsMap?targetsMap[baseYM]:null;
