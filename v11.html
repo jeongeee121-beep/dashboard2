@@ -384,7 +384,7 @@ main .main-grid{width:100%;}
 
     <div class="nav-label">판매</div>
     <button class="sb-item active" data-page="exec" onclick="goPage('exec')"><span>🏠</span><span>판매현황</span></button>
-    <button class="sb-item" data-page="monthly" onclick="goPage('monthly')"><span>📊</span><span>월별 비교</span></button>
+    <button class="sb-item" data-page="monthly" onclick="goPage('monthly')"><span>📊</span><span>기간별 비교</span></button>
 
     <div class="nav-label">상세 분석 (실무)</div>
     <button class="sb-item" data-page="product" onclick="goPage('product')"><span>📦</span><span>상품별 현황</span></button>
@@ -473,7 +473,7 @@ main .main-grid{width:100%;}
             <div><div class="l"><span class="d" style="background:#10B981;"></span>예상</div><div class="v" id="exFcExpect2">-</div></div>
             <div><div class="l">부족 예상</div><div class="v" id="exFcShort" style="color:#EF4444;">-</div></div>
           </div>
-          <div class="ex-fnote">※ 현재 페이스(영업일 기준) 유지 시 예측 · 공휴일 미반영</div>
+          <div class="ex-fnote">※ 현재 페이스(영업일 기준) 유지 시 예측</div>
         </section>
       </div>
       <div style="height:16px;"></div>
@@ -495,8 +495,8 @@ main .main-grid{width:100%;}
     <div id="monthlyPage" style="display:none;">
       <div class="ex-toprow">
         <div>
-          <div class="ex-pagetitle">월별 비교</div>
-          <div class="ex-pagedesc">신차·재렌트 월별 출고 비교와 프로모션 메모</div>
+          <div class="ex-pagetitle">기간별 비교</div>
+          <div class="ex-pagedesc">월별·주간 출고 비교와 프로모션 메모</div>
         </div>
         <label class="ex-basedate">📅 연도
           <select id="mcYearSel" onchange="mcYearChange(this.value)"
@@ -515,6 +515,7 @@ main .main-grid{width:100%;}
             </div>
           </div>
         </div>
+        <div id="mcMonthSummary" style="display:none;margin:-4px 0 12px;padding:9px 14px;background:var(--bg);border-radius:10px;font-size:12.5px;color:#5A5F73;"></div>
         <div class="mc-chartwrap"><canvas id="mcChart"></canvas></div>
         <div id="mcCaption" style="margin-top:10px;font-size:11.5px;color:#8A8FA3;"></div>
       </section>
@@ -2160,13 +2161,14 @@ async function deleteNotice(time){
 
 // ===================== v10: 경영현황 =====================
 let navPage='exec', targetsMap=null, issuesList=null, exDrillKey='상품별', assetBuyMap=null, assetCarNo=null;
+let holidaySet=new Set();
 // ▼▼▼ 팀 공유 메모: Apps Script 배포 URL을 아래 따옴표 안에 붙여넣으세요 ▼▼▼
 const ISSUE_URL='https://script.google.com/macros/s/AKfycbzK57bSaTVSDyMtvz9raJ8I92NncY-XNqC756elylrDzVwP9tsVWVHQBkcVlQVTs_pt/exec';
 // ▲▲▲ 비워두면 화면 입력 메모는 내 기기에만 저장됩니다 ▲▲▲
 const exCharts={};
 const PAGE_TITLES={
   exec:['판매현황 요약','한눈에 보는 판매 실적과 주요 지표'],
-  monthly:['월별 비교','신차·재렌트 월별 출고 비교와 프로모션 메모'],
+  monthly:['기간별 비교','월별·주간 출고 비교와 프로모션 메모'],
   product:['상품별 현황','상품별 출고 상세 (실무)'],
   model:['차종별 현황','차종별 출고 상세 (실무)'],
   channel:['판매채널별 현황','채널별 출고 상세 (실무)'],
@@ -2256,8 +2258,19 @@ function parseIssuesTable(tI){
 }
 
 async function loadExecExtras(){
-  const [tT,tI,tV]=await Promise.all([fetchSheetTab('목표설정'),fetchSheetTab('이슈'),fetchSheetTab('차량 RAW DATA')]);
+  const [tT,tI,tV,tH]=await Promise.all([fetchSheetTab('목표설정'),fetchSheetTab('이슈'),fetchSheetTab('차량 RAW DATA'),fetchSheetTab('공휴일')]);
   targetsMap=null;issuesList=null;assetBuyMap=null;
+  holidaySet=new Set();
+  if(tH){
+    const hCols=tH.cols.map(c=>((c.label||'')+'').trim());
+    let hI=hCols.findIndex(c=>c.includes('날짜')||c.includes('일자'));
+    tH.rows.forEach((r,ri)=>{
+      const c=r.c;if(!c)return;
+      const cell=hI>=0?c[hI]:c[0];
+      const k=cellYMD(cell);
+      if(k)holidaySet.add(k);
+    });
+  }
   if(tV){
     const fA=findColFlexible(tV,'자산번호'),fB=findColFlexible(tV,'매입구분');
     const fC=findColFlexible(tV,'차량번호');
@@ -2294,10 +2307,25 @@ async function loadExecExtras(){
 }
 
 // --- 영업일 계산 (주말 제외, 공휴일 미반영) ---
+function dateKey(d){return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;}
 function bizDays(d1,d2){
   let c=0;const d=new Date(d1);
-  while(d<=d2){const w=d.getDay();if(w!==0&&w!==6)c++;d.setDate(d.getDate()+1);}
+  while(d<=d2){
+    const w=d.getDay();
+    if(w!==0&&w!==6&&!holidaySet.has(dateKey(d)))c++;
+    d.setDate(d.getDate()+1);
+  }
   return c;
+}
+function cellYMD(c){
+  if(!c)return null;
+  const s=((c.v!=null?c.v:c.f)||'').toString();
+  let m=s.match(/Date\((\d{4}),(\d{1,2}),(\d{1,2})/);
+  if(m)return `${m[1]}.${String(parseInt(m[2])+1).padStart(2,'0')}.${String(parseInt(m[3])).padStart(2,'0')}`;
+  const s2=((c.f!=null?c.f:c.v)||'').toString();
+  m=s2.match(/(\d{4})[.\-\/\s]+(\d{1,2})[.\-\/\s]+(\d{1,2})/);
+  if(m)return `${m[1]}.${m[2].padStart(2,'0')}.${m[3].padStart(2,'0')}`;
+  return null;
 }
 
 function exDeltaHtml(cur,prev){
@@ -2327,7 +2355,12 @@ function renderExec(){
   const isShin=r=>((r[iProd]||'')+'').includes('신차');
   const isRe=r=>{const v=(r[iProd]||'')+'';return v.includes('재렌트')||v.includes('재');};
 
-  const monthRows=rows.filter(r=>getYM(r[iDate])===baseYM);
+  const baseDay=base.getDate();
+  const monthRows=rows.filter(r=>{
+    if(getYM(r[iDate])!==baseYM)return false;
+    const d=getDayNum(r[iDate]);
+    return d==null||d<=baseDay;   // 기준일까지의 출고분만
+  });
   const prevRows=rows.filter(r=>getYM(r[iDate])===prevYM);
   const shin=monthRows.filter(isShin).length, re=monthRows.filter(isRe).length;
   const pShin=prevRows.filter(isShin).length, pRe=prevRows.filter(isRe).length;
@@ -2338,7 +2371,7 @@ function renderExec(){
   const rate=(tTotal&&tTotal>0)?Math.round(total/tTotal*100):null;
 
   // ---- 미실행건 (탁송 완료 O · 실행 X) ----
-  let unexecHtml='';
+  let unexecHtml='', unexShin=0, unexRe=0, unexAvail=false;
   try{
     if(typeof rawTaksoTable!=='undefined'&&rawTaksoTable){
       const mCols=rawTable.cols.map(c=>(c.label||'')+'');
@@ -2352,6 +2385,7 @@ function renderExec(){
       const tCar=tCols.findIndex(c=>c.includes('차종'));
       const tWk=tCols.findIndex(c=>c.includes('수행자'));
       const tProd=tCols.findIndex(c=>c.includes('상품명'));
+      const tType=tCols.findIndex(c=>c.includes('신차구분'));
       const tCarNo=tCols.findIndex(c=>c.replace(/\s/g,'').includes('차량번호'));
       if(tAsset>=0&&iAssetMain>=0&&tDate>=0){
         const execSet=new Set(monthRows.map(r=>((r[iAssetMain]||'')+'').trim()).filter(Boolean));
@@ -2359,9 +2393,16 @@ function renderExec(){
         const list=[];let taksoCnt=0;
         tRows.forEach(r=>{
           if(getYM(r[tDate])!==baseYM)return;
+          const dd=getDayNum(r[tDate]);
+          if(dd!=null&&dd>baseDay)return;   // 기준일 이후 탁송 제외
           const a=((r[tAsset]||'')+'').trim();
           if(!a||seen.has(a))return;
           seen.add(a);taksoCnt++;
+          if(!execSet.has(a)){
+            const tv=tType>=0?((r[tType]||'')+''):'';
+            if(tv.includes('신차'))unexShin++;
+            else if(tv.includes('재렌트')||tv.includes('재'))unexRe++;
+          }
           if(!execSet.has(a))list.push({
             asset:a,
             carNo:(tCarNo>=0?((r[tCarNo]||'')+'').trim():'')||(assetCarNo?(assetCarNo[a]||''):''),
@@ -2373,6 +2414,7 @@ function renderExec(){
         });
         list.sort((x,y)=>(x.day||99)-(y.day||99));
         window._exUnexec={list,takso:taksoCnt,ym:baseYM};
+        unexAvail=true;
         const n=list.length;
         unexecHtml=`
     <div class="ex-kpi" style="cursor:pointer;" onclick="toggleUnexec()" title="클릭하면 목록이 열려요">
@@ -2416,6 +2458,10 @@ function renderExec(){
         <div class="ex-kpi-ico" style="background:#e8f3fe;">🚗</div>
         <div><div class="ex-kpi-label">신차 출고</div>
         <div class="ex-kpi-value">${shin.toLocaleString()}<small>대</small></div></div>
+        ${unexAvail?`<div style="margin-left:auto;text-align:right;padding-top:3px;">
+          <div style="font-size:10.5px;color:#C6C9D6;font-weight:600;">미실행</div>
+          <div style="font-size:16px;font-weight:800;color:#B4B8C9;">${unexShin}<span style="font-size:11px;">건</span></div>
+        </div>`:''}
       </div>
       ${exDeltaHtml(shin,pShin)}
     </div>
@@ -2424,6 +2470,10 @@ function renderExec(){
         <div class="ex-kpi-ico" style="background:#e9f9f3;">🚙</div>
         <div><div class="ex-kpi-label">재렌트 출고</div>
         <div class="ex-kpi-value">${re.toLocaleString()}<small>대</small></div></div>
+        ${unexAvail?`<div style="margin-left:auto;text-align:right;padding-top:3px;">
+          <div style="font-size:10.5px;color:#C6C9D6;font-weight:600;">미실행</div>
+          <div style="font-size:16px;font-weight:800;color:#B4B8C9;">${unexRe}<span style="font-size:11px;">건</span></div>
+        </div>`:''}
       </div>
       ${exDeltaHtml(re,pRe)}
     </div>${unexecHtml}`;
@@ -2463,7 +2513,7 @@ function renderExec(){
       ${expectShort>0
         ?`<div class="ex-warn bad">예상 미달 ${expectShort.toLocaleString()}대</div>`
         :`<div class="ex-warn good">목표 달성 예상 🎉 (+${Math.abs(expectShort).toLocaleString()}대)</div>`}
-      <div class="ex-noteset">영업일은 주말 제외 기준 (공휴일 미반영)</div>`;
+      <div class="ex-noteset">${holidaySet.size?`영업일은 주말·공휴일 제외 기준 (공휴일 탭 ${holidaySet.size}일 반영)`:`영업일은 주말 제외 기준 · 시트에 '공휴일' 탭(날짜)을 추가하면 공휴일도 제외돼요`}</div>`;
   }else{
     goalEl.innerHTML=`
       <div style="text-align:center;padding:24px 10px;color:#aaa;font-size:12.5px;line-height:1.8;">
@@ -2478,7 +2528,11 @@ function renderExec(){
   // ---- 3. Trend ----
   const labels=[];
   for(let m=0;m<=bM;m++)labels.push(`${bY}.${String(m+1).padStart(2,'0')}`);
-  const cntBy=(pred)=>labels.map(l=>rows.filter(r=>getYM(r[iDate])===l&&pred(r)).length);
+  const cntBy=(pred)=>labels.map(l=>rows.filter(r=>{
+    if(getYM(r[iDate])!==l)return false;
+    if(l===baseYM){const d=getDayNum(r[iDate]);if(d!=null&&d>baseDay)return false;}
+    return pred(r);
+  }).length);
   const shinArr=cntBy(isShin), reArr=cntBy(isRe);
   const totalArr=shinArr.map((v,i)=>v+reArr[i]);
   const tgtArr=targetsMap?labels.map(l=>{const t=targetsMap[l];return t?(t.shin||0)+(t.re||0):null;}):null;
@@ -2657,6 +2711,12 @@ function renderMonthly(){
       mSel.innerHTML=Array.from({length:12},(_,k)=>`<option value="${k+1}" ${(k+1)===mcMonth?'selected':''}>${k+1}월</option>`).join('');
     }
     if(ttl)ttl.textContent='주간 출고 비교';
+    const sumEl=document.getElementById('mcMonthSummary');
+    if(sumEl){
+      const mS=shinArr[mcMonth-1]||0, mR=reArr[mcMonth-1]||0;
+      sumEl.style.display='';
+      sumEl.innerHTML=`<b>${mcMonth}월 합계</b> &nbsp;·&nbsp; 신차 <b>${mS.toLocaleString()}</b>대 &nbsp;·&nbsp; 재렌트 <b>${mR.toLocaleString()}</b>대 &nbsp;·&nbsp; 전체 <b style="color:var(--primary);">${(mS+mR).toLocaleString()}대</b>`;
+    }
     const ymSel=`${mcYear}.${String(mcMonth).padStart(2,'0')}`;
     const yNum=parseInt(mcYear);
     const dim=new Date(yNum,mcMonth,0).getDate();
@@ -2686,6 +2746,8 @@ function renderMonthly(){
   }else{
     if(mSel)mSel.style.display='none';
     if(ttl)ttl.textContent='월별 출고 비교';
+    const sumEl=document.getElementById('mcMonthSummary');
+    if(sumEl)sumEl.style.display='none';
   }
   const chOwn=chRe.map((v,i)=>v-chUsed[i]);
 
