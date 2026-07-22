@@ -1899,7 +1899,7 @@ function renderTakso(){
     ? (tMo.split('.')[0]+'년 '+parseInt(tMo.split('.')[1])+'월')
     : (tYr+'년 전체');
 
-  const isSpecial=r=>mapTaksoWorker(r[iWorker])==='특이건';
+  const isSpecial=r=>{const s=((r[iWorker]==null?'':r[iWorker])+'').trim();return !s||mapTaksoWorker(r[iWorker])==='특이건';};
   const specialRows=allFiltered.filter(isSpecial);
   const filtered=allFiltered.filter(r=>!isSpecial(r));
   const shincha=filtered.filter(r=>(r[iType]||'').toString().includes('신차'));
@@ -1934,7 +1934,6 @@ function renderTakso(){
       <div class="sum-card" style="border-left:4px solid #5B5FE8;">
         <div class="sum-label">총 탁송 출고</div>
         <div class="sum-value">${filtered.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
-        ${specialCount>0?`<div style="font-size:11px;color:#bbb;margin-top:4px;">* 차량교체 ${specialCount}건 제외</div>`:''}
       </div>
       <div class="sum-card" style="border-left:4px solid #5B5FE8;">
         <div class="sum-label">신차</div>
@@ -1943,7 +1942,7 @@ function renderTakso(){
       <div class="sum-card" style="border-left:4px solid #22c997;">
         <div class="sum-label">재렌트</div>
         <div class="sum-value" style="color:#22c997;">${rerent.length}<span style="font-size:16px;color:#aaa;"> 건</span></div>
-        ${specialCount>0?`<div style="font-size:11px;color:#bbb;margin-top:4px;">* 차량교체 ${specialCount}건</div>`:''}
+        ${specialCount>0?`<div style="font-size:11px;color:#bbb;margin-top:4px;">* 차량교체 ${specialCount}건은 집계에서 제외</div>`:''}
       </div>
     </div>
 
@@ -2574,12 +2573,10 @@ function renderExec(){
         </div>`:''}
       </div>
       ${exDeltaHtml(re,pRe)}
+      ${(taksoAvail&&taksoSwapCnt>0)?`<span style="font-size:11px;color:#B4B8C9;font-weight:600;">* 차량교체 ${taksoSwapCnt}건은 집계에서 제외</span>`:''}
     </div>${unexecHtml}`;
   const swapNote=document.getElementById('exSwapNote');
-  if(swapNote){
-    swapNote.style.display=(taksoAvail&&taksoSwapCnt>0)?'block':'none';
-    swapNote.textContent=`* 차량교체 ${taksoSwapCnt}건(수행자 미기재·특이건)은 집계에서 제외`;
-  }
+  if(swapNote)swapNote.style.display='none';
 
   // ---- 2. Goal Tracking ----
   const mStart=new Date(bY,bM,1), mEnd=new Date(bY,bM+1,0);
