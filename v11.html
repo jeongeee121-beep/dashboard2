@@ -441,6 +441,7 @@ main .main-grid{width:100%;}
       <section class="ex-card">
         <div class="ex-head"><div class="ex-badge">1</div><div class="ex-title">판매 요약<small>탁송(출고) 기준</small></div></div>
         <div class="ex-kpis" id="exKpis"><div style="color:#8A8FA3;font-size:13px;">데이터 로딩 중...</div></div>
+        <div id="exSwapNote" style="display:none;margin-top:10px;font-size:11px;color:#B4B8C9;"></div>
         <div id="exUnexecPanel" style="display:none;margin-top:14px;"></div>
       </section>
 
@@ -2420,19 +2421,22 @@ function renderExec(){
 
   // ---- 판매 요약 · 목표 달성 현황 기준: 실행데이터가 아닌 "탁송데이터" 기준 ----
   // (드릴다운·미실행 판정은 아래에서 계속 실행데이터인 monthRows/prevRows를 사용함)
-  let taksoShin=0,taksoRe=0,taksoPShin=0,taksoPRe=0,taksoAvail=false;
+  let taksoShin=0,taksoRe=0,taksoPShin=0,taksoPRe=0,taksoAvail=false,taksoSwapCnt=0;
+  const isSwapWk=v=>{const s=((v==null?'':v)+'').trim();return !s||s.includes('특이건');};
   try{
     if(typeof rawTaksoTable!=='undefined'&&rawTaksoTable){
       const tkCols=rawTaksoTable.cols.map(c=>(c.label||'')+'');
       const tkDate=(tkCols.findIndex(c=>c.includes('희망'))>=0)?tkCols.findIndex(c=>c.includes('희망')):tkCols.findIndex(c=>c.includes('요청일시'));
       const tkType=tkCols.findIndex(c=>c.includes('신차구분'));
       const tkAsset=tkCols.findIndex(c=>c.includes('자산번호'));
+      const tkWk=tkCols.findIndex(c=>c.includes('수행자')||c.includes('수행원'));
       if(tkDate>=0){
         const seenCur=new Set(),seenPrev=new Set();
         rawTaksoTable.rows.forEach(rw=>{
           const r=rw.c.map(c=>c?c.v:null);
           const ym=getYM(r[tkDate]);
           if(ym!==baseYM&&ym!==prevYM)return;
+          const swap=tkWk>=0&&isSwapWk(r[tkWk]);   // 차량교체건: 집계 제외, 개수만 표시
           const a=(tkAsset>=0?((r[tkAsset]||'')+''):'').trim();
           const tv=tkType>=0?((r[tkType]||'')+''):'';
           const isS=tv.includes('신차'), isR=!isS&&(tv.includes('재렌트')||tv.includes('재'));
@@ -2440,9 +2444,11 @@ function renderExec(){
             const d=getDayNum(r[tkDate]);
             if(d!=null&&d>baseDay)return;
             if(a){if(seenCur.has(a))return;seenCur.add(a);}
+            if(swap){taksoSwapCnt++;return;}
             if(isS)taksoShin++; else if(isR)taksoRe++;
           }else{
             if(a){if(seenPrev.has(a))return;seenPrev.add(a);}
+            if(swap)return;
             if(isS)taksoPShin++; else if(isR)taksoPRe++;
           }
         });
@@ -2486,6 +2492,7 @@ function renderExec(){
           if(getYM(r[tDate])!==baseYM)return;
           const dd=getDayNum(r[tDate]);
           if(dd!=null&&dd>baseDay)return;   // 기준일 이후 탁송 제외
+          if(tWk>=0&&isSwapWk(r[tWk]))return;   // 차량교체건 제외
           const a=((r[tAsset]||'')+'').trim();
           if(!a||seen.has(a))return;
           seen.add(a);taksoCnt++;
@@ -2568,6 +2575,11 @@ function renderExec(){
       </div>
       ${exDeltaHtml(re,pRe)}
     </div>${unexecHtml}`;
+  const swapNote=document.getElementById('exSwapNote');
+  if(swapNote){
+    swapNote.style.display=(taksoAvail&&taksoSwapCnt>0)?'block':'none';
+    swapNote.textContent=`* 차량교체 ${taksoSwapCnt}건(수행자 미기재·특이건)은 집계에서 제외`;
+  }
 
   // ---- 2. Goal Tracking ----
   const mStart=new Date(bY,bM,1), mEnd=new Date(bY,bM+1,0);
