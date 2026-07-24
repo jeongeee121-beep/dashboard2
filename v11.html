@@ -194,6 +194,11 @@ main{max-width:1400px;margin:0 auto;padding:20px 28px 40px;}
 
 
 /* ===== 재고현황판 (임베드) ===== */
+#invPage .inv-simplebar{display:flex;align-items:center;gap:9px;padding:12px 28px;background:#fff;border-bottom:1px solid #eee;font-size:12.5px;color:#8A8FA3;font-weight:600;}
+#invPage .inv-dot{width:7px;height:7px;border-radius:50%;background:#22c997;flex-shrink:0;box-shadow:0 0 0 3px rgba(34,201,151,0.15);}
+#invPage .inv-lastupdate{margin-left:auto;color:#B4B8C9;font-weight:600;font-size:11.5px;}
+#invPage .inv-refresh-btn{border:1px solid #E2E3EF;background:#fff;border-radius:8px;padding:5px 12px;font-family:inherit;font-size:11.5px;font-weight:700;color:#5B5FE8;cursor:pointer;}
+#invPage .inv-refresh-btn:hover{background:#F4F6FF;}
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
 
 
@@ -648,7 +653,7 @@ main .main-grid{width:100%;}
     </div>
 
     <div id="invPage" style="display:none;">
-<div class="connect-bar">
+<div class="connect-bar" style="display:none;">
   <label>시트 ID</label>
   <input id="invSheetIdInput" placeholder="구글 스프레드시트 ID" value="14j3hDW3Hn-1ftkJlqZhEZhWTt38eZU8S4yMoadenrR4">
   <label>탭 이름</label>
@@ -660,6 +665,12 @@ main .main-grid{width:100%;}
   <button class="btn-load" onclick="invLoadAll()">불러오기</button>
   <span id="invStatusMsg"></span>
   <span class="last-update" id="invLastUpdate" style="margin-left:auto;"></span>
+</div>
+<div class="inv-simplebar">
+  <span class="inv-dot"></span>
+  <span>같은 구글시트에서 자동 연동돼요</span>
+  <span id="invLastUpdateSimple" class="inv-lastupdate"></span>
+  <button class="inv-refresh-btn" onclick="invLoadAll()" title="지금 다시 불러오기">🔄 새로고침</button>
 </div>
 
 <div class="inv-main">
@@ -3716,6 +3727,8 @@ function invSetStatus(msg, isErr){
   const el = document.getElementById('invStatusMsg');
   el.textContent = msg;
   el.style.color = isErr ? '#e2483d' : '#22c997';
+  const simple = document.getElementById('invLastUpdateSimple');
+  if(simple && isErr){ simple.textContent = '⚠ '+msg; simple.style.color = '#e2483d'; }
 }
 
 async function invLoadAll(){
@@ -3885,6 +3898,8 @@ async function invLoadAll(){
 
     shipStatus += salesStatus;
     document.getElementById('invLastUpdate').textContent = '마지막 업데이트: ' + new Date().toLocaleString('ko-KR');
+    const simpleUp = document.getElementById('invLastUpdateSimple');
+    if(simpleUp){ simpleUp.style.color=''; simpleUp.textContent = '마지막 업데이트 ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}); }
     invSetStatus(`불러오기 완료 (재고 ${rows.length}건 / 원본 ${raw.length}행)${shipStatus}`, false);
 
     invRender();
