@@ -1015,34 +1015,32 @@ async function loadAll(){
   const id=document.getElementById('sheetId').value.trim();
   if(!id){setStatus('시트 ID를 입력해주세요.',false);return;}
   setStatus('불러오는 중...',null);
-  const url=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('판매현황테스트')}`;
+  const gvizUrl=sheet=>`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
+  const fetchTable=async(sheet)=>{
+    try{
+      const res=await fetch(gvizUrl(sheet));
+      const text=await res.text();
+      const m=text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+      if(!m)return null;
+      const json=JSON.parse(m[1]);
+      return json.table?.rows?.length?json.table:null;
+    }catch(e){return null;}
+  };
   try{
-    const res=await fetch(url);const text=await res.text();
-    const match=text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
-    if(!match)throw new Error('파싱 실패');
-    const json=JSON.parse(match[1]);
-    if(!json.table?.rows?.length)throw new Error('데이터 없음');
-    rawTable=json.table;
+    // 판매현황테스트 · 탁송데이터를 동시에(병렬로) 요청 — 서로 의존관계 없어서 순서대로 기다릴 필요 없음
+    const [salesTable,taksoTable]=await Promise.all([fetchTable('판매현황테스트'),fetchTable('탁송데이터')]);
+    if(!salesTable)throw new Error('데이터 없음');
+    rawTable=salesTable;
+    if(taksoTable){
+      rawTaksoTable=taksoTable;
+      console.log('탁송 로드 성공:',rawTaksoTable.rows.length,'건');
+    }else{
+      console.log('탁송 로드 실패 또는 매칭 안 됨');
+    }
     const now=new Date();
     document.getElementById('lastUpdate').textContent=`↻ 최종 업데이트: ${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     // sheetTabs already visible
     // periodBar already visible
-    // 탁송 데이터도 함께 로드
-    try{
-      const tUrl=`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('탁송데이터')}`;
-      const tRes=await fetch(tUrl);
-      const tText=await tRes.text();
-      const tMatch=tText.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
-      if(tMatch){
-        const tJson=JSON.parse(tMatch[1]);
-        if(tJson.table?.rows?.length){
-          rawTaksoTable=tJson.table;
-          console.log('탁송 로드 성공:',rawTaksoTable.rows.length,'건');
-        }
-      } else {
-        console.log('탁송 매칭 실패, 응답:', tText.slice(0,200));
-      }
-    }catch(e){console.log('탁송 로드 실패:',e.message);}
 
     // 실행/탁송 버튼 표시
     const modeBtns=document.getElementById('dataModeBtns');
@@ -2384,7 +2382,7 @@ async function deleteNotice(time){
 
 
 // ===================== v10: 경영현황 =====================
-let navPage='exec', targetsMap=null, issuesList=null, exDrillKey='상품별', assetBuyMap=null, assetCarNo=null, unexecExcludeMap=null;
+let navPage='exec', targetsMap=null, issuesList=null, exDrillKey='상품별', assetBuyMap=null, assetCarNo=null, unexecExcludeMap=null, rawVehicleTable=null;
 let holidaySet=new Set();
 // ▼▼▼ 팀 공유 메모: Apps Script 배포 URL을 아래 따옴표 안에 붙여넣으세요 ▼▼▼
 const ISSUE_URL='https://script.google.com/macros/s/AKfycbzK57bSaTVSDyMtvz9raJ8I92NncY-XNqC756elylrDzVwP9tsVWVHQBkcVlQVTs_pt/exec';
@@ -2495,6 +2493,7 @@ function parseIssuesTable(tI){
 
 async function loadExecExtras(){
   const [tT,tI,tV,tH,tX]=await Promise.all([fetchSheetTab('목표설정'),fetchSheetTab('이슈'),fetchSheetTab('차량 RAW DATA'),fetchSheetTab('공휴일'),fetchSheetTab('미실행제외')]);
+  rawVehicleTable=tV||null;   // 재고현황(재고판) 재사용용 — 매번 재요청하지 않도록 캐시
   targetsMap=null;issuesList=null;assetBuyMap=null;
   unexecExcludeMap=null;
   if(tX){
@@ -3736,16 +3735,39 @@ async function invLoadAll(){
   const sheetName = document.getElementById('invSheetNameInput').value.trim() || '자산관리';
   if(!id){ invSetStatus('시트 ID를 입력해주세요.', true); return; }
   invSetStatus('불러오는 중...', false);
+  const gvizUrl = sheet => `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
+  const fetchTable = async(sheet) => {
+    try{
+      const res = await fetch(gvizUrl(sheet));
+      const text = await res.text();
+      const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+      if(!m) return null;
+      const json = JSON.parse(m[1]);
+      return (json.table && json.table.rows && json.table.rows.length) ? json.table : null;
+    }catch(e){ return null; }
+  };
   try{
-    const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
-    const res = await fetch(url);
-    const text = await res.text();
-    const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
-    if(!m) throw new Error(`시트를 찾을 수 없어요. 탭 이름 "${sheetName}"이 맞는지 확인해주세요.`);
-    const json = JSON.parse(m[1]);
-    if(!json.table || !json.table.rows || !json.table.rows.length) throw new Error('데이터가 비어있어요.');
+    const shipSheetName = document.getElementById('invShipSheetNameInput').value.trim() || '탁송데이터';
+    const salesSheetName = document.getElementById('invSalesSheetNameInput').value.trim() || '판매현황테스트';
+    let reuseNote = [];
 
-    const cols = json.table.cols.map(c=>c.label);
+    // 판매현황(대시보드)이 이미 불러온 데이터가 있으면 재사용 — 없을 때만 새로 요청 (그것도 동시에·병렬로)
+    const needVehicle = !(typeof rawVehicleTable!=='undefined' && rawVehicleTable);
+    const needTakso = !(typeof rawTaksoTable!=='undefined' && rawTaksoTable) || shipSheetName!=='탁송데이터';
+    const needSales = !(typeof rawTable!=='undefined' && rawTable) || salesSheetName!=='판매현황테스트';
+
+    const [vehicleTable, taksoTable, salesTable] = await Promise.all([
+      needVehicle ? fetchTable(sheetName) : Promise.resolve(rawVehicleTable),
+      needTakso ? fetchTable(shipSheetName) : Promise.resolve(rawTaksoTable),
+      needSales ? fetchTable(salesSheetName) : Promise.resolve(rawTable),
+    ]);
+    if(!needVehicle) reuseNote.push('차량 RAW DATA(재사용)');
+    if(!needTakso) reuseNote.push('탁송데이터(재사용)');
+    if(!needSales) reuseNote.push('판매현황(재사용)');
+
+    if(!vehicleTable) throw new Error(`시트를 찾을 수 없어요. 탭 이름 "${sheetName}"이 맞는지 확인해주세요.`);
+
+    const cols = vehicleTable.cols.map(c=>c.label);
     const idx = n => cols.findIndex(c=>c && c.includes(n));
     const iBuy=idx('매입구분'), iPDate=idx('매입계약일'), iStatus=idx('자산상태'),
           iRDate=idx('상품등록일'), iNewcar=idx('신차구분'), iName=idx('시리즈명'),
@@ -3755,7 +3777,7 @@ async function invLoadAll(){
       throw new Error('필요한 컬럼(매입구분/매입계약일/자산상태/신차구분/시리즈명)을 찾을 수 없어요. 헤더명을 확인해주세요.');
     }
 
-    const raw = json.table.rows.map(r=>{
+    const raw = vehicleTable.rows.map(r=>{
       const c = r.c;
       const v = i => (i>=0 && c[i] && c[i].v!=null) ? c[i].v : '';
       return {
@@ -3799,104 +3821,85 @@ async function invLoadAll(){
       if(gubun) rows.push({gubun, name:r.name, grade, year:r.year, fuel:r.fuel});
     });
 
-    // 탁송데이터(이번달 출고) 함께 로드 - 실패해도 재고 표시는 계속 진행
+    // 탁송데이터(이번달 출고) 반영 - 실패해도 재고 표시는 계속 진행
     let shipStatus = '';
-    const shipSheetName = document.getElementById('invShipSheetNameInput').value.trim() || '탁송데이터';
     try{
-      const shipUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(shipSheetName)}`;
-      const shipRes = await fetch(shipUrl);
-      const shipText = await shipRes.text();
-      const sm = shipText.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
-      if(!sm){ shipStatus = ` / 탁송 탭("${shipSheetName}") 못 찾음`; }
+      if(!taksoTable){ shipStatus = ` / 탁송 탭("${shipSheetName}") 못 찾음`; }
       else{
-        const shipJson = JSON.parse(sm[1]);
-        if(shipJson.table && shipJson.table.rows){
-          const scols = shipJson.table.cols.map(c=>c.label);
-          const sidx = n => scols.findIndex(c=>c && c.includes(n));
-          const iSGubun=sidx('신차구분'), iSName=sidx('차종'), iSAsset=sidx('자산번호'),
-                iSMonth=sidx('월'), iSReqDate=sidx('요청일시'), iSHopeDate=sidx('희망일자');
-          if(iSGubun<0 || iSName<0){
-            shipStatus = ` / 탁송 탭에서 "신차구분"·"차종" 컬럼을 못 찾음`;
-          } else {
-            const curMonthText = (TODAY.getMonth()+1)+'월';
-            const curMonthNum = TODAY.getMonth()+1;
-            let filterNote = '';
-            let allShipRows = shipJson.table.rows.map(r=>{
-              const c=r.c;
-              const v = i => (i>=0 && c[i] && c[i].v!=null) ? c[i].v : '';
-              return { gubun:v(iSGubun), name:v(iSName), asset:v(iSAsset), month:v(iSMonth), reqDate:v(iSReqDate), hopeDate:v(iSHopeDate) };
-            }).filter(r=>r.asset && r.name);
-            const beforeFilter = allShipRows.length;
-            let filtered = allShipRows;
-            if(iSHopeDate>=0 || iSReqDate>=0){
-              const unparsed = allShipRows.filter(r=> !parseYMD(r.hopeDate) && !parseYMD(r.reqDate)).length;
-              filtered = allShipRows.filter(r=>{
-                const d = parseYMD(r.hopeDate) || parseYMD(r.reqDate);
-                return d && d.getFullYear()===TODAY.getFullYear() && d.getMonth()===TODAY.getMonth();
-              });
-              filterNote = `희망일자(DATEVALUE) 기준 ${TODAY.getFullYear()}년 ${curMonthNum}월로 필터링${unparsed?`, 날짜 파싱 실패 ${unparsed}건`:''}`;
-            } else if(iSMonth>=0){
-              filtered = allShipRows.filter(r=>{
-                const mv = String(r.month).trim();
-                return mv.includes(curMonthText) || mv === String(curMonthNum) || parseInt(mv)===curMonthNum;
-              });
-              filterNote = `"월" 컬럼(${curMonthText}) 기준 필터링`;
-            } else {
-              filterNote = `월 필터 컬럼을 못 찾아 전체 기간 합산됨 - 주의`;
-            }
-            // 안전장치: 원본은 있는데 필터링 결과가 0건이면 필터 기준이 안 맞는 것으로 보고 무필터로 폴백
-            if(beforeFilter>0 && filtered.length===0){
-              filtered = allShipRows;
-              filterNote += ` → 필터 결과 0건이라 필터 없이 전체 표시함(월 컬럼 형식을 확인해줘)`;
-            }
-            shipRows = filtered;
-            const rejaShip = shipRows.filter(r=>r.gubun==='재렌트');
-            const rejaMatched = rejaShip.filter(r=>assetBuyMap[String(r.asset)]).length;
-            const matchNote = rejaShip.length ? `, 재렌트 중 매입구분 매칭 ${rejaMatched}/${rejaShip.length}건` : '';
-            shipStatus = ` / 이번달출고 ${shipRows.length}건(원본 ${beforeFilter}건, ${filterNote}${matchNote})`;
-          }
+        const scols = taksoTable.cols.map(c=>c.label);
+        const sidx = n => scols.findIndex(c=>c && c.includes(n));
+        const iSGubun=sidx('신차구분'), iSName=sidx('차종'), iSAsset=sidx('자산번호'),
+              iSMonth=sidx('월'), iSReqDate=sidx('요청일시'), iSHopeDate=sidx('희망일자');
+        if(iSGubun<0 || iSName<0){
+          shipStatus = ` / 탁송 탭에서 "신차구분"·"차종" 컬럼을 못 찾음`;
         } else {
-          shipStatus = ` / 탁송 탭 데이터 없음`;
+          const curMonthText = (TODAY.getMonth()+1)+'월';
+          const curMonthNum = TODAY.getMonth()+1;
+          let filterNote = '';
+          let allShipRows = taksoTable.rows.map(r=>{
+            const c=r.c;
+            const v = i => (i>=0 && c[i] && c[i].v!=null) ? c[i].v : '';
+            return { gubun:v(iSGubun), name:v(iSName), asset:v(iSAsset), month:v(iSMonth), reqDate:v(iSReqDate), hopeDate:v(iSHopeDate) };
+          }).filter(r=>r.asset && r.name);
+          const beforeFilter = allShipRows.length;
+          let filtered = allShipRows;
+          if(iSHopeDate>=0 || iSReqDate>=0){
+            const unparsed = allShipRows.filter(r=> !parseYMD(r.hopeDate) && !parseYMD(r.reqDate)).length;
+            filtered = allShipRows.filter(r=>{
+              const d = parseYMD(r.hopeDate) || parseYMD(r.reqDate);
+              return d && d.getFullYear()===TODAY.getFullYear() && d.getMonth()===TODAY.getMonth();
+            });
+            filterNote = `희망일자(DATEVALUE) 기준 ${TODAY.getFullYear()}년 ${curMonthNum}월로 필터링${unparsed?`, 날짜 파싱 실패 ${unparsed}건`:''}`;
+          } else if(iSMonth>=0){
+            filtered = allShipRows.filter(r=>{
+              const mv = String(r.month).trim();
+              return mv.includes(curMonthText) || mv === String(curMonthNum) || parseInt(mv)===curMonthNum;
+            });
+            filterNote = `"월" 컬럼(${curMonthText}) 기준 필터링`;
+          } else {
+            filterNote = `월 필터 컬럼을 못 찾아 전체 기간 합산됨 - 주의`;
+          }
+          // 안전장치: 원본은 있는데 필터링 결과가 0건이면 필터 기준이 안 맞는 것으로 보고 무필터로 폴백
+          if(beforeFilter>0 && filtered.length===0){
+            filtered = allShipRows;
+            filterNote += ` → 필터 결과 0건이라 필터 없이 전체 표시함(월 컬럼 형식을 확인해줘)`;
+          }
+          shipRows = filtered;
+          const rejaShip = shipRows.filter(r=>r.gubun==='재렌트');
+          const rejaMatched = rejaShip.filter(r=>assetBuyMap[String(r.asset)]).length;
+          const matchNote = rejaShip.length ? `, 재렌트 중 매입구분 매칭 ${rejaMatched}/${rejaShip.length}건` : '';
+          shipStatus = ` / 이번달출고 ${shipRows.length}건(원본 ${beforeFilter}건, ${filterNote}${matchNote})`;
         }
       }
-    }catch(e){ shipStatus = ` / 탁송데이터 로드 오류(${e.message})`; }
+    }catch(e){ shipStatus = ` / 탁송데이터 처리 오류(${e.message})`; }
 
-    // 판매현황테스트(계약실행일 기준 월별 이력) 로드 - 최근평균/전년동월 비교용
+    // 판매현황테스트(계약실행일 기준 월별 이력) 반영 - 최근평균/전년동월 비교용
     let salesStatus = '';
-    const salesSheetName = document.getElementById('invSalesSheetNameInput').value.trim() || '판매현황테스트';
     try{
-      const salesUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(salesSheetName)}`;
-      const salesRes = await fetch(salesUrl);
-      const salesText = await salesRes.text();
-      const lm = salesText.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
-      if(!lm){ salesStatus = ` / 판매 탭("${salesSheetName}") 못 찾음`; }
+      if(!salesTable){ salesStatus = ` / 판매 탭("${salesSheetName}") 못 찾음`; }
       else{
-        const salesJson = JSON.parse(lm[1]);
-        if(salesJson.table && salesJson.table.rows){
-          const lcols = salesJson.table.cols.map(c=>c.label);
-          const lidx = n => lcols.findIndex(c=>c && c.includes(n));
-          let iLDate=lidx('계약실행일'), iLName=lidx('차종');
-          let iLGubun=lidx('상품구분');
-          if(iLGubun<0) iLGubun=lidx('신차구분');
-          if(iLDate<0 && lcols.length>31) iLDate=31; // 헤더명이 안 잡히면 AF열(0-idx 31)을 계약실행일로 간주
-          if(iLDate<0 || iLName<0){
-            salesStatus = ` / 판매 탭에서 "계약실행일"·"차종" 컬럼을 못 찾음`;
-          } else {
-            salesRows = salesJson.table.rows.map(r=>{
-              const c=r.c;
-              const v = i => (i>=0 && c[i] && c[i].v!=null) ? c[i].v : '';
-              const d = parseYMD(v(iLDate));
-              return d ? { gubun:v(iLGubun), name:v(iLName), monthKey: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0') } : null;
-            }).filter(r=>r && r.name);
-            salesStatus = ` / 판매이력 ${salesRows.length}건${iLGubun<0 ? ' (신차구분 컬럼 없어 신차/재렌트 구분 없이 합산)' : ''}`;
-          }
+        const lcols = salesTable.cols.map(c=>c.label);
+        const lidx = n => lcols.findIndex(c=>c && c.includes(n));
+        let iLDate=lidx('계약실행일'), iLName=lidx('차종');
+        let iLGubun=lidx('상품구분');
+        if(iLGubun<0) iLGubun=lidx('신차구분');
+        if(iLDate<0 && lcols.length>31) iLDate=31; // 헤더명이 안 잡히면 AF열(0-idx 31)을 계약실행일로 간주
+        if(iLDate<0 || iLName<0){
+          salesStatus = ` / 판매 탭에서 "계약실행일"·"차종" 컬럼을 못 찾음`;
         } else {
-          salesStatus = ` / 판매 탭 데이터 없음`;
+          salesRows = salesTable.rows.map(r=>{
+            const c=r.c;
+            const v = i => (i>=0 && c[i] && c[i].v!=null) ? c[i].v : '';
+            const d = parseYMD(v(iLDate));
+            return d ? { gubun:v(iLGubun), name:v(iLName), monthKey: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0') } : null;
+          }).filter(r=>r && r.name);
+          salesStatus = ` / 판매이력 ${salesRows.length}건${iLGubun<0 ? ' (신차구분 컬럼 없어 신차/재렌트 구분 없이 합산)' : ''}`;
         }
       }
-    }catch(e){ salesStatus = ` / 판매이력 로드 오류(${e.message})`; }
+    }catch(e){ salesStatus = ` / 판매이력 처리 오류(${e.message})`; }
 
     shipStatus += salesStatus;
+    if(reuseNote.length) shipStatus += ` / ⚡${reuseNote.join('·')} 재요청 생략`;
     document.getElementById('invLastUpdate').textContent = '마지막 업데이트: ' + new Date().toLocaleString('ko-KR');
     const simpleUp = document.getElementById('invLastUpdateSimple');
     if(simpleUp){ simpleUp.style.color=''; simpleUp.textContent = '마지막 업데이트 ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}); }
