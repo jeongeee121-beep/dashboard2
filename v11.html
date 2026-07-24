@@ -493,6 +493,12 @@ main .main-grid{width:100%;}
 .rp-kpi{border:1px solid var(--line);border-radius:13px;padding:13px 12px;text-align:center;word-break:keep-all;}
 .rp-kpi .l{font-size:14px;font-weight:700;color:#8A8FA3;margin-bottom:7px;}
 .rp-kpi .v{font-size:29px;font-weight:900;color:#1E2038;}
+.rp-kpi-app{background:linear-gradient(135deg,#FFF7ED,#FFFFFF);border-color:#FBD9A5;}
+.rp-kpi-app .l{color:#B45309;}
+.rp-kpi-appval{display:flex;align-items:baseline;justify-content:center;gap:3px;}
+.rp-kpi-appval input{width:52px;border:none;outline:none;background:transparent;font-family:inherit;font-size:29px;font-weight:900;color:#C2410C;text-align:right;-moz-appearance:textfield;padding:0;}
+.rp-kpi-appval input::-webkit-outer-spin-button,.rp-kpi-appval input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.rp-kpi-appval small{color:#C2410C;}
 .rp-kpi .v small{font-size:15px;font-weight:700;color:#8A8FA3;}
 .rp-kpi .s{font-size:13px;font-weight:700;color:#8A8FA3;margin-top:6px;line-height:1.45;word-break:keep-all;}
 .rp-kpi .s .up{color:#10B981;} .rp-kpi .s .dn{color:#EF4444;}
@@ -651,7 +657,7 @@ main .main-grid{width:100%;}
 
     <!-- ===================== 월별 비교 페이지 ===================== -->
     <div id="reportPage" style="display:none;">
-      <div style="display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="display:flex;justify-content:flex-start;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:7px 14px;">
           <span style="font-size:12.5px;font-weight:700;color:#8A8FA3;">📅 기준일</span>
           <input type="date" id="rpDateInput" onchange="renderReport()"
@@ -3563,21 +3569,13 @@ function renderReport(){
       <div class="rp-date">${y}.${String(mo).padStart(2,'0')}.${String(dd).padStart(2,'0')} (${yoil})</div>
     </div>
     <div class="rp-banner">📢 ${banner}</div>
-    <div class="rp-appcard">
-      <div class="rp-appcard-l">
-        <span class="rp-appcard-badge">🔥 최신</span>
-        <span class="rp-appcard-label">오늘 계약신청</span>
-        <span class="rp-appcard-sub">탁송·실행보다 먼저 들어오는 신호 · 수기 입력 (이 브라우저에만 저장돼요)</span>
-      </div>
-      <div class="rp-appcard-r">
-        <input type="number" id="rpAppInput" min="0" placeholder="0" value="${appCount!=null?appCount:''}"
+    <div class="rp-kpis">
+      <div class="rp-kpi rp-kpi-app"><div class="l">계약신청</div>
+        <div class="v rp-kpi-appval"><input type="number" id="rpAppInput" min="0" placeholder="0" value="${appCount!=null?appCount:''}"
           oninput="this.dataset.dirty='1'"
           onblur="saveRpAppCount()"
-          onkeydown="if(event.key==='Enter'){this.blur();}">
-        <span class="rp-appcard-unit">건</span>
-      </div>
-    </div>
-    <div class="rp-kpis">
+          onkeydown="if(event.key==='Enter'){this.blur();}"><small>대</small></div>
+        <div class="s">수기 입력</div></div>
       <div class="rp-kpi"><div class="l">당일 출고 🚗</div><div class="v">${todayTotal}<small>대</small></div>
         <div class="s" style="white-space:nowrap;font-size:12px;">신차 : ${tAgg.shin} / 재렌트 : ${tAgg.re}</div></div>
       <div class="rp-kpi"><div class="l">익일 출고 📆</div><div class="v">${tmTotal}<small>대</small></div>
@@ -3586,8 +3584,6 @@ function renderReport(){
         <div class="s">신차 : ${cum.shin.toLocaleString()} / 재렌트 : ${cum.re.toLocaleString()}${cumPct!=null?`<br>목표 대비 <b style="color:#2563EB;">${cumPct}%</b>`:''}</div></div>
       <div class="rp-kpi"><div class="l">미실행 ⏳</div><div class="v" style="color:${unexec>0?'#EF4444':'#10B981'};">${unexec!=null?unexec:'-'}<small>건</small></div>
         <div class="s">인수증 서명 대기</div></div>
-      <div class="rp-kpi"><div class="l">남은 영업일 🗓</div><div class="v">${remainBiz}<small>일</small></div>
-        </div>
     </div>
     <div class="rp-2col">
       <div class="rp-card">
@@ -3614,18 +3610,14 @@ function renderReport(){
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:13px;font-size:11px;font-weight:700;color:#8A8FA3;">
           <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#3B82F6;margin-right:4px;vertical-align:-1px;"></span>신차</span>
           <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#10B981;margin-right:4px;vertical-align:-1px;"></span>재렌트</span>
-          <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:repeating-linear-gradient(45deg,#10B981,#10B981 2px,#eafbf3 2px,#eafbf3 4px);margin-right:4px;vertical-align:-1px;border:1px solid #10B981;"></span>중고매입</span>
         </div>
         ${carTop.length
-          ?carTop.map(([nm,ct,shinCt,reCt,usedCt])=>{
-            const ownCt=reCt-usedCt;
+          ?carTop.map(([nm,ct,shinCt,reCt])=>{
             const wShin=Math.round(shinCt/carMax*100);
-            const wOwn=Math.round(ownCt/carMax*100);
-            const wUsed=Math.round(usedCt/carMax*100);
+            const wRe=Math.round(reCt/carMax*100);
             const segs=[];
             if(shinCt)segs.push(`<i style="width:${wShin}%;background:#3B82F6;"></i>`);
-            if(ownCt)segs.push(`<i style="width:${wOwn}%;background:#10B981;"></i>`);
-            if(usedCt)segs.push(`<i style="width:${wUsed}%;background:repeating-linear-gradient(45deg,#10B981,#10B981 3px,#eafbf3 3px,#eafbf3 6px);"></i>`);
+            if(reCt)segs.push(`<i style="width:${wRe}%;background:#10B981;"></i>`);
             return `<div class="rp-baritem" style="margin-bottom:11px;"><div class="nm">${escH(nm)}</div><div class="bar" style="display:flex;overflow:hidden;">${segs.join('')}</div><div class="ct">${ct}대</div></div>`;
           }).join('')
           :'<div style="font-size:12px;color:#C6C9D6;padding:14px 0;">당일 출고 데이터가 없어요</div>'}
