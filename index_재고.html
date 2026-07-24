@@ -15,8 +15,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f2f7;color:#1c1c2e;font
 
 .connect-bar{background:#fff;border-bottom:1px solid #eee;padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .connect-bar label{font-size:12px;color:#888;}
-.connect-bar input{padding:7px 12px;font-size:13px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:8px;background:#fafafa;color:#1c1c2e;width:300px;}
+.connect-bar input{padding:7px 12px;font-size:13px;font-family:inherit;border:1.5px solid #e8e8f0;border-radius:8px;background:#fafafa;color:#1c1c2e;}
 .connect-bar input:focus{outline:none;border-color:#6C63FF;}
+#sheetIdInput{width:280px;}
+#sheetNameInput{width:140px;}
 .btn-load{padding:7px 16px;background:#6C63FF;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;}
 .btn-load:hover{background:#574fd6;}
 #statusMsg{font-size:12px;}
@@ -35,24 +37,40 @@ main{max-width:1100px;margin:0 auto;padding:20px 28px 60px;}
 
 .card{background:#fff;border-radius:10px;padding:14px;border:1px solid #ebebf5;margin-bottom:12px;}
 .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
-.card-title{font-size:12.5px;font-weight:700;}
+.card-title{font-size:13.5px;font-weight:700;}
+.card-sub{font-size:11.5px;color:#999;margin-top:2px;}
 
 .seg-toggle{display:flex;background:#f0f0f8;border-radius:7px;padding:3px;}
-.seg-btn{padding:5px 14px;border-radius:5px;font-size:11px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all .15s;}
+.seg-btn{padding:6px 15px;border-radius:5px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:none;background:transparent;color:#888;transition:all .15s;}
 .seg-btn.active{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1);font-weight:600;}
 
-table.inv-table{width:100%;border-collapse:collapse;font-size:11.5px;}
-.inv-table th{text-align:center;padding:5px 4px;color:#999;font-weight:500;font-size:11px;}
+table.inv-table{width:100%;border-collapse:collapse;font-size:13px;}
+.inv-table th{text-align:center;padding:7px 6px;color:#999;font-weight:600;font-size:12.5px;}
 .inv-table th:first-child{text-align:left;}
-.inv-table td{text-align:center;padding:6px 4px;border-top:1px solid #f5f5fa;}
-.inv-table td:first-child{text-align:left;font-weight:600;cursor:pointer;}
+.inv-table td{text-align:center;padding:9px 6px;border-top:1px solid #f5f5fa;}
+.inv-table td:first-child{text-align:left;font-weight:600;cursor:pointer;font-size:13.5px;}
+.inv-table td.emph{font-size:15px;font-weight:700;}
 .inv-table tr.model-row:hover td:first-child{color:#6C63FF;}
 .inv-table tr.model-row.open td:first-child{color:#6C63FF;}
 .detail-cell{padding:0 !important;border-top:none !important;}
-.detail-box{padding:8px 10px 10px 20px;border-radius:0 0 6px 6px;}
-.detail-label{font-size:10px;color:#999;margin-bottom:6px;}
-.detail-stats{display:flex;gap:14px;font-size:11px;color:#555;flex-wrap:wrap;}
+.detail-box{padding:14px 16px 16px 20px;border-radius:0 0 6px 6px;}
+.detail-label{font-size:12px;font-weight:600;color:#888;margin-bottom:10px;}
+.detail-stats{display:flex;gap:14px;font-size:12.5px;color:#555;flex-wrap:wrap;}
 .detail-stats b{color:#1c1c2e;}
+
+.pivot-table{border-collapse:collapse;font-size:12px;background:#fff;border-radius:8px;overflow:hidden;}
+.pivot-table thead tr{background:#eeecff;}
+.pivot-table th{padding:6px 10px;font-weight:700;color:#555;text-align:center;}
+.pivot-table th:first-child{text-align:left;}
+.pivot-table td{padding:6px 10px;text-align:center;border-top:1px solid #f0f0f5;}
+.pivot-table td:first-child{text-align:left;font-weight:600;}
+.pivot-table td.total-col, .pivot-table th.total-col{border-left:1px solid #e3e0ff;font-weight:700;color:#6C63FF;}
+.pivot-table td.zero{color:#ccc;}
+
+.arrow-cell{white-space:nowrap;}
+.arrow-cell b{color:#6C63FF;}
+.tt-wrap{position:relative;}
+.tt-wrap:hover .tt-popup{display:block !important;}
 
 .empty-state{padding:50px;text-align:center;color:#aaa;font-size:13px;}
 footer{text-align:center;color:#bbb;font-size:11px;padding:20px;}
@@ -68,21 +86,61 @@ footer{text-align:center;color:#bbb;font-size:11px;padding:20px;}
 
 <div class="connect-bar">
   <label>시트 ID</label>
-  <input id="sheetIdInput" placeholder="구글 스프레드시트 ID를 입력하세요">
+  <input id="sheetIdInput" placeholder="구글 스프레드시트 ID" value="14j3hDW3Hn-1ftkJlqZhEZhWTt38eZU8S4yMoadenrR4">
+  <label>탭 이름</label>
+  <input id="sheetNameInput" placeholder="예: 자산관리" value="차량 RAW DATA">
+  <label>탁송 탭</label>
+  <input id="shipSheetNameInput" placeholder="예: 탁송데이터" value="탁송데이터" style="width:120px;">
+  <label>판매 탭</label>
+  <input id="salesSheetNameInput" placeholder="예: 판매현황테스트" value="판매현황테스트" style="width:130px;">
   <button class="btn-load" onclick="loadAll()">불러오기</button>
   <span id="statusMsg"></span>
 </div>
 
 <main>
-  <div id="content"><div class="empty-state">시트 ID를 입력하고 "불러오기"를 눌러주세요.</div></div>
+  <div id="content"><div class="empty-state">불러오는 중...</div></div>
 </main>
 
-<footer>재고현황판 · 차량데이터 기준 · 매일 수동 업데이트</footer>
+<footer>재고현황판 · 원본 차량데이터 기준 · 분류/집계는 브라우저에서 자동 계산 · build 2026-07-17a</footer>
 
 <script>
-let rows = null; // {gubun, name, grade, year, fuel}
+window.addEventListener('DOMContentLoaded', () => {
+  if(document.getElementById('sheetIdInput').value.trim()) loadAll();
+});
+</script>
+
+<script>
+// ===== 분류 기준 (여기 값만 바꾸면 기준 조정 가능) =====
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const REG_CUTOFF = new Date(2026,5,1); // 2026-06-01 : 이 날짜 이후 상품등록 = 정상재고
+
+const SHIN_TOTAL = new Set(["구매완료","상품준비","상품화진행중","상품화완료","상품"]);
+const SHIN_AGE   = new Set(["상품준비","상품화진행중","상품화완료","상품"]); // 구매완료는 총재고엔 포함, 장기/반장기/정상 판정 대상 아님
+const REJA_SET   = new Set(["상품준비","상품화진행중","상품화완료","상품"]);
+const REJU_SET   = new Set(["구매준비중","상품준비","상품화진행중","상품화완료","상품"]);
+
+function parseYMD(s){
+  if(!s) return null;
+  const str = String(s);
+  // 구글 gviz가 진짜 날짜형 셀을 "Date(2026,6,8)" 식으로 반환하는 경우 (월은 이미 0-indexed)
+  let m = str.match(/Date\((\d+),\s*(\d+),\s*(\d+)/);
+  if(m) return new Date(parseInt(m[1]), parseInt(m[2]), parseInt(m[3]));
+  // "2026/07/08", "2026-07-08", "2026.07.08" 같은 텍스트 날짜
+  m = str.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  if(m) return new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
+  return null;
+}
+function daysSince(d){ return Math.round((TODAY - d) / 86400000); }
+
+let rows = null; // classified: {gubun, name, grade, year, fuel}
+let shipRows = null; // {gubun, name} from 탁송데이터
+let salesRows = null; // {gubun, name, monthKey} from 판매현황테스트 (계약실행일 기준)
+let assetBuyMap = {}; // 자산번호 -> 매입구분(자사매입/중고매입), 차량 RAW DATA에서 구축
+let targetCoverage = 1; // 구매필요대수 계산 시 목표 커버리지(개월)
+let showPurchaseModal = false;
 let rejaMode = '자사매입';
 let openShin = null, openReja = null;
+let tableSort = { shin:{key:null, dir:'desc'}, reja:{key:null, dir:'desc'} };
 
 function setStatus(msg, isErr){
   const el = document.getElementById('statusMsg');
@@ -92,89 +150,634 @@ function setStatus(msg, isErr){
 
 async function loadAll(){
   const id = document.getElementById('sheetIdInput').value.trim();
+  const sheetName = document.getElementById('sheetNameInput').value.trim() || '자산관리';
   if(!id){ setStatus('시트 ID를 입력해주세요.', true); return; }
   setStatus('불러오는 중...', false);
   try{
-    const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('재고현황')}`;
+    const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
     const res = await fetch(url);
     const text = await res.text();
     const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
-    if(!m) throw new Error('시트를 찾을 수 없어요. 시트 이름이 "재고현황"인지 확인해주세요.');
+    if(!m) throw new Error(`시트를 찾을 수 없어요. 탭 이름 "${sheetName}"이 맞는지 확인해주세요.`);
     const json = JSON.parse(m[1]);
     if(!json.table || !json.table.rows || !json.table.rows.length) throw new Error('데이터가 비어있어요.');
 
     const cols = json.table.cols.map(c=>c.label);
     const idx = n => cols.findIndex(c=>c && c.includes(n));
-    const iGubun=idx('구분'), iName=idx('시리즈명'), iGrade=idx('재고등급'), iYear=idx('년형'), iFuel=idx('유종');
+    const iBuy=idx('매입구분'), iPDate=idx('매입계약일'), iStatus=idx('자산상태'),
+          iRDate=idx('상품등록일'), iNewcar=idx('신차구분'), iName=idx('시리즈명'),
+          iYear=idx('년형'), iFuel=idx('유종'), iAsset=idx('자산번호');
 
-    rows = json.table.rows.map(r=>{
+    if(iBuy<0||iPDate<0||iStatus<0||iNewcar<0||iName<0){
+      throw new Error('필요한 컬럼(매입구분/매입계약일/자산상태/신차구분/시리즈명)을 찾을 수 없어요. 헤더명을 확인해주세요.');
+    }
+
+    const raw = json.table.rows.map(r=>{
       const c = r.c;
-      const v = i => (c[i] && c[i].v!=null) ? c[i].v : '';
-      return { gubun:v(iGubun), name:v(iName), grade:v(iGrade), year:v(iYear), fuel:v(iFuel) };
-    }).filter(r=>r.name);
+      const v = i => (i>=0 && c[i] && c[i].v!=null) ? c[i].v : '';
+      return {
+        buy:v(iBuy), pdate:v(iPDate), status:v(iStatus), rdate:v(iRDate),
+        newcar:v(iNewcar), name:v(iName), year:v(iYear), fuel:v(iFuel), asset:v(iAsset)
+      };
+    });
 
+    // 자산번호 -> 매입구분(자사매입/중고매입) 매핑 - 탁송데이터 출고건의 자사/중고 구분에 사용
+    assetBuyMap = {};
+    raw.forEach(r=>{ if(r.asset) assetBuyMap[String(r.asset)] = r.buy; });
+
+    rows = [];
+    raw.forEach(r=>{
+      if(!r.name) return;
+      let gubun = null, grade = '';
+      if(r.newcar==='신차' && SHIN_TOTAL.has(r.status)){
+        gubun = '신차';
+        if(SHIN_AGE.has(r.status)){
+          const pd = parseYMD(r.pdate);
+          if(pd){
+            const d = daysSince(pd);
+            grade = d>=60 ? '장기' : d>=30 ? '반장기' : '정상';
+          }
+        } else {
+          grade = '정상'; // 구매완료 등 아직 재고연령 매기기 이른 상태는 정상재고로 집계
+        }
+      } else if(r.newcar==='재렌트' && r.buy==='자사매입' && REJA_SET.has(r.status)){
+        gubun = '재렌트-자사매입';
+        if(r.status==='상품'){
+          const rd = parseYMD(r.rdate);
+          if(rd) grade = rd < REG_CUTOFF ? '장기' : '정상';
+        }
+      } else if(r.newcar==='재렌트' && r.buy==='중고매입' && REJU_SET.has(r.status)){
+        gubun = '재렌트-중고매입';
+        if(r.status==='상품'){
+          const rd = parseYMD(r.rdate);
+          if(rd) grade = rd < REG_CUTOFF ? '장기' : '정상';
+        }
+      }
+      if(gubun) rows.push({gubun, name:r.name, grade, year:r.year, fuel:r.fuel});
+    });
+
+    // 탁송데이터(이번달 출고) 함께 로드 - 실패해도 재고 표시는 계속 진행
+    let shipStatus = '';
+    const shipSheetName = document.getElementById('shipSheetNameInput').value.trim() || '탁송데이터';
+    try{
+      const shipUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(shipSheetName)}`;
+      const shipRes = await fetch(shipUrl);
+      const shipText = await shipRes.text();
+      const sm = shipText.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+      if(!sm){ shipStatus = ` / 탁송 탭("${shipSheetName}") 못 찾음`; }
+      else{
+        const shipJson = JSON.parse(sm[1]);
+        if(shipJson.table && shipJson.table.rows){
+          const scols = shipJson.table.cols.map(c=>c.label);
+          const sidx = n => scols.findIndex(c=>c && c.includes(n));
+          const iSGubun=sidx('신차구분'), iSName=sidx('차종'), iSAsset=sidx('자산번호'),
+                iSMonth=sidx('월'), iSReqDate=sidx('요청일시'), iSHopeDate=sidx('희망일자');
+          if(iSGubun<0 || iSName<0){
+            shipStatus = ` / 탁송 탭에서 "신차구분"·"차종" 컬럼을 못 찾음`;
+          } else {
+            const curMonthText = (TODAY.getMonth()+1)+'월';
+            const curMonthNum = TODAY.getMonth()+1;
+            let filterNote = '';
+            let allShipRows = shipJson.table.rows.map(r=>{
+              const c=r.c;
+              const v = i => (i>=0 && c[i] && c[i].v!=null) ? c[i].v : '';
+              return { gubun:v(iSGubun), name:v(iSName), asset:v(iSAsset), month:v(iSMonth), reqDate:v(iSReqDate), hopeDate:v(iSHopeDate) };
+            }).filter(r=>r.asset && r.name);
+            const beforeFilter = allShipRows.length;
+            let filtered = allShipRows;
+            if(iSHopeDate>=0 || iSReqDate>=0){
+              const unparsed = allShipRows.filter(r=> !parseYMD(r.hopeDate) && !parseYMD(r.reqDate)).length;
+              filtered = allShipRows.filter(r=>{
+                const d = parseYMD(r.hopeDate) || parseYMD(r.reqDate);
+                return d && d.getFullYear()===TODAY.getFullYear() && d.getMonth()===TODAY.getMonth();
+              });
+              filterNote = `희망일자(DATEVALUE) 기준 ${TODAY.getFullYear()}년 ${curMonthNum}월로 필터링${unparsed?`, 날짜 파싱 실패 ${unparsed}건`:''}`;
+            } else if(iSMonth>=0){
+              filtered = allShipRows.filter(r=>{
+                const mv = String(r.month).trim();
+                return mv.includes(curMonthText) || mv === String(curMonthNum) || parseInt(mv)===curMonthNum;
+              });
+              filterNote = `"월" 컬럼(${curMonthText}) 기준 필터링`;
+            } else {
+              filterNote = `월 필터 컬럼을 못 찾아 전체 기간 합산됨 - 주의`;
+            }
+            // 안전장치: 원본은 있는데 필터링 결과가 0건이면 필터 기준이 안 맞는 것으로 보고 무필터로 폴백
+            if(beforeFilter>0 && filtered.length===0){
+              filtered = allShipRows;
+              filterNote += ` → 필터 결과 0건이라 필터 없이 전체 표시함(월 컬럼 형식을 확인해줘)`;
+            }
+            shipRows = filtered;
+            const rejaShip = shipRows.filter(r=>r.gubun==='재렌트');
+            const rejaMatched = rejaShip.filter(r=>assetBuyMap[String(r.asset)]).length;
+            const matchNote = rejaShip.length ? `, 재렌트 중 매입구분 매칭 ${rejaMatched}/${rejaShip.length}건` : '';
+            shipStatus = ` / 이번달출고 ${shipRows.length}건(원본 ${beforeFilter}건, ${filterNote}${matchNote})`;
+          }
+        } else {
+          shipStatus = ` / 탁송 탭 데이터 없음`;
+        }
+      }
+    }catch(e){ shipStatus = ` / 탁송데이터 로드 오류(${e.message})`; }
+
+    // 판매현황테스트(계약실행일 기준 월별 이력) 로드 - 최근평균/전년동월 비교용
+    let salesStatus = '';
+    const salesSheetName = document.getElementById('salesSheetNameInput').value.trim() || '판매현황테스트';
+    try{
+      const salesUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(salesSheetName)}`;
+      const salesRes = await fetch(salesUrl);
+      const salesText = await salesRes.text();
+      const lm = salesText.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+      if(!lm){ salesStatus = ` / 판매 탭("${salesSheetName}") 못 찾음`; }
+      else{
+        const salesJson = JSON.parse(lm[1]);
+        if(salesJson.table && salesJson.table.rows){
+          const lcols = salesJson.table.cols.map(c=>c.label);
+          const lidx = n => lcols.findIndex(c=>c && c.includes(n));
+          let iLDate=lidx('계약실행일'), iLName=lidx('차종');
+          let iLGubun=lidx('상품구분');
+          if(iLGubun<0) iLGubun=lidx('신차구분');
+          if(iLDate<0 && lcols.length>31) iLDate=31; // 헤더명이 안 잡히면 AF열(0-idx 31)을 계약실행일로 간주
+          if(iLDate<0 || iLName<0){
+            salesStatus = ` / 판매 탭에서 "계약실행일"·"차종" 컬럼을 못 찾음`;
+          } else {
+            salesRows = salesJson.table.rows.map(r=>{
+              const c=r.c;
+              const v = i => (i>=0 && c[i] && c[i].v!=null) ? c[i].v : '';
+              const d = parseYMD(v(iLDate));
+              return d ? { gubun:v(iLGubun), name:v(iLName), monthKey: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0') } : null;
+            }).filter(r=>r && r.name);
+            salesStatus = ` / 판매이력 ${salesRows.length}건${iLGubun<0 ? ' (신차구분 컬럼 없어 신차/재렌트 구분 없이 합산)' : ''}`;
+          }
+        } else {
+          salesStatus = ` / 판매 탭 데이터 없음`;
+        }
+      }
+    }catch(e){ salesStatus = ` / 판매이력 로드 오류(${e.message})`; }
+
+    shipStatus += salesStatus;
     document.getElementById('lastUpdate').textContent = '마지막 업데이트: ' + new Date().toLocaleString('ko-KR');
-    setStatus(`불러오기 완료 (${rows.length}건)`, false);
+    setStatus(`불러오기 완료 (재고 ${rows.length}건 / 원본 ${raw.length}행)${shipStatus}`, false);
+
     render();
   }catch(e){
     setStatus('오류: '+e.message, true);
   }
 }
 
+// 2026년 대한민국 공휴일 (제헌절 부활 반영, 대체공휴일 포함)
+const HOLIDAYS_2026 = new Set([
+  '2026-01-01', // 신정
+  '2026-02-16','2026-02-17','2026-02-18', // 설날 연휴
+  '2026-03-01', // 삼일절
+  '2026-03-02', // 대체공휴일(삼일절)
+  '2026-05-01', // 노동절
+  '2026-05-05', // 어린이날
+  '2026-05-24', // 부처님오신날
+  '2026-05-25', // 대체공휴일(부처님오신날)
+  '2026-06-03', // 전국동시지방선거(임시공휴일)
+  '2026-06-06', // 현충일
+  '2026-07-17', // 제헌절 (2026년부터 공휴일 재지정)
+  '2026-08-15', // 광복절
+  '2026-08-17', // 대체공휴일(광복절)
+  '2026-09-24','2026-09-25','2026-09-26', // 추석 연휴
+  '2026-10-03', // 개천절
+  '2026-10-05', // 대체공휴일(개천절)
+  '2026-10-09', // 한글날
+  '2026-12-25', // 성탄절
+]);
+function fmtDate(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function getBusinessDays(){
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month+1, 0);
+  let total=0, elapsed=0;
+  for(let t=first.getTime(); t<=last.getTime(); t+=86400000){
+    const d = new Date(t);
+    const day = d.getDay();
+    const isHoliday = HOLIDAYS_2026.has(fmtDate(d));
+    if(day!==0 && day!==6 && !isHoliday){
+      total++;
+      if(d.getTime() <= now.getTime()) elapsed++;
+    }
+  }
+  return {elapsed, total, pct: total? Math.round(elapsed/total*100) : 0};
+}
+
+function monthsAgoKey(n){
+  const d = new Date(TODAY.getFullYear(), TODAY.getMonth()-n, 1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function salesCountFor(gubunFilter, name, monthKey){
+  if(!salesRows) return 0;
+  return salesRows.filter(r=>{
+    if(r.name!==name) return false;
+    if(r.monthKey!==monthKey) return false;
+    if(r.gubun) return r.gubun===gubunFilter; // 신차구분 있으면 매칭, 없으면(공백) 전체 합산
+    return true;
+  }).length;
+}
+function recentAvg(gubunFilter, name, monthsBack){
+  let sum=0;
+  for(let i=1;i<=monthsBack;i++){ sum += salesCountFor(gubunFilter, name, monthsAgoKey(i)); }
+  return monthsBack>0 ? sum/monthsBack : 0;
+}
+function sameMonthLastYear(gubunFilter, name){
+  const d = new Date(TODAY.getFullYear()-1, TODAY.getMonth(), 1);
+  const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  return salesCountFor(gubunFilter, name, key);
+}
+
+function shipCount(gubunFilter, name, buyFilter){
+  if(!shipRows) return null;
+  return shipRows.filter(r=>{
+    if(r.gubun!==gubunFilter || r.name!==name) return false;
+    if(buyFilter){
+      const buy = assetBuyMap[String(r.asset)];
+      if(buy!==buyFilter) return false;
+    }
+    return true;
+  }).length;
+}
+
 function groupByModel(arr){
   const map = {};
   arr.forEach(r=>{
-    if(!map[r.name]) map[r.name] = {name:r.name, total:0, long:0, mid:0, normal:0, items:[]};
+    if(!map[r.name]) map[r.name] = {name:r.name, total:0, long:0, mid:0, normal:0, prep:0, items:[]};
     const g = map[r.name];
     g.total++; g.items.push(r);
     if(r.grade==='장기') g.long++;
     else if(r.grade==='반장기') g.mid++;
-    else g.normal++;
+    else if(r.grade==='정상') g.normal++;
+    else g.prep++; // 등급 미분류 = 상품준비/상품화진행중/상품화완료/구매준비중
   });
   return Object.values(map).sort((a,b)=>b.total-a.total);
 }
 
 function breakdown(items){
-  const byYear={}, byFuel={};
+  const byYear = {}; // { year: { fuel: count, __total: n } }
+  const fuelSet = new Set();
   items.forEach(r=>{
-    if(r.year){ byYear[r.year]=(byYear[r.year]||0)+1; }
-    if(r.fuel){ byFuel[r.fuel]=(byFuel[r.fuel]||0)+1; }
+    const y = r.year || '년형미상';
+    const f = fuelLabel(r.fuel) || '유종미상';
+    if(!byYear[y]) byYear[y] = {__total:0};
+    byYear[y].__total++;
+    byYear[y][f] = (byYear[y][f]||0)+1;
+    fuelSet.add(f);
   });
-  return {byYear, byFuel};
+  return {byYear, fuels: Array.from(fuelSet)};
 }
 
-function detailHtml(items, colspan){
-  const {byYear, byFuel} = breakdown(items);
-  const yearHtml = Object.entries(byYear).sort().map(([k,v])=>`<span>${k} <b>${v}</b></span>`).join('');
-  const fuelHtml = Object.entries(byFuel).map(([k,v])=>`<span>${k} <b>${v}</b></span>`).join('');
+function detailHtml(m, colspan, shipGubun, showSales, hasM){
+  // 신차: 장기-반장기-정상 / 재렌트: 장기-정상-상품화진행중 순서로 표시
+  const grades = hasM ? ['장기','반장기','정상'] : ['장기','정상','상품화진행중'];
+  const gradeColor = {'장기':'#e2483d','반장기':'#FFA500','정상':'#22c997','상품화진행중':'#999'};
+  const gradeBg = {'장기':'#fff5f4','반장기':'#fff8ec','정상':'#f0fbf6','상품화진행중':'#f5f5f5'};
+  const gradeBorder = {'장기':'#ffd2ce','반장기':'#ffe0b0','정상':'#c8f0dd','상품화진행중':'#bbb'};
+  const gradeBorderStyle = {'장기':'solid','반장기':'solid','정상':'solid','상품화진행중':'dashed'};
+
+  const total = m.total || 0;
+  const gradeVals = {'장기':m.long, '반장기':hasM?m.mid:0, '정상':m.normal, '상품화진행중':hasM?0:m.prep};
+
+  // 도넛: stroke-dasharray 누적 계산 (원둘레 100 기준)
+  let offset = 0;
+  const donutSegs = grades.map(g=>{
+    const v = gradeVals[g];
+    const pct = total ? v/total*100 : 0;
+    const seg = `<circle cx="21" cy="21" r="15.9" fill="transparent" stroke="${gradeColor[g]}" stroke-width="6" stroke-dasharray="${pct} ${100-pct}" stroke-dashoffset="${-offset}"></circle>`;
+    offset += pct;
+    return seg;
+  }).join('');
+
+  const legendRows = grades.map(g=>{
+    const v = gradeVals[g];
+    const pct = total ? Math.round(v/total*100) : 0;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:#333;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${gradeColor[g]};margin-right:8px;"></span>${g}${g==='상품화진행중'?'':'재고'}</span>
+      <span style="font-size:12px;color:#333;">${v}대 · <b>${pct}%</b></span>
+    </div>`;
+  }).join('');
+
+  // 유종별 총계 (전체, 등급 무관)
+  const fuelTotals = {};
+  m.items.forEach(it=>{ const f=fuelLabel(it.fuel)||'유종미상'; fuelTotals[f]=(fuelTotals[f]||0)+1; });
+  const fuelTotalLine = Object.entries(fuelTotals).map(([f,n])=>`<span style="font-size:12px;color:#555;">${f} <b style="color:#1c1c2e;">${n}</b></span>`).join('');
+
+  // 년형별 칩: 표시 대상 등급(장기/반장기/정상/[재렌트는 상품화진행중도]) 전부 포함, 실제 년형 기준으로 그룹핑
+  const gradeSet = new Set(grades);
+  const items = m.items.map(it=>({...it, grade: it.grade || (hasM?it.grade:'상품화진행중')}));
+  const byYear = {};
+  items.filter(it=>gradeSet.has(it.grade)).forEach(it=>{
+    const y = it.year || '년형미상';
+    if(!byYear[y]) byYear[y] = [];
+    byYear[y].push(it);
+  });
+  const years = Object.keys(byYear).sort();
+  const gradeOrder = grades; // 위에서 정의한 순서 그대로 칩 정렬에 사용
+  const chipSections = years.map(y=>{
+    const byFuelGrade = {};
+    byYear[y].forEach(it=>{
+      const f = fuelLabel(it.fuel)||'유종미상';
+      const key = f+'|'+it.grade;
+      byFuelGrade[key] = (byFuelGrade[key]||0)+1;
+    });
+    const entries = Object.entries(byFuelGrade).sort((a,b)=>{
+      const ga = a[0].split('|')[1], gb = b[0].split('|')[1];
+      return gradeOrder.indexOf(ga) - gradeOrder.indexOf(gb);
+    });
+    const chips = entries.map(([key,n])=>{
+      const [f,g] = key.split('|');
+      return `<div style="display:flex;align-items:center;gap:6px;background:${gradeBg[g]};border:1px ${gradeBorderStyle[g]} ${gradeBorder[g]};border-radius:20px;padding:7px 14px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:${gradeColor[g]};"></span>
+        <span style="font-size:12px;color:#555;">${f}</span>
+        <span style="font-size:13px;font-weight:800;color:${g==='상품화진행중'?'#666':gradeColor[g]};">${n}대</span>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:10px;">
+      <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px;">${y}년형</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">${chips}</div>
+    </div>`;
+  }).join('');
+
+  let salesLine = '';
+  if(showSales){
+    const avg3 = recentAvg(shipGubun, m.name, 3).toFixed(1);
+    const lastYear = sameMonthLastYear(shipGubun, m.name);
+    salesLine = `<div style="font-size:12.5px;color:#888;margin-top:12px;">최근3개월평균 <b style="color:#1c1c2e;">${avg3}</b> · 작년동월 <b style="color:#1c1c2e;">${lastYear}</b></div>`;
+  }
+
   return `<tr><td colspan="${colspan}" class="detail-cell">
-    <div class="detail-box" id="detailbox">
-      <div class="detail-label">년형별 · 유종별</div>
-      <div class="detail-stats">${yearHtml}${fuelHtml ? '<span style="margin-left:8px;"></span>'+fuelHtml : ''}</div>
+    <div class="detail-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1c1c2e;">${m.name} 재고 상세</div>
+        <div style="background:#f0eeff;color:#6C63FF;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;">${total}대</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:24px;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="position:relative;width:112px;height:112px;flex-shrink:0;">
+          <svg width="112" height="112" viewBox="0 0 42 42" style="transform:rotate(-90deg);">
+            <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#f0f2f7" stroke-width="6"></circle>
+            ${donutSegs}
+          </svg>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+            <div style="font-size:20px;font-weight:800;color:#1c1c2e;">${total}</div>
+            <div style="font-size:10.5px;color:#999;">대</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;flex:1;min-width:160px;">${legendRows}</div>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;padding:8px 12px;background:#fafafc;border-radius:8px;margin-bottom:14px;">
+        <span style="font-size:10.5px;color:#999;">유종별 총계</span>${fuelTotalLine}
+      </div>
+      ${chipSections || '<span style="color:#bbb;font-size:12.5px;">년형 정보 없음</span>'}
+      ${salesLine}
     </div>
   </td></tr>`;
 }
 
-function renderTable(models, openName, onClick, hasM){
+function fuelLabel(f){
+  if(!f) return f;
+  const map = {'가솔린 하이브리드':'HEV', '가솔린하이브리드':'HEV', '전기':'EV'};
+  return map[f] || f;
+}
+
+function gradeCell(items, grade, value, color){
+  const filtered = items.filter(it=>it.grade===grade);
+  if(!value){ return `<td style="color:${color};">${value}</td>`; }
+  const byYear = {};
+  filtered.forEach(r=>{
+    const y = r.year || '년형미상';
+    const f = fuelLabel(r.fuel) || '유종미상';
+    if(!byYear[y]) byYear[y] = {};
+    byYear[y][f] = (byYear[y][f]||0)+1;
+  });
+  const years = Object.keys(byYear).sort();
+  const lineArr = [];
+  years.forEach(y=>{
+    Object.entries(byYear[y]).forEach(([f,n])=>{
+      lineArr.push(`<div>${y}년형 · ${f} <b>${n}</b></div>`);
+    });
+  });
+  return `<td style="position:relative;">
+    <span class="tt-wrap" style="border-bottom:1.5px dotted ${color};color:${color};cursor:pointer;">${value}
+      <div class="tt-popup" style="display:none;position:absolute;top:26px;left:50%;transform:translateX(-50%);background:#1c1c2e;color:#fff;border-radius:8px;padding:9px 12px;font-size:11px;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.18);z-index:20;text-align:left;">
+        ${lineArr.join('')}
+      </div>
+    </span>
+  </td>`;
+}
+
+function renderTable(models, openName, onClick, hasM, shipGubun, buyFilter, tableId){
+  const showShip = !!shipRows;
+  const showSales = !!salesRows;
+  const biz = showShip ? getBusinessDays() : null;
   const cols = hasM
     ? ['차종','총재고','장기','반장기','정상']
-    : ['차종','총재고','장기','정상'];
+    : ['차종','총재고','상품화진행중','장기','정상'];
+  let colsWithShip = cols;
+  if(showShip) colsWithShip = [...colsWithShip, '당월출고', '예상출고', '마감예상재고'];
+  if(showShip && hasM) colsWithShip = [...colsWithShip, '구매필요대수'];
+
+  const colKeyMap = {'총재고':'total','장기':'long','반장기':'mid','정상':'normal','상품화진행중':'prep','당월출고':'_sc','예상출고':'_proj','마감예상재고':'_projStock','구매필요대수':'_buyNeed'};
+
+  // 정렬용 필드 사전 계산
+  if(showShip){
+    models.forEach(m=>{
+      const sc = shipCount(shipGubun, m.name, buyFilter);
+      const proj = (biz.elapsed>0) ? Math.round(sc/biz.elapsed*biz.total) : sc;
+      const projStock = Math.max(0, m.total - (proj - sc));
+      m._sc = sc; m._proj = proj; m._projStock = projStock;
+      if(hasM){
+        try{
+          const expectedDemand = showSales ? (recentAvg(shipGubun, m.name, 3) || null) : null;
+          const basis = expectedDemand!=null ? expectedDemand : (biz.elapsed>0 ? sc/biz.elapsed*biz.total : sc);
+          m._buyNeed = Math.max(0, Math.round(basis*targetCoverage - projStock));
+        }catch(e){ m._buyNeed = 0; }
+      }
+    });
+  }
+
+  const sortState = tableId ? tableSort[tableId] : null;
+  if(sortState && sortState.key){
+    const key = colKeyMap[sortState.key];
+    models = [...models].sort((a,b)=>{
+      const av = a[key]||0, bv = b[key]||0;
+      return sortState.dir==='desc' ? bv-av : av-bv;
+    });
+  }
+
   const rowsHtml = models.map(m=>{
     const isOpen = m.name===openName;
     const cells = hasM
-      ? `<td>${m.total}</td><td>${m.long}</td><td>${m.mid}</td><td>${m.normal}</td>`
-      : `<td>${m.total}</td><td>${m.long}</td><td>${m.normal}</td>`;
+      ? `<td class="emph">${m.total}</td>${gradeCell(m.items,'장기',m.long,'#e2483d')}${gradeCell(m.items,'반장기',m.mid,'#FFA500')}${gradeCell(m.items,'정상',m.normal,'#1aab73')}`
+      : `<td class="emph">${m.total}</td>${gradeCell(m.items,'',m.prep,'#888')}${gradeCell(m.items,'장기',m.long,'#e2483d')}${gradeCell(m.items,'정상',m.normal,'#1aab73')}`;
+    let midCell = '', tailCell = '';
+    let projStock = null;
+    if(showShip){
+      const sc = m._sc, proj = m._proj;
+      projStock = m._projStock;
+      midCell = `<td style="border-left:1.5px solid #f5f5fa;">${sc}</td><td style="font-weight:700;color:#6C63FF;">${proj}</td><td class="emph" style="border-left:1.5px solid #f5f5fa;">${projStock}</td>`;
+    }
+    if(showShip && hasM){
+      const buyNeed = m._buyNeed || 0;
+      const buyStyle = buyNeed>0 ? 'font-weight:700;color:#e2483d;font-size:15px;' : 'color:#999;';
+      if(buyNeed>0){
+        const fuelCounts = {};
+        m.items.forEach(it=>{ const f=fuelLabel(it.fuel)||'유종미상'; fuelCounts[f]=(fuelCounts[f]||0)+1; });
+        const lines = Object.entries(fuelCounts).map(([f,cnt])=>{
+          const alloc = Math.round(buyNeed*cnt/m.total);
+          return alloc>0 ? `<div>${f} <b>${alloc}</b></div>` : '';
+        }).join('');
+        tailCell = `<td style="position:relative;">
+          <span class="tt-wrap" style="border-bottom:1.5px dotted #e2483d;${buyStyle}cursor:pointer;">+${buyNeed}
+            <div class="tt-popup" style="display:none;position:absolute;top:26px;left:50%;transform:translateX(-50%);background:#1c1c2e;color:#fff;border-radius:8px;padding:9px 12px;font-size:11px;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.18);z-index:20;text-align:left;">
+              ${lines || '<div>유종 정보 없음</div>'}
+            </div>
+          </span>
+        </td>`;
+      } else {
+        tailCell = `<td style="${buyStyle}">${buyNeed}</td>`;
+      }
+    }
     let html = `<tr class="model-row ${isOpen?'open':''}" onclick="${onClick}('${m.name.replace(/'/g,"\\'")}')">
-      <td>${m.name}${isOpen?' ▾':' ▸'}</td>${cells}
+      <td>${m.name}${isOpen?' ▾':' ▸'}</td>${cells}${midCell}${tailCell}
     </tr>`;
-    if(isOpen){ html += detailHtml(m.items, cols.length); }
+    if(isOpen){ html += detailHtml(m, colsWithShip.length, shipGubun, showSales, hasM); }
     return html;
   }).join('');
+  let totalRowHtml = '';
+  if(models.length){
+    const t = models.reduce((a,m)=>({
+      total:a.total+m.total, long:a.long+m.long, mid:a.mid+m.mid, normal:a.normal+m.normal, prep:a.prep+(m.prep||0)
+    }), {total:0,long:0,mid:0,normal:0,prep:0});
+    const tCells = hasM
+      ? `<td class="emph">${t.total}</td><td style="color:#e2483d;">${t.long}</td><td style="color:#FFA500;">${t.mid}</td><td style="color:#1aab73;">${t.normal}</td>`
+      : `<td class="emph">${t.total}</td><td>${t.prep}</td><td style="color:#e2483d;">${t.long}</td><td style="color:#1aab73;">${t.normal}</td>`;
+    let tMid = '', tTail = '';
+    if(showShip){
+      const sc = shipRows.filter(r=>{
+        if(r.gubun!==shipGubun) return false;
+        if(buyFilter){ const buy = assetBuyMap[String(r.asset)]; if(buy!==buyFilter) return false; }
+        return true;
+      }).length;
+      const proj = (biz.elapsed>0) ? Math.round(sc/biz.elapsed*biz.total) : sc;
+      const projStock = Math.max(0, t.total - (proj - sc));
+      tMid = `<td style="border-left:1.5px solid #f5f5fa;">${sc}</td><td style="font-weight:700;color:#6C63FF;">${proj}</td><td class="emph" style="border-left:1.5px solid #f5f5fa;">${projStock}</td>`;
+      if(hasM){
+        const need = models.reduce((a,m)=>{
+          const msc = shipCount(shipGubun, m.name, buyFilter);
+          const mproj = (biz.elapsed>0) ? Math.round(msc/biz.elapsed*biz.total) : msc;
+          const mProjStock = Math.max(0, m.total - (mproj - msc));
+          const basis = showSales ? (recentAvg(shipGubun,m.name,3)||( biz.elapsed>0?msc/biz.elapsed*biz.total:msc)) : (biz.elapsed>0?msc/biz.elapsed*biz.total:msc);
+          return a + Math.max(0, Math.round(basis*targetCoverage - mProjStock));
+        }, 0);
+        tTail = `<td style="${need>0?'font-weight:700;color:#e2483d;font-size:15px;':'color:#999;'}">${need>0?'+':''}${need}</td>`;
+      }
+    }
+    totalRowHtml = `<tr style="background:#fafaff;font-weight:700;"><td>계</td>${tCells}${tMid}${tTail}</tr>`;
+  }
+
   return `<table class="inv-table">
-    <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
-    <tbody>${rowsHtml}</tbody>
+    <thead><tr>${colsWithShip.map((c,i)=>{
+      const divider = (showShip && (i===cols.length || i===cols.length+2)) ? 'border-left:1.5px solid #eee;' : '';
+      if(c==='차종' || !tableId){
+        return `<th style="${divider}">${c}</th>`;
+      }
+      const active = sortState && sortState.key===c;
+      const arrow = active ? (sortState.dir==='desc'?' ▼':' ▲') : '';
+      const color = active ? 'color:#6C63FF;' : '';
+      return `<th style="${divider}cursor:pointer;${color}" onclick="setSort('${tableId}','${c}')">${c}${arrow}</th>`;
+    }).join('')}</tr></thead>
+    <tbody>${totalRowHtml}${rowsHtml || `<tr><td colspan="${colsWithShip.length}" style="text-align:center;color:#aaa;">데이터 없음</td></tr>`}</tbody>
   </table>`;
 }
+
+function setSort(tableId, colLabel){
+  const s = tableSort[tableId];
+  if(s.key===colLabel){ s.dir = s.dir==='desc'?'asc':'desc'; }
+  else { s.key = colLabel; s.dir='desc'; }
+  render();
+}
+
+function setTargetCoverage(v){ targetCoverage = parseFloat(v)||1; render(); }
+function buildPurchaseNeedList(shinModels){
+  if(!shipRows) return [];
+  const biz = getBusinessDays();
+  const list = shinModels.map(m=>{
+    const sc = shipCount('신차', m.name);
+    const proj = (biz.elapsed>0) ? Math.round(sc/biz.elapsed*biz.total) : sc;
+    const projStock = Math.max(0, m.total - (proj - sc));
+    const paceBasis = biz.elapsed>0 ? sc/biz.elapsed*biz.total : sc;
+    let avg3 = salesRows ? recentAvg('신차', m.name, 3) : paceBasis;
+    if(!avg3) avg3 = paceBasis; // 판매이력 평균이 0이면(매칭 실패 등) 이번달 출고 페이스로 대체
+    const buyNeed = Math.max(0, Math.round(avg3*targetCoverage - projStock));
+    // 유종별 배분: 현재 재고의 유종 구성 비율로 추정 배분
+    const fuelCounts = {};
+    m.items.forEach(it=>{ const f=fuelLabel(it.fuel)||'유종미상'; fuelCounts[f]=(fuelCounts[f]||0)+1; });
+    const fuelAlloc = {};
+    if(buyNeed>0 && m.total>0){
+      Object.entries(fuelCounts).forEach(([f,cnt])=>{
+        const alloc = Math.round(buyNeed * cnt / m.total);
+        if(alloc>0) fuelAlloc[f]=alloc;
+      });
+    }
+    return {name:m.name, total:m.total, long:m.long, avg3, projStock, buyNeed, fuelAlloc};
+  }).filter(x=>x.buyNeed>0).sort((a,b)=>b.buyNeed-a.buyNeed);
+  return list;
+}
+
+function renderPurchaseNeedButton(shinModels){
+  if(!shipRows) return '';
+  const list = buildPurchaseNeedList(shinModels);
+  const totalNeed = list.reduce((a,b)=>a+b.buyNeed,0);
+  return `<button onclick="togglePurchaseModal()" style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid #ffd9d9;border-radius:8px;background:#fff8f8;font-family:inherit;font-size:12px;font-weight:700;color:#e2483d;cursor:pointer;white-space:nowrap;">
+    🚨 구매필요 리스트 <span style="font-weight:500;color:#999;">${list.length}개·${totalNeed}대</span>
+  </button>`;
+}
+
+function renderPurchaseNeedModal(shinModels){
+  if(!shipRows || !showPurchaseModal) return '';
+  const list = buildPurchaseNeedList(shinModels);
+  const totalNeed = list.reduce((a,b)=>a+b.buyNeed,0);
+  const shinSalesCount = salesRows ? salesRows.filter(r=>!r.gubun || r.gubun==='신차').length : 0;
+  const salesNote = salesRows ? `판매이력(신차) ${shinSalesCount}건 매칭` : '판매이력 없음(이번달 페이스로 대체 계산)';
+  const rowsHtml = list.map(x=>{
+    const fuelStr = Object.entries(x.fuelAlloc).map(([f,n])=>`${f} <b style="color:#1c1c2e;">${n}</b>`).join(' · ');
+    return `<tr style="border-top:1px solid #f5f5fa;">
+      <td style="padding:8px 4px;font-weight:600;">${x.name}</td>
+      <td style="padding:8px 4px;text-align:center;">${x.total}</td>
+      <td style="padding:8px 4px;text-align:center;color:#e2483d;">${x.long}</td>
+      <td style="padding:8px 4px;text-align:center;">${x.avg3.toFixed(1)}</td>
+      <td style="padding:8px 4px;text-align:center;">${x.projStock}</td>
+      <td style="padding:8px 4px;text-align:center;"><span style="font-size:14.5px;font-weight:800;color:#e2483d;">+${x.buyNeed}</span></td>
+      <td style="padding:8px 4px;text-align:left;color:#555;">${fuelStr||'-'}</td>
+    </tr>`;
+  }).join('');
+  return `<div onclick="if(event.target===this)togglePurchaseModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;">
+    <div style="background:#fff;border-radius:14px;padding:20px;width:100%;max-width:720px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.25);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div style="font-size:15px;font-weight:700;color:#1c1c2e;">🚨 구매필요차량 리스트 (신차)</div>
+        <div onclick="togglePurchaseModal()" style="width:26px;height:26px;border-radius:50%;background:#f5f5f7;display:flex;align-items:center;justify-content:center;color:#888;font-size:13px;cursor:pointer;">✕</div>
+      </div>
+      <div style="font-size:11px;color:#999;margin-bottom:12px;">구매필요 &gt; 0 전체 · ${list.length}개 차종 · ${totalNeed}대</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fafafc;border-radius:8px;margin-bottom:12px;">
+        <span style="font-size:11px;color:#888;">목표 커버리지</span>
+        <input type="number" step="0.5" min="0.5" value="${targetCoverage}" onchange="setTargetCoverage(this.value)"
+          style="width:60px;padding:6px 8px;border:1.5px solid #e8e8f0;border-radius:6px;font-family:inherit;text-align:center;"/>
+        <span style="font-size:11px;color:#888;">개월</span>
+      </div>
+      <table class="inv-table">
+        <thead><tr><th>차종</th><th>현재고</th><th>장기재고</th><th>최근3개월평균</th><th>마감예상재고</th><th>구매필요(총)</th><th style="text-align:left;">유종별 필요대수</th></tr></thead>
+        <tbody>${rowsHtml || `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:16px;">구매가 필요한 차종이 없어요 🎉</td></tr>`}</tbody>
+      </table>
+      <div style="font-size:11px;color:#999;margin-top:8px;">기준: 마감예상재고 &lt; 최근3개월평균 × 목표커버리지(${targetCoverage}개월) · 유종별 필요대수는 현재고 유종비율로 추정 배분 · ${salesNote}</div>
+    </div>
+  </div>`;
+}
+
+function togglePurchaseModal(){ showPurchaseModal = !showPurchaseModal; render(); }
 
 function toggleShin(name){ openShin = (openShin===name)? null : name; render(); }
 function toggleReja(name){ openReja = (openReja===name)? null : name; render(); }
@@ -189,44 +792,101 @@ function render(){
   const rejuAll = rows.filter(r=>r.gubun==='재렌트-중고매입');
   const rejaCurrent = rejaMode==='자사매입' ? rejaAll : rejuAll;
 
-  const totalAll = rows.length;
-  const totalReja = rejaAll.length, totalReju = rejuAll.length;
+  let shipBadge = '';
+  if(shipRows){
+    const biz = getBusinessDays();
+    shipBadge = ` — 마감예상출고는 현재 페이스 비례 추정, 구매필요는 마감예상재고가 (판매이력 있으면 최근3개월평균, 없으면 이번달 페이스) 기준 예상수요 × 목표커버리지에 못 미치는 만큼`;
+  }
+
+  let shipSummaryCard = '';
+  if(shipRows){
+    const biz = getBusinessDays();
+    const shinShip = shipRows.filter(r=>r.gubun==='신차').length;
+    const rejaShip = shipRows.filter(r=>r.gubun==='재렌트').length;
+    const totalShip = shinShip + rejaShip;
+    const projOf = n => biz.elapsed>0 ? Math.round(n/biz.elapsed*biz.total) : n;
+    const projTotal = projOf(totalShip);
+    const growthPct = totalShip>0 ? Math.round((projTotal/totalShip-1)*100) : 0;
+    shipSummaryCard = `
+    <div class="summary-row" style="grid-template-columns:1fr 1fr 1fr;">
+      <div style="background:#fff;border-radius:12px;padding:16px;border-left:4px solid #6C63FF;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="font-size:11.5px;color:#999;font-weight:600;">이번달 영업일 진척률</div>
+          <span style="font-size:10px;color:#6C63FF;font-weight:700;background:#f0eeff;padding:2px 8px;border-radius:10px;">${biz.elapsed}/${biz.total}일</span>
+        </div>
+        <div style="font-size:30px;font-weight:800;color:#6C63FF;margin-top:8px;">${biz.pct}%</div>
+        <div style="height:6px;background:#eee;border-radius:3px;overflow:hidden;margin-top:10px;">
+          <div style="width:${biz.pct}%;height:100%;background:#6C63FF;"></div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:16px;border-left:4px solid #999;">
+        <div style="font-size:11.5px;color:#999;font-weight:600;">이번달 출고 (현재)</div>
+        <div style="font-size:30px;font-weight:800;color:#1c1c2e;margin-top:8px;">${totalShip.toLocaleString()}<span style="font-size:13px;font-weight:500;color:#bbb;">대</span></div>
+        <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:#888;">
+          <span>신차 <b style="color:#1c1c2e;">${shinShip}</b></span>
+          <span>재렌트 <b style="color:#1c1c2e;">${rejaShip}</b></span>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:16px;border-left:4px solid #6C63FF;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="font-size:11.5px;color:#999;font-weight:600;">마감 예상 출고</div>
+          <span style="font-size:10px;color:#22c997;font-weight:700;background:#eafbf3;padding:2px 8px;border-radius:10px;">${growthPct>=0?'+':''}${growthPct}%</span>
+        </div>
+        <div style="font-size:30px;font-weight:800;color:#6C63FF;margin-top:8px;">${projTotal.toLocaleString()}<span style="font-size:13px;font-weight:500;color:#c4bfff;">대</span></div>
+        <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:#888;">
+          <span>신차 <b style="color:#1c1c2e;">${projOf(shinShip)}</b></span>
+          <span>재렌트 <b style="color:#1c1c2e;">${projOf(rejaShip)}</b></span>
+        </div>
+      </div>
+    </div>`;
+  }
 
   content.innerHTML = `
-    <div class="summary-row">
-      <div class="sum-card">
-        <div class="sum-label">전체 재고</div>
-        <div class="sum-value">${totalAll.toLocaleString()}<span class="sum-unit">대</span></div>
+    <div style="background:#1c1c2e;border-radius:14px;padding:22px 24px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+      <div>
+        <div style="font-size:12px;color:#9b9ac2;font-weight:600;margin-bottom:6px;">전체 재고</div>
+        <div style="font-size:38px;font-weight:800;color:#fff;">${rows.length.toLocaleString()}<span style="font-size:16px;font-weight:500;color:#9b9ac2;"> 대</span></div>
       </div>
-      <div class="sum-card split-row">
-        <div class="split-item">
-          <div class="sum-label">신차</div>
-          <div class="sum-value" style="color:#6C63FF;">${shin.length}<span class="sum-unit">대</span></div>
+      <div style="display:flex;gap:28px;">
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:#9b9ac2;margin-bottom:4px;">신차</div>
+          <div style="font-size:22px;font-weight:800;color:#a89bff;">${shin.length}<span style="font-size:12px;font-weight:500;"> 대</span></div>
         </div>
-        <div class="split-sep"></div>
-        <div class="split-item">
-          <div class="sum-label">재렌트</div>
-          <div class="sum-value" style="color:#22c997;">${(totalReja+totalReju).toLocaleString()}<span class="sum-unit">대</span></div>
-          <div class="split-sub">자사 : ${totalReja} &nbsp;/&nbsp; 중고 : ${totalReju}</div>
+        <div style="width:1px;background:#3a3a52;"></div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:#9b9ac2;margin-bottom:4px;">재렌트</div>
+          <div style="font-size:22px;font-weight:800;color:#5ee0c0;">${(rejaAll.length+rejuAll.length).toLocaleString()}<span style="font-size:12px;font-weight:500;"> 대</span></div>
+          <div style="font-size:10.5px;color:#7a7a99;margin-top:2px;">자사${rejaAll.length} · 중고${rejuAll.length}</div>
         </div>
       </div>
     </div>
+    ${shipSummaryCard}
 
     <div class="card">
-      <div class="card-header"><div class="card-title">신차 상세</div></div>
-      ${renderTable(groupByModel(shin), openShin, 'toggleShin', true)}
+      <div class="card-header">
+        <div>
+          <div class="card-title">신차 상세</div>
+          <div class="card-sub">매입계약일 기준 · D+60↑ 장기 · D+30~59 반장기 · D+29↓ 정상${shipBadge}</div>
+        </div>
+        ${renderPurchaseNeedButton(groupByModel(shin))}
+      </div>
+      ${renderTable(groupByModel(shin), openShin, 'toggleShin', true, '신차', undefined, 'shin')}
     </div>
 
     <div class="card">
       <div class="card-header">
-        <div class="card-title">재렌트 상세</div>
+        <div>
+          <div class="card-title">재렌트 상세</div>
+          <div class="card-sub">상품등록일 기준 · 2026년 6~7월 정상 · 그 이전 장기${shipBadge}</div>
+        </div>
         <div class="seg-toggle">
           <button class="seg-btn ${rejaMode==='자사매입'?'active':''}" onclick="setRejaMode('자사매입')" style="${rejaMode==='자사매입'?'color:#22c997;':''}">자사매입</button>
           <button class="seg-btn ${rejaMode==='중고매입'?'active':''}" onclick="setRejaMode('중고매입')" style="${rejaMode==='중고매입'?'color:#f5a623;':''}">중고매입</button>
         </div>
       </div>
-      ${renderTable(groupByModel(rejaCurrent), openReja, 'toggleReja', false)}
+      ${renderTable(groupByModel(rejaCurrent), openReja, 'toggleReja', false, '재렌트', rejaMode, 'reja')}
     </div>
+    ${renderPurchaseNeedModal(groupByModel(shin))}
   `;
 }
 </script>
